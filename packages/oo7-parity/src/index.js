@@ -51,6 +51,7 @@ export function setupBonds(_api) {
 	bonds.accountsInfo = new TransformBond(api.parity.accountsInfo, [], [bonds.time]); //new SubscriptionBond('parity_accountsInfo');
     bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
     bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
+	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
 
     Function.__proto__.bond = function(...args) { return new TransformBond(this, args); };
     Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [parity.bonds.time]); };
