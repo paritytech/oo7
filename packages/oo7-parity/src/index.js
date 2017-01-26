@@ -77,14 +77,6 @@ export function singleton(f) {
     }
 }
 
-export function createIdentityImg (address, scale = 8) {
-  return blockies({
-    	seed: (address || '').toLowerCase(),
-    	size: 8,
-    	scale
-    }).toDataURL();
-}
-
 export const denominations = [ "wei", "Kwei", "Mwei", "Gwei", "szabo", "finney", "ether", "grand", "Mether", "Gether", "Tether", "Pether", "Eether", "Zether", "Yether", "Nether", "Dether", "Vether", "Uether" ];
 
 export function denominationMultiplier(s) {

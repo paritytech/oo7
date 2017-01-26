@@ -23,9 +23,9 @@
   "author": "Parity Technologies <admin@parity.io> (https://parity.io/)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ethcore/oo7/issues"
+    "url": "https://github.com/ethcore/oo7-parity/issues"
   },
-  "homepage": "https://github.com/ethcore/oo7#readme",
+  "homepage": "https://github.com/ethcore/oo7-parity#readme",
   "dependencies": {
     "bignumber.js": "^4.0.0",
     "oo7": "file:../oo7"
