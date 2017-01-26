@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "The Parity Bond API",
   "main": "lib/index.js",
-  "files": ["lib/*"],
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
     "compile": "babel --presets es2015 -d lib/ src/",
@@ -25,6 +27,7 @@
   },
   "homepage": "https://github.com/ethcore/oo7#readme",
   "dependencies": {
+    "bignumber.js": "^4.0.0",
     "oo7": "file:../oo7"
   },
   "devDependencies": {

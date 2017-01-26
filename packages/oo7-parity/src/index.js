@@ -1,4 +1,5 @@
 import {Bond, TimeBond, TransformBond} from 'oo7';
+import BigNumber from 'bignumber.js';
 
 var api = null;
 
