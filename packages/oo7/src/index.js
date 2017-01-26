@@ -1,4 +1,10 @@
 
+var defaultContext = typeof(parity) === 'undefined' ? null : parity.api;
+
+export function setDefaultTransformBondContext(c) {
+	defaultContext = c;
+}
+
 export class Bond {
 	constructor() {
 		this.fire = [];
@@ -30,7 +36,7 @@ export class Bond {
 ///
 /// we return a bond (an ongoing promise).
 export class TransformBond extends Bond {
-	constructor(f, a = [], d = [], context = parity.api) {
+	constructor(f, a = [], d = [], context = defaultContext) {
 		super();
 		this.f = f;
 		this.a = a;
