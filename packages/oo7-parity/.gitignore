@@ -3,6 +3,9 @@ logs
 *.log
 npm-debug.log*
 
+# Babel
+lib
+
 # Runtime data
 pids
 *.pid
