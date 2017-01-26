@@ -57,3 +57,73 @@ export function setupBonds(_api) {
 
 	return bonds;
 }
+
+////
+// Parity Utilities
+
+// TODO: move to parity.js, repackage or repot.
+
+export function capitalizeFirstLetter(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+export function singleton(f) {
+    var instance = null;
+    return function() {
+        if (instance === null)
+            instance = f();
+        return instance;
+    }
+}
+
+export function createIdentityImg (address, scale = 8) {
+  return blockies({
+    	seed: (address || '').toLowerCase(),
+    	size: 8,
+    	scale
+    }).toDataURL();
+}
+
+export const denominations = [ "wei", "Kwei", "Mwei", "Gwei", "szabo", "finney", "ether", "grand", "Mether", "Gether", "Tether", "Pether", "Eether", "Zether", "Yether", "Nether", "Dether", "Vether", "Uether" ];
+
+export function denominationMultiplier(s) {
+    let i = denominations.indexOf(s);
+    if (i < 0)
+        throw "Invalid denomination";
+    return (new BigNumber(1000)).pow(i);
+}
+
+export function interpretQuantity(s) {
+    try {
+        let m = s.toLowerCase().match('([0-9,.]+) *([a-zA-Z]+)?');
+        let d = denominationMultiplier(m[2] || 'ether');
+        let n = +m[1].replace(',', '');
+        while (n !== Math.round(n)) {
+            n *= 10;
+            d = d.div(10);
+        }
+        return new BigNumber(n).mul(d);
+    }
+    catch (e) {
+        return null;
+    }
+}
+
+export function splitValue(a) {
+	var i = 0;
+	var a = new BigNumber('' + a);
+	if (a.gte(new BigNumber("10000000000000000")) && a.lt(new BigNumber("100000000000000000000000")) || a.eq(0))
+		i = 6;
+	else
+		for (var aa = a; aa.gte(1000) && i < denominations.length - 1; aa = aa.div(1000))
+			i++;
+
+	for (var j = 0; j < i; ++j)
+		a = a.div(1000);
+
+	return {base: a, denom: i};
+}
+
+export function formatBlockNumber(n) {
+    return '#' + ('' + n).replace(/(\d)(?=(\d{3})+$)/g, "$1,");
+}
