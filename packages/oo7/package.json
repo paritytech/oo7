@@ -1,0 +1,32 @@
+{
+  "name": "oo7",
+  "version": "0.1.0",
+  "description": "The Bond API",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
+    "compile": "babel --presets es2015 -d lib/ src/",
+    "prepublish": "npm run compile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethcore/oo7.git"
+  },
+  "keywords": [
+    "Promise",
+    "Parity",
+    "Bond"
+  ],
+  "author": "Parity Technologies <admin@parity.io> (https://parity.io/)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ethcore/oo7/issues"
+  },
+  "homepage": "https://github.com/ethcore/oo7#readme",
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-es2015": "^6.22.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0"
+  }
+}
