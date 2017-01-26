@@ -15,10 +15,13 @@ work with basic values, `Promise`s and other `Bonds` abstractly.
 
 ## Installation
 
+```sh
   npm install oo7 --save
+```
 
 ## Usage
 
+```javascript
   var oo7 = require('oo7')
       Bond = oo7.Bond,
       TimeBond = oo7.TimeBond,
@@ -31,10 +34,13 @@ work with basic values, `Promise`s and other `Bonds` abstractly.
 
   // Prints the formatted date every second.
   new TransformBond(x => new Date(x), [t]).subscribe(console.log);
+```
 
 ## Tests
 
+```sh
   npm test
+```
 
 ## Contributing
 
