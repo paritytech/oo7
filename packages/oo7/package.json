@@ -2,7 +2,8 @@
   "name": "oo7",
   "version": "0.1.0",
   "description": "The Bond API",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
     "compile": "babel --presets es2015 -d lib/ src/",
