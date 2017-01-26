@@ -28,7 +28,7 @@
   "homepage": "https://github.com/ethcore/oo7-parity#readme",
   "dependencies": {
     "bignumber.js": "^4.0.0",
-    "oo7": "file:../oo7"
+    "oo7": "^0.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
