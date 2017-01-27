@@ -1,5 +1,6 @@
-import {Bond, TimeBond, TransformBond} from 'oo7';
 import React from 'react';
+import TextField from 'material-ui/TextField';
+import {Bond, TimeBond, TransformBond} from 'oo7';
 
 export class ReactiveComponent extends React.Component {
 	constructor(reactiveProps = [], extraState = {}) {
@@ -88,3 +89,46 @@ export class Reactive extends ReactiveComponent {
 		return <span className={className}>{a}</span>;
 	}
 }
+
+export class ReactiveAnchor extends ReactiveComponent {
+	constructor() {
+		super(['href', 'className', 'style', 'children']);
+	}
+	render() {
+		return <a
+				href={this.state.href}
+				className={this.state.className}
+				style={this.state.style}
+				id={this.props.id}
+				name={this.props.name}
+				target={this.props.target}
+			>{this.state.children}</a>;
+	}
+}
+
+export class BondedTextField extends React.Component {
+	constructor() {
+		super();
+		this.state = { value: '' };
+	}
+
+	render() {
+		return (<TextField
+			className={this.props.className}
+			style={this.props.style}
+			id={this.props.id}
+			name={this.props.name}
+			value={this.state.value}
+			floatingLabelText={this.props.floatingLabelText}
+			errorText={this.props.errorText || (typeof(this.props.validator) === 'function' && !this.props.validator(this.state.value) ? this.props.invalidText : null)}
+			onChange={(e, v) => {
+				this.setState({value: v});
+				if (this.props.bond instanceof Bond && (typeof(this.props.validator) !== 'function' || this.props.validator(v)))
+					this.props.bond.changed(v);
+			}}
+		/>);
+	}
+}
+BondedTextField.defaultProps = {
+	invalidText: 'Invalid'
+};

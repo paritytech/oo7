@@ -1,6 +1,6 @@
 {
   "name": "oo7-react",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The Reactive Bond API",
   "main": "lib/index.js",
   "files": [
@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/ethcore/oo7-react#readme",
   "dependencies": {
+    "material-ui": "^0.16.7",
     "oo7": "^0.1.1",
     "react": "^15.4.2"
   },
