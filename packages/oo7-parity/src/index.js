@@ -42,16 +42,58 @@ export class Transaction extends Bond {
 	}
 }
 
+function call(addr, method, args) {
+	let data = parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
+	let decode = d => parity.api.util.abiDecode(method.outputs.map(f => f.type), d);
+	return parity.api.eth.call({to: addr, data: data}).then(decode);
+};
+
 export function setupBonds(_api) {
 	api = _api;
 
 	var bonds = {};
+
     bonds.time = new TimeBond;
 	bonds.blockNumber = new SubscriptionBond('eth_blockNumber');
+	bonds.blockByNumber = n => new TransformBond(api.eth.getBlockByNumber, [n]);	// TODO: subscribe to chain reorgs that involve block 'n'.
+	bonds.block = bonds.blockByNumber(bonds.blockNumber);
 	bonds.accountsInfo = new TransformBond(api.parity.accountsInfo, [], [bonds.time]); //new SubscriptionBond('parity_accountsInfo');
     bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
     bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
+
+	bonds.makeContract = function(address, abi, extras = []) {
+		var r = { address: address };
+		let unwrapIfOne = a => a.length == 1 ? a[0] : a;
+		abi.forEach(i => {
+			if (i.type == 'function' && i.constant) {
+				r[i.name] = function (...args) {
+					if (args.length != i.inputs.length)
+						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
+					let f = (addr, ...fargs) => call(addr, i, fargs).then(unwrapIfOne);
+					return new TransformBond(f, [address, ...args], [bonds.blockNumber]);	// TODO: should be subscription on contract events
+				};
+			}
+		});
+		extras.forEach(i => {
+			r[i.name] = function (...args) {
+				let expectedInputs = (i.numInputs || i.args.length);
+				if (args.length != expectedInputs)
+					throw `Invalid number of arguments to ${i.name}. Expected ${expectedInputs}, got ${args.length}.`;
+				let c = abi.find(j => j.name == i.method);
+				let f = (addr, ...fargs) => {
+					let args = i.args.map((v, index) => v === null ? fargs[index] : typeof(v) === 'function' ? v(fargs[index]) : v);
+					return call(addr, c, args).then(unwrapIfOne);
+				};
+				return new TransformBond(f, [address, ...args], [bonds.blockNumber]);	// TODO: should be subscription on contract events
+			};
+		});
+		return r;
+	};
+
+	bonds.registry = bonds.makeContract(new TransformBond(api.parity.registryAddress, [], [bonds.time]), api.abi.registry, api.abi.registryExtras);	// TODO should be subscription.
+	bonds.githubhint = bonds.makeContract(bonds.registry.lookupAddress('githubhint', 'A'), api.abi.githubhint);
+	bonds.operations = bonds.makeContract(bonds.registry.lookupAddress('operations', 'A'), api.abi.operations);
 
     Function.__proto__.bond = function(...args) { return new TransformBond(this, args); };
     Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [parity.bonds.time]); };
