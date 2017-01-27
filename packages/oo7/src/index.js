@@ -1,4 +1,3 @@
-
 var defaultContext = typeof(parity) === 'undefined' ? null : parity.api;
 
 export function setDefaultTransformBondContext(c) {
@@ -7,22 +6,36 @@ export function setDefaultTransformBondContext(c) {
 
 export class Bond {
 	constructor() {
-		this.fire = [];
+		this.subscribers = [];
+		this.thens = [];
 	}
 	changed(v) {
-		if (JSON.stringify(this.v) != JSON.stringify(v)) {	// Horrible - would be nice to less flakey way of determining difference.
-//			console.log(`changing from ${this.v} => ${v}`);
+		if (JSON.stringify(v) != JSON.stringify(this._value)) {
 			this.trigger(v);
 		}
 	}
 	trigger(v) {
 //		console.log(`firing`);
-		this.v = v;
-		this.fire.forEach(f => f(v));
+		if (!this.ready()) {
+			this._value = v;
+			this.thens.forEach(f => f(v));
+			this.thens = null;
+		}
+		this.subscribers.forEach(f => f(v));
 	}
 	drop () {}
-	subscribe (f) { this.fire.push(f); if (this.ready()) f(this.v);  }
-	ready () { return typeof(this.v) != 'undefined'; }
+	subscribe (f) {
+		this.subscribers.push(f);
+		if (this.ready())
+			f(this._value);
+	}
+	ready () { return typeof(this._value) != 'undefined'; }
+	then (f) {
+		if (this.ready())
+			f(this._value);
+		else
+			this.thens.push(f);
+	}
 
     map(f) {
         return new TransformBond(f, [this]);
@@ -74,13 +87,13 @@ export class TransformBond extends Bond {
 export class TimeBond extends Bond {
 	constructor() {
 		super();
-		this.interval = window.setInterval(this.trigger.bind(this), 1000);
-		this.trigger();
-	}
-	trigger() {
-		this.fire.forEach(f => f(Date.now()));
+		let t = function() { this.trigger(Date.now()); }.bind(this);
+		if (typeof(window) !== 'undefined')
+			this.interval = window.setInterval(t, 1000);
+		t();
 	}
 	drop () {
-		window.clearInterval(this.interval);
+		if (typeof(window) !== 'undefined')
+			window.clearInterval(this.interval);
 	}
 }
