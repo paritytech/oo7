@@ -22,7 +22,7 @@ work with basic values, `Promise`s and other `Bonds` abstractly.
 ## Usage
 
 ```javascript
-  var oo7 = require('oo7')
+  var oo7 = require('oo7'),
       Bond = oo7.Bond,
       TimeBond = oo7.TimeBond,
 	  TransformBond = oo7.TransformBond;
