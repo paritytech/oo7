@@ -42,10 +42,21 @@ export class Transaction extends Bond {
 	}
 }
 
-function call(addr, method, args) {
+function overlay(base, top) {
+	for (k in Object.keys(top))
+		base[k] = top[k];
+	return base;
+}
+
+function call(addr, method, args, options) {
 	let data = parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
 	let decode = d => parity.api.util.abiDecode(method.outputs.map(f => f.type), d);
-	return parity.api.eth.call({to: addr, data: data}).then(decode);
+	return parity.api.eth.call(overlay({to: addr, data: data}, options)).then(decode);
+};
+
+function post(addr, method, args, options) {
+	let data = parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
+	return new Transaction(overlay({to: addr, data: data}, options));
 };
 
 export function setupBonds(_api) {
@@ -71,9 +82,10 @@ export function setupBonds(_api) {
 		abi.forEach(i => {
 			if (i.type == 'function' && i.constant) {
 				r[i.name] = function (...args) {
+					var options = args.length === i.inputs.length + 1 ? args.unshift() : {};
 					if (args.length != i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
-					let f = (addr, ...fargs) => call(addr, i, fargs).then(unwrapIfOne);
+					let f = (addr, ...fargs) => call(addr, i, fargs, options).then(unwrapIfOne);
 					return new TransformBond(f, [address, ...args], [bonds.blockNumber]);	// TODO: should be subscription on contract events
 				};
 			}
@@ -81,15 +93,26 @@ export function setupBonds(_api) {
 		extras.forEach(i => {
 			r[i.name] = function (...args) {
 				let expectedInputs = (i.numInputs || i.args.length);
+				var options = args.length === expectedInputs + 1 ? args.unshift() : {};
 				if (args.length != expectedInputs)
 					throw `Invalid number of arguments to ${i.name}. Expected ${expectedInputs}, got ${args.length}.`;
 				let c = abi.find(j => j.name == i.method);
 				let f = (addr, ...fargs) => {
 					let args = i.args.map((v, index) => v === null ? fargs[index] : typeof(v) === 'function' ? v(fargs[index]) : v);
-					return call(addr, c, args).then(unwrapIfOne);
+					return call(addr, c, args, options).then(unwrapIfOne);
 				};
 				return new TransformBond(f, [address, ...args], [bonds.blockNumber]);	// TODO: should be subscription on contract events
 			};
+		});
+		abi.forEach(i => {
+			if (i.type == 'function' && !i.constant) {
+				r[i.name] = function (...args) {
+					var options = args.length === i.inputs.length + 1 ? args.unshift() : {};
+					if (args.length !== i.inputs.length)
+						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
+					return Promise.all([addr, ...fargs]).then(addrArgs => post(addrArgs[0], i, addrArgs.slice(1), options));
+				};
+			}
 		});
 		return r;
 	};
