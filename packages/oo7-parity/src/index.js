@@ -63,7 +63,7 @@ export function setupBonds(_api) {
 	api = _api;
 
 	window.TimeBond = TimeBond;
-	
+
 	var bonds = {};
 
     bonds.time = new TimeBond;
@@ -74,7 +74,6 @@ export function setupBonds(_api) {
     bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
     bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
-
 
 	bonds.makeContract = function(address, abi, extras = []) {
 		var r = { address: address };
@@ -110,7 +109,7 @@ export function setupBonds(_api) {
 					var options = args.length === i.inputs.length + 1 ? args.unshift() : {};
 					if (args.length !== i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
-					return Promise.all([addr, ...fargs]).then(addrArgs => post(addrArgs[0], i, addrArgs.slice(1), options));
+					return Bond.all([addr, ...fargs]).then(addrArgs => post(addrArgs[0], i, addrArgs.slice(1), options));
 				};
 			}
 		});
