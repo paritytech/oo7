@@ -51,6 +51,8 @@ function call(addr, method, args) {
 export function setupBonds(_api) {
 	api = _api;
 
+	window.TimeBond = TimeBond;
+	
 	var bonds = {};
 
     bonds.time = new TimeBond;
@@ -61,6 +63,7 @@ export function setupBonds(_api) {
     bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
     bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
+
 
 	bonds.makeContract = function(address, abi, extras = []) {
 		var r = { address: address };
