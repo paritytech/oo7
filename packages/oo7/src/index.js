@@ -7,39 +7,132 @@ export function setDefaultTransformBondContext(c) {
 export class Bond {
 	constructor() {
 		this.subscribers = [];
+		this.notify = [];
 		this.thens = [];
 	}
+
 	changed(v) {
-		if (JSON.stringify(v) != JSON.stringify(this._value)) {
+//		console.log(`maybe changed (${this._value} -> ${v})`);
+		if (JSON.stringify(v) !== JSON.stringify(this._value)) {
 			this.trigger(v);
 		}
 	}
 	trigger(v) {
-//		console.log(`firing`);
-		if (!this.ready()) {
-			this._value = v;
-			this.thens.forEach(f => f(v));
-			this.thens = null;
-		}
+//		console.log(`firing (${v})`);
+		this._value = v;
+		this.notify.forEach(f => f());
 		this.subscribers.forEach(f => f(v));
+		if (this.ready()) {
+			this.thens.forEach(f => f(v));
+			this.thens = [];
+		}
 	}
 	drop () {}
+	tie (f) {
+		this.notify.push(f);
+		if (this.ready()) {
+			f();
+		}
+	}
 	subscribe (f) {
 		this.subscribers.push(f);
-		if (this.ready())
+		if (this.ready()) {
 			f(this._value);
+		}
+		return this;
 	}
-	ready () { return typeof(this._value) != 'undefined'; }
+	ready () { return typeof(this._value) !== 'undefined'; }
 	then (f) {
-		if (this.ready())
+		if (this.ready()) {
 			f(this._value);
-		else
+		} else {
 			this.thens.push(f);
+		}
+		return this;
 	}
 
     map(f) {
         return new TransformBond(f, [this]);
     }
+
+	static all(list) {
+		return new TransformBond((...args) => args, list);
+	}
+
+	static promise(list) {
+		return new Promise((resolve, reject) => {
+			var finished = 0;
+			var l = [];
+			l.length = list.length;
+
+			let done = (i, v) => {
+//				console.log(`done ${i} ${v}`);
+				l[i] = v;
+				finished++;
+//				console.log(`finished ${finished}; l.length ${l.length}`);
+				if (finished === l.length) {
+//					console.log(`resolving with ${l}`);
+					resolve(l);
+				}
+			};
+
+			list.forEach((v, i) => {
+				if (v instanceof Bond) {
+					v.then(x => done(i, x));
+				} else if (v instanceof Promise) {
+					v.then(x => done(i, x), reject);
+				} else {
+					done(i, v);
+				}
+			});
+		});
+	}
+}
+
+export class ReactiveBond extends Bond {
+	constructor(a, d, execute = args => this.changed(args)) {
+		super();
+
+		let poll = () => {
+			if (a.findIndex(i => (i instanceof Bond && !i.ready()) || (i instanceof Promise && typeof(i._value) === 'undefined')) != -1) {
+	//			console.log("Input undefined");
+				this.changed(undefined);
+			} else {
+				execute.bind(this)(a.map(i => (i instanceof Bond || i instanceof Promise) ? i._value : i));
+			}
+		};
+
+		d.forEach(i => i.tie(poll));
+		var nd = 0;
+		a.forEach(i => {
+			if (i instanceof Bond) {
+				i.tie(poll);
+				nd++;
+			}
+			if (i instanceof Promise) {
+				i.then(v => { i._value = v; poll(); });
+				nd++;
+			}
+		});
+		if (nd == 0 && d.length == 0)
+			poll();
+	}
+	drop () {
+		// TODO clear up all our dependency `notify`s.
+	}
+}
+
+// Just a one-off.
+export class ReactivePromise extends ReactiveBond {
+	constructor(a, d, execute = args => this.changed(args)) {
+		var done = false;
+		super(a, d, args => {
+			if (!done) {
+				done = true;
+				execute.bind(this)(args);
+			}
+		})
+	}
 }
 
 /// f is function which returns a promise. a is a set of dependencies
@@ -48,39 +141,19 @@ export class Bond {
 /// underlying value which is passed.
 ///
 /// we return a bond (an ongoing promise).
-export class TransformBond extends Bond {
-	constructor(f, a = [], d = [], context = defaultContext) {
-		super();
-		this.f = f;
-		this.a = a;
-		this.context = context;
-		d.forEach(i => i.subscribe((() => this.poll()).bind(this)));
-		var nd = 0;
-		a.forEach(i => {
-			if (i instanceof Bond) {
-				i.subscribe(this.poll.bind(this));
-				nd++;
-			}
-			if (i instanceof Promise) {
-				let f = this.poll.bind(this);
-				i.then(v => { i.v = v; f(); });
-				nd++;
+export class TransformBond extends ReactiveBond {
+	constructor(f, a = [], d = [], latched = true, context = defaultContext) {
+		super(a, d, function (args) {
+			let r = f.apply(context, args);
+			if (r instanceof Promise) {
+				if (!latched) {
+					this.changed(undefined);
+				}
+				r.then(this.changed.bind(this));
+			} else {
+				this.changed(r);
 			}
 		});
-		if (nd == 0 && d.length == 0)
-			this.poll();
-	}
-	poll () {
-		if (this.a.findIndex(i => (i instanceof Bond && !i.ready()) || (i instanceof Promise && typeof(i.v) === 'undefined')) != -1)
-			return;	// still have undefined params.
-		let r = this.f.apply(this.context, this.a.map(i => (i instanceof Bond || i instanceof Promise) ? i.v : i));
-		if (r instanceof Promise)
-			r.then(this.changed.bind(this));
-		else
-			this.changed(r);
-	}
-	drop () {
-		// TODO clear up all our dependency `.subscribe`s.
 	}
 }
 
