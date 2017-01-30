@@ -1,4 +1,4 @@
-import {Bond, TimeBond, TransformBond} from 'oo7';
+import {Bond, TimeBond, TransformBond, ReactivePromise} from 'oo7';
 import BigNumber from 'bignumber.js';
 
 var api = null;
@@ -17,28 +17,50 @@ export class SubscriptionBond extends Bond {
 	}
 }
 
-export class Transaction extends Bond {
+export class Signature extends ReactivePromise {
+	constructor(from, message) {
+		super([from, message], [], ([from, message]) => {
+			parity.api.parity.postSign(from, parity.api.util.asciiToHex(message))
+				.then(signerRequestId => {
+	//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
+					this.trigger({requested: signerRequestId});
+			    	return parity.api.pollMethod('parity_checkRequest', signerRequestId);
+			    })
+			    .then(signature => {
+	//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
+					this.trigger({signed: signature});
+				})
+				.catch(error => {
+	//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
+					this.trigger({failed: error});
+				});
+		});
+	}
+}
+
+export class Transaction extends ReactivePromise {
 	constructor(tx) {
-		super();
-		var p = api.parity.postTransaction(tx)
-			.then(signerRequestId => {
-//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
-				this.trigger({requested: signerRequestId});
-		    	return api.pollMethod('parity_checkRequest', signerRequestId);
-		    })
-		    .then(transactionHash => {
-//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
-				this.trigger({signed: transactionHash});
-				return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
-			})
-			.then(receipt => {
-//				console.log('trackRequest', `received transaction receipt ${JSON.stringify(receipt)}`);
-				this.trigger({confirmed: receipt});
-			})
-			.catch(error => {
-//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
-				this.trigger({failed: error});
-			});
+		super([tx], [], ([tx]) => {
+			api.parity.postTransaction(tx)
+				.then(signerRequestId => {
+	//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
+					this.trigger({requested: signerRequestId});
+			    	return api.pollMethod('parity_checkRequest', signerRequestId);
+			    })
+			    .then(transactionHash => {
+	//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
+					this.trigger({signed: transactionHash});
+					return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
+				})
+				.then(receipt => {
+	//				console.log('trackRequest', `received transaction receipt ${JSON.stringify(receipt)}`);
+					this.trigger({confirmed: receipt});
+				})
+				.catch(error => {
+	//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
+					this.trigger({failed: error});
+				});
+		});
 	}
 }
 
@@ -55,8 +77,10 @@ function call(addr, method, args, options) {
 };
 
 function post(addr, method, args, options) {
-	let data = parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
-	return new Transaction(overlay({to: addr, data: data}, options));
+	let toOptions = (addr, method, options, ...args) => {
+		return overlay({to: addr, data: parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
+	};
+	return new Transaction(toOptions.bond(addr, method, options, ...args));
 };
 
 export function setupBonds(_api) {
@@ -68,12 +92,24 @@ export function setupBonds(_api) {
 
     bonds.time = new TimeBond;
 	bonds.blockNumber = new SubscriptionBond('eth_blockNumber');
-	bonds.blockByNumber = n => new TransformBond(api.eth.getBlockByNumber, [n]);	// TODO: subscribe to chain reorgs that involve block 'n'.
+
+	Function.__proto__.bond = function(...args) { return new TransformBond(this, args); };
+	Function.__proto__.unlatchedBond = function(...args) { return new TransformBond(this, args, [], false, undefined); };
+    Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [parity.bonds.time]); };
+    Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [parity.bonds.blockNumber]); };
+
+	// eth_
+	bonds.blockByNumber = n => api.eth.getBlockByNumber.bond(n);	// TODO: subscribe to chain reorgs that involve block 'n'.
 	bonds.block = bonds.blockByNumber(bonds.blockNumber);
-	bonds.accountsInfo = new TransformBond(api.parity.accountsInfo, [], [bonds.time]); //new SubscriptionBond('parity_accountsInfo');
-    bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
-    bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
+
+	// net_
+    bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
+
+	// parity_
+	bonds.hashContent = u => api.parity.hashContent.unlatchedBond(u);
+	bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
+	bonds.accountsInfo = new TransformBond(api.parity.accountsInfo, [], [bonds.time]); //new SubscriptionBond('parity_accountsInfo');
 
 	bonds.makeContract = function(address, abi, extras = []) {
 		var r = { address: address };
@@ -109,7 +145,7 @@ export function setupBonds(_api) {
 					var options = args.length === i.inputs.length + 1 ? args.unshift() : {};
 					if (args.length !== i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
-					return Bond.all([addr, ...fargs]).then(addrArgs => post(addrArgs[0], i, addrArgs.slice(1), options));
+					return post(address, i, args, options);
 				};
 			}
 		});
@@ -119,10 +155,6 @@ export function setupBonds(_api) {
 	bonds.registry = bonds.makeContract(new TransformBond(api.parity.registryAddress, [], [bonds.time]), api.abi.registry, api.abi.registryExtras);	// TODO should be subscription.
 	bonds.githubhint = bonds.makeContract(bonds.registry.lookupAddress('githubhint', 'A'), api.abi.githubhint);
 	bonds.operations = bonds.makeContract(bonds.registry.lookupAddress('operations', 'A'), api.abi.operations);
-
-    Function.__proto__.bond = function(...args) { return new TransformBond(this, args); };
-    Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [parity.bonds.time]); };
-    Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [parity.bonds.blockNumber]); };
 
 	return bonds;
 }
