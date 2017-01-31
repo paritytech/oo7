@@ -98,18 +98,35 @@ export function setupBonds(_api) {
     Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [parity.bonds.time]); };
     Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [parity.bonds.blockNumber]); };
 
+	let presub = function (f) {
+		return new Proxy(f, {
+			get (receiver, name) {
+				if ((name instanceof String || name instanceof Number) && typeof(receiver[name]) !== 'undefined') {
+					return receiver[name];
+				} else {
+					return receiver(name);
+				}
+			}
+		});
+	};
+
 	// eth_
-	bonds.blockByNumber = n => api.eth.getBlockByNumber.bond(n);	// TODO: subscribe to chain reorgs that involve block 'n'.
-	bonds.block = bonds.blockByNumber(bonds.blockNumber);
+	bonds.blockByNumber = (x => new TransformBond(api.eth.getBlockByNumber, [x], [/* TODO: chain reorg that includes number x */]).subscriptable());
+	bonds.blocks = presub(bonds.blockByNumber);
+	bonds.block = bonds.blocks(bonds.blockNumber);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
+	bonds.balance = (x => new TransformBond(api.eth.getBalance, [x]));
+	bonds.accounts = new TransformBond(api.eth.accounts, [], [bonds.time]).subscriptable();
+
+	// Weird compound
 
 	// net_
     bonds.peerCount = new TransformBond(api.net.peerCount, [], [bonds.time]);
 
 	// parity_
-	bonds.hashContent = u => api.parity.hashContent.unlatchedBond(u);
+	bonds.hashContent = u => new TransformBond(api.parity.hashContent, [u], [], false);
 	bonds.netChain = new TransformBond(api.parity.netChain, [], [bonds.time]);
-	bonds.accountsInfo = new TransformBond(api.parity.accountsInfo, [], [bonds.time]); //new SubscriptionBond('parity_accountsInfo');
+	bonds.accountsInfo = new TransformBond(api.parity.accountsInfo, [], [bonds.time]).subscriptable(); //new SubscriptionBond('parity_accountsInfo');
 
 	bonds.makeContract = function(address, abi, extras = []) {
 		var r = { address: address };
@@ -121,7 +138,7 @@ export function setupBonds(_api) {
 					if (args.length != i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
 					let f = (addr, ...fargs) => call(addr, i, fargs, options).then(unwrapIfOne);
-					return new TransformBond(f, [address, ...args], [bonds.blockNumber]);	// TODO: should be subscription on contract events
+					return new TransformBond(f, [address, ...args], [bonds.blockNumber]).subscriptable();	// TODO: should be subscription on contract events
 				};
 			}
 		});
@@ -136,7 +153,7 @@ export function setupBonds(_api) {
 					let args = i.args.map((v, index) => v === null ? fargs[index] : typeof(v) === 'function' ? v(fargs[index]) : v);
 					return call(addr, c, args, options).then(unwrapIfOne);
 				};
-				return new TransformBond(f, [address, ...args], [bonds.blockNumber]);	// TODO: should be subscription on contract events
+				return new TransformBond(f, [address, ...args], [bonds.blockNumber]).subscriptable();	// TODO: should be subscription on contract events
 			};
 		});
 		abi.forEach(i => {
@@ -145,7 +162,7 @@ export function setupBonds(_api) {
 					var options = args.length === i.inputs.length + 1 ? args.unshift() : {};
 					if (args.length !== i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
-					return post(address, i, args, options);
+					return post(address, i, args, options).subscriptable();
 				};
 			}
 		});
