@@ -71,7 +71,7 @@ describe('Bond', function() {
       let u = new Bond();
 
       var x = 0;
-      t.sub(u).subscribe(a => { x = a; });
+      t[u].subscribe(a => { x = a; });
 
       x.should.equal(0);
 
@@ -134,6 +134,30 @@ describe('ReactiveBond', function() {
 
         // then
         u.itWorks.should.equal(true);
+    });
+    it('should not propagate undefined values', () => {
+        let t = new Bond();
+        class MyBond extends ReactiveBond {
+            constructor(a) {
+                super([a], [], (args) => { this.argsType = typeof(args[0]); });
+                this.argsType = '';
+            }
+        };
+        let u = new MyBond(t);
+
+        u.argsType.should.equal('');
+
+        // when
+        t.reset();
+
+        // then
+        u.argsType.should.equal('');
+
+        // when
+        t.trigger(69);
+
+        // then
+        u.argsType.should.equal('number');
     });
 });
 

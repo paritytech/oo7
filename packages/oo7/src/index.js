@@ -4,13 +4,23 @@ export function setDefaultTransformBondContext(c) {
 	defaultContext = c;
 }
 
+var subscripted = {};
+
 export class Bond {
-	constructor() {
+	constructor(mayBeNull = false) {
 		this.subscribers = [];
 		this.notify = [];
 		this.thens = [];
 		this._ready = false;
 		this._value = null;
+		this.mayBeNull = mayBeNull;
+//		return this.subscriptable();
+	}
+
+	toString () {
+		let s = Symbol();
+		subscripted[s] = this;
+		return s;
 	}
 
 	subscriptable () {
@@ -19,9 +29,10 @@ export class Bond {
 //				console.log(`subscriptable.get: ${JSON.stringify(receiver)}, ${JSON.stringify(name)}, ${JSON.stringify(receiver)}: ${typeof(name)}, ${typeof(receiver[name])}`);
 				if ((typeof(name) === 'string' || typeof(name) === 'number') && typeof(receiver[name]) !== 'undefined') {
 					return receiver[name];
-				} else if (name === '[object Object]') {
-					console.error("Subscription ([]s) not supported with a Bond/Promise. Use .sub(...) instead.");
-					return null;
+				} else if (typeof(name) === 'symbol' && subscripted[name]) {
+					let sub = subscripted[name];
+					delete subscripted[name];
+					return new TransformBond((r, n) => r[n], [receiver, sub]);
 				} else {
 					return new TransformBond((r, n) => r[n], [receiver, name]);
 				}
@@ -31,23 +42,40 @@ export class Bond {
 	}
 
 	reset () {
-		this._ready = false;
-		this._value = null;
+		if (this._ready) {
+			this._ready = false;
+			this._value = null;
+			this.notify.forEach(f => f());
+		}
 	}
 	changed (v) {
+		if (typeof(v) === 'undefined') {
+			console.error(`Trigger called with undefined value`);
+			return;
+		}
 //		console.log(`maybe changed (${this._value} -> ${v})`);
-		if (!this._ready || JSON.stringify(v) !== JSON.stringify(this._value)) {
+		if (!this.mayBeNull && v === null) {
+			this.reset();
+		} else if (!this._ready || JSON.stringify(v) !== JSON.stringify(this._value)) {
 			this.trigger(v);
 		}
 	}
 	trigger (v) {
-//		console.log(`firing (${v})`);
-		this._ready = true;
-		this._value = v;
-		this.notify.forEach(f => f());
-		this.subscribers.forEach(f => f(this._value));
-		this.thens.forEach(f => f(this._value));
-		this.thens = [];
+		if (typeof(v) === 'undefined') {
+			console.error(`Trigger called with undefined value`);
+			return;
+		}
+		if (!this.mayBeNull && v === null) {
+			this.reset();
+		} else {
+//			console.log(`firing (${JSON.stringify(v)})`);
+			this._ready = true;
+			this._value = v;
+			this.notify.forEach(f => f());
+			this.subscribers.forEach(f => f(this._value));
+			this.thens.forEach(f => f(this._value));
+			this.thens = [];
+		}
 	}
 	drop () {}
 	tie (f) {
@@ -115,6 +143,7 @@ export class Bond {
 }
 
 function isReady(x, deep = true) {
+	let r = (() => {
 	if (typeof(x) === 'object' && x !== null)
 		if (x instanceof Bond)
 			return x._ready;
@@ -128,6 +157,9 @@ function isReady(x, deep = true) {
 			return true;
 	else
 		return true;
+	})();
+//	console.log(`isReady(${JSON.stringify(x)}) => ${r}`);
+	return r;
 }
 
 function mapped(x, deep = true) {
@@ -180,8 +212,8 @@ function deepTie(x, poll, deep = true) {
 }
 
 export class ReactiveBond extends Bond {
-	constructor(a, d, execute = args => this.changed(args)) {
-		super();
+	constructor(a, d, execute = args => this.changed(args), mayBeNull = false) {
+		super(mayBeNull);
 
 		let poll = () => {
 			if (a.findIndex(i => !isReady(i)) !== -1) {
@@ -207,14 +239,14 @@ export class ReactiveBond extends Bond {
 
 // Just a one-off.
 export class ReactivePromise extends ReactiveBond {
-	constructor(a, d, execute = args => this.changed(args)) {
+	constructor(a, d, execute = args => this.changed(args), mayBeNull = false) {
 		var done = false;
 		super(a, d, args => {
 			if (!done) {
 				done = true;
 				execute.bind(this)(args);
 			}
-		})
+		}, mayBeNull)
 	}
 }
 
@@ -225,8 +257,9 @@ export class ReactivePromise extends ReactiveBond {
 ///
 /// we return a bond (an ongoing promise).
 export class TransformBond extends ReactiveBond {
-	constructor(f, a = [], d = [], latched = true, context = defaultContext) {
+	constructor(f, a = [], d = [], latched = true, mayBeNull = false, context = defaultContext) {
 		super(a, d, function (args) {
+//			console.log(`Applying: ${JSON.stringify(args)}`);
 			let r = f.apply(context, args);
 			if (r instanceof Promise) {
 				if (!latched) {
@@ -236,7 +269,7 @@ export class TransformBond extends ReactiveBond {
 			} else {
 				this.changed(r);
 			}
-		});
+		}, mayBeNull);
 	}
 }
 
