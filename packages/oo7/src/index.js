@@ -9,41 +9,63 @@ export class Bond {
 		this.subscribers = [];
 		this.notify = [];
 		this.thens = [];
+		this._ready = false;
+		this._value = null;
 	}
 
-	changed(v) {
+	subscriptable () {
+		var r = new Proxy(this, {
+		    get (receiver, name) {
+//				console.log(`subscriptable.get: ${JSON.stringify(receiver)}, ${JSON.stringify(name)}, ${JSON.stringify(receiver)}: ${typeof(name)}, ${typeof(receiver[name])}`);
+				if ((typeof(name) === 'string' || typeof(name) === 'number') && typeof(receiver[name]) !== 'undefined') {
+					return receiver[name];
+				} else if (name === '[object Object]') {
+					console.error("Subscription ([]s) not supported with a Bond/Promise. Use .sub(...) instead.");
+					return null;
+				} else {
+					return new TransformBond((r, n) => r[n], [receiver, name]);
+				}
+		    }
+		});
+		return r;
+	}
+
+	reset () {
+		this._ready = false;
+		this._value = null;
+	}
+	changed (v) {
 //		console.log(`maybe changed (${this._value} -> ${v})`);
-		if (JSON.stringify(v) !== JSON.stringify(this._value)) {
+		if (!this._ready || JSON.stringify(v) !== JSON.stringify(this._value)) {
 			this.trigger(v);
 		}
 	}
-	trigger(v) {
+	trigger (v) {
 //		console.log(`firing (${v})`);
+		this._ready = true;
 		this._value = v;
 		this.notify.forEach(f => f());
-		this.subscribers.forEach(f => f(v));
-		if (this.ready()) {
-			this.thens.forEach(f => f(v));
-			this.thens = [];
-		}
+		this.subscribers.forEach(f => f(this._value));
+		this.thens.forEach(f => f(this._value));
+		this.thens = [];
 	}
 	drop () {}
 	tie (f) {
 		this.notify.push(f);
-		if (this.ready()) {
+		if (this._ready) {
 			f();
 		}
 	}
 	subscribe (f) {
 		this.subscribers.push(f);
-		if (this.ready()) {
+		if (this._ready) {
 			f(this._value);
 		}
 		return this;
 	}
-	ready () { return typeof(this._value) !== 'undefined'; }
+	ready () { return this._ready; }
 	then (f) {
-		if (this.ready()) {
+		if (this._ready) {
 			f(this._value);
 		} else {
 			this.thens.push(f);
@@ -51,9 +73,12 @@ export class Bond {
 		return this;
 	}
 
-    map(f) {
+    map (f) {
         return new TransformBond(f, [this]);
     }
+	sub (name) {
+		return new TransformBond((r, n) => r[n], [this, name]);
+	}
 
 	static all(list) {
 		return new TransformBond((...args) => args, list);
@@ -89,33 +114,91 @@ export class Bond {
 	}
 }
 
+function isReady(x, deep = true) {
+	if (typeof(x) === 'object' && x !== null)
+		if (x instanceof Bond)
+			return x._ready;
+		else if (x instanceof Promise)
+		  	return typeof(x._value) !== 'undefined';
+		else if (deep && x.constructor === Array)
+			return x.findIndex(i => !isReady(i, false)) === -1;
+		else if (deep && x.constructor === Object)
+			return Object.keys(x).findIndex(k => !isReady(x[k], false)) === -1;
+		else
+			return true;
+	else
+		return true;
+}
+
+function mapped(x, deep = true) {
+//	console.log(`x: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}`);
+	if (typeof(x) === 'object' && x !== null) {
+		if (x instanceof Bond || x instanceof Promise) {
+//			console.log(`Bond/Promise: ${JSON.stringify(x._value)}`);
+			return x._value;
+		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1) {
+			let o = x.slice().map(i => mapped(i, false));
+//			console.log(`Deep array: ${JSON.stringify(o)}`);
+			return o;
+		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1) {
+			var o = {};
+			Object.keys(x).forEach(k => { o[k] = mapped(x[k], false); });
+//			console.log(`Deep object: ${JSON.stringify(o)}`);
+			return o;
+		} else {
+//			console.log(`Shallow object: ${JSON.stringify(x._value)}`);
+			return x;
+		}
+	} else {
+//		console.log(`Basic value: ${JSON.stringify(x)}`);
+		return x;
+	}
+}
+
+function deepTie(x, poll, deep = true) {
+	if (typeof(x) === 'object' && x !== null) {
+		if (x instanceof Bond) {
+			x.tie(poll);
+			return true;
+		} else if (x instanceof Promise) {
+			x.then(v => { x._value = v; poll(); });
+			return true;
+		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1) {
+			var r = false;
+			x.forEach(i => { r = deepTie(i, poll, false) || r; });
+			return r;
+		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1) {
+			var r = false;
+			Object.keys(x).forEach(k => { r = deepTie(x[k], poll, false) || r; });
+			return r;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
 export class ReactiveBond extends Bond {
 	constructor(a, d, execute = args => this.changed(args)) {
 		super();
 
 		let poll = () => {
-			if (a.findIndex(i => (i instanceof Bond && !i.ready()) || (i instanceof Promise && typeof(i._value) === 'undefined')) != -1) {
-	//			console.log("Input undefined");
-				this.changed(undefined);
+			if (a.findIndex(i => !isReady(i)) !== -1) {
+//				console.log("poll: One or more dependencies undefined");
+				this.reset();
 			} else {
-				execute.bind(this)(a.map(i => (i instanceof Bond || i instanceof Promise) ? i._value : i));
+//				console.log(`poll: All dependencies good: ${JSON.stringify(a.map(mapped))}`);
+				execute.bind(this)(a.map(mapped));
 			}
 		};
 
 		d.forEach(i => i.tie(poll));
 		var nd = 0;
-		a.forEach(i => {
-			if (i instanceof Bond) {
-				i.tie(poll);
-				nd++;
-			}
-			if (i instanceof Promise) {
-				i.then(v => { i._value = v; poll(); });
-				nd++;
-			}
-		});
-		if (nd == 0 && d.length == 0)
+		a.forEach(i => { if (deepTie(i, poll)) nd++; });
+		if (nd == 0 && d.length == 0) {
 			poll();
+		}
 	}
 	drop () {
 		// TODO clear up all our dependency `notify`s.
@@ -147,7 +230,7 @@ export class TransformBond extends ReactiveBond {
 			let r = f.apply(context, args);
 			if (r instanceof Promise) {
 				if (!latched) {
-					this.changed(undefined);
+					this.reset();
 				}
 				r.then(this.changed.bind(this));
 			} else {

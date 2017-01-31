@@ -38,6 +38,55 @@ describe('Bond', function() {
       // then
       x.should.equal(69);
   });
+  it('should have subscripts which fall back properly', () => {
+      let t = new Bond().subscriptable();
+
+      var x = 0;
+      t.subscribe(a => { x = a; });
+
+      x.should.equal(0);
+
+      // when
+      t.trigger(42);
+
+      // then
+      x.should.equal(42);
+  });
+  it('should have subscripts which work with normals', () => {
+      let t = new Bond().subscriptable();
+
+      var x = 0;
+      t[2].subscribe(a => { x = a; });
+
+      x.should.equal(0);
+
+      // when
+      t.trigger([0, 0, 42, 0]);
+
+      // then
+      x.should.equal(42);
+  });
+  it('should have subscripts which work with bonds', () => {
+      let t = new Bond().subscriptable();
+      let u = new Bond();
+
+      var x = 0;
+      t.sub(u).subscribe(a => { x = a; });
+
+      x.should.equal(0);
+
+      // when
+      t.trigger([0, 0, 42, 0]);
+
+      // then
+      x.should.equal(0);
+
+      // when
+      u.trigger(2);
+
+      // then
+      x.should.equal(42);
+  });
   // Won't work as then gets called async.
 /*  it('should work with trivial all', () => {
       let v = 6;
@@ -87,6 +136,35 @@ describe('ReactiveBond', function() {
         u.itWorks.should.equal(true);
     });
 });
+
+describe('TransformBond', function() {
+    it('should react to in-object dependencies', () => {
+        var x = 0;
+        let t = new Bond;
+        let u = new Bond;
+        let v = new Bond;
+        let w = new Bond;
+        let b = new TransformBond((a, b, c) => {
+            x = a + b.n + c[0];
+            return true;
+        }, [t, {n: u, m: {w}}, [v]]);
+
+        b.ready().should.equal(false);
+        x.should.equal(0);
+
+        t.trigger(60);
+        b.ready().should.equal(false);
+        x.should.equal(0);
+
+        u.trigger(6);
+        b.ready().should.equal(false);
+        x.should.equal(0);
+
+        v.trigger(3);
+        b.ready().should.equal(true);
+        x.should.equal(69);
+    });
+})
 
 describe('TimeBond', function() {
   it('should be constructable', () => {
