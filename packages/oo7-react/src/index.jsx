@@ -68,42 +68,71 @@ export class ReactiveComponent extends React.Component {
 	}
 }
 
-export class ReactiveSpan extends ReactiveComponent {
+export class Rspan extends ReactiveComponent {
     constructor() { super(['className', 'style', 'children']); }
 	render() {
-		return <span
-			className={this.state.className}
-			style={this.state.style}
-			name={this.props.name}
-		>{this.state.children}</span>;
+		return (
+			<span
+				className={this.state.className}
+				style={this.state.style}
+				name={this.props.name}
+			>{this.state.children}</span>
+		);
 	}
 }
 
-export class ReactiveDiv extends ReactiveComponent {
+export class Rdiv extends ReactiveComponent {
     constructor() { super(['className', 'style', 'children']); }
 	render() {
-		return <div
-			className={this.state.className}
-			style={this.state.style}
-			name={this.props.name}
-		>{this.state.children}</div>;
+		return (
+			<div
+				className={this.state.className}
+				style={this.state.style}
+				name={this.props.name}
+			>{this.state.children}</div>
+		);
 	}
 }
 
-export class ReactiveAnchor extends ReactiveComponent {
+export class Ra extends ReactiveComponent {
 	constructor() {
 		super(['href', 'target', 'className', 'style', 'children']);
 	}
 	render() {
-		return <a
+		return (
+			<a
 				href={this.state.href}
 				target={this.state.target}
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{this.state.children}</a>;
+			>{this.state.children}</a>
+		);
 	}
 }
+
+export class Hash extends ReactiveComponent {
+	constructor() {
+		super(['value', 'className', 'style']);
+	}
+	render() {
+		let v = this.state.value;
+		let d = typeof(v) === 'string' && v.startsWith('0x') && v.length >= 18
+			? v.substr(0, 8) + '…' + v.substr(v.length - 4)
+			: v;
+		return (
+			<span
+				className={this.state.className}
+				style={this.state.style}
+				title={this.state.value}
+				name={this.props.name}
+			>{d}</span>
+		);
+	}
+}
+Hash.defaultProps = {
+	className: '_hash'
+};
 
 export class TextBond extends React.Component {
 	constructor() {
@@ -115,26 +144,42 @@ export class TextBond extends React.Component {
 		if (this.props.bond instanceof Bond && (typeof(this.props.validator) !== 'function' || this.props.validator(v)))
 			this.props.bond.changed(v);
 		else
-			this.props.bond.changed(undefined);
+			this.props.bond.reset();
 	}
 
 	componentWillMount() { this.fixValue(this.state.value); }
 
 	render() {
-		return (<TextField
-			className={this.props.className}
-			style={this.props.style}
-			name={this.props.name}
-			value={this.state.value}
-			floatingLabelText={this.props.floatingLabelText}
-			errorText={this.props.errorText || (typeof(this.props.validator) === 'function' && !this.props.validator(this.state.value) ? this.props.invalidText : null)}
-			onChange={(e, v) => {
-				this.setState({value: v});
-				this.fixValue(v);
-			}}
-		/>);
+		return (
+			<TextField
+				className={this.props.className}
+				style={this.props.style}
+				name={this.props.name}
+				value={this.state.value}
+				floatingLabelText={this.props.floatingLabelText}
+				errorText={this.props.errorText || (typeof(this.props.validator) === 'function' && !this.props.validator(this.state.value) ? this.props.invalidText : null)}
+				onChange={(e, v) => {
+					this.setState({value: v});
+					this.fixValue(v);
+				}}
+			/>
+		);
 	}
 }
 TextBond.defaultProps = {
 	invalidText: 'Invalid'
 };
+
+export class HashBond extends TextBond {}
+HashBond.defaultProps = {
+	floatingLabelText: 'Enter a hash to look up',
+	invalidText: 'Invalid 32-byte hash',
+	validator: v => v.startsWith('0x') && v.length == 66
+};
+
+export class URLBond extends TextBond {}
+URLBond.defaultProps = {
+	floatingLabelText: 'Enter a URL',
+	invalidText: 'Not a URL',
+	validator: u => { try { return new URL(u) && true; } catch (e) { return false; } }
+}
