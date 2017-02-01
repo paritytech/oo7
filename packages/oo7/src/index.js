@@ -9,7 +9,7 @@ var subscripted = {};
 export class Bond {
 	constructor(mayBeNull = false) {
 		this.subscribers = [];
-		this.notify = [];
+		this.notifies = [];
 		this.thens = [];
 		this._ready = false;
 		this._value = null;
@@ -29,10 +29,8 @@ export class Bond {
 //				console.log(`subscriptable.get: ${JSON.stringify(receiver)}, ${JSON.stringify(name)}, ${JSON.stringify(receiver)}: ${typeof(name)}, ${typeof(receiver[name])}`);
 				if ((typeof(name) === 'string' || typeof(name) === 'number') && typeof(receiver[name]) !== 'undefined') {
 					return receiver[name];
-				} else if (typeof(name) === 'symbol' && subscripted[name]) {
-					let sub = subscripted[name];
-					delete subscripted[name];
-					return new TransformBond((r, n) => r[n], [receiver, sub]);
+				} else if (typeof(name) === 'symbol' && Bond.knowSymbol(name)) {
+					return new TransformBond((r, n) => r[n], [receiver, Bond.fromSymbol(name)]);
 				} else {
 					return new TransformBond((r, n) => r[n], [receiver, name]);
 				}
@@ -41,11 +39,20 @@ export class Bond {
 		return r;
 	}
 
+	static knowSymbol (name) {
+		return !!subscripted[name];
+	}
+	static fromSymbol (name) {
+		let sub = subscripted[name];
+		delete subscripted[name];
+		return sub;
+	}
+
 	reset () {
 		if (this._ready) {
 			this._ready = false;
 			this._value = null;
-			this.notify.forEach(f => f());
+			this.notifies.forEach(f => f());
 		}
 	}
 	changed (v) {
@@ -71,25 +78,29 @@ export class Bond {
 //			console.log(`firing (${JSON.stringify(v)})`);
 			this._ready = true;
 			this._value = v;
-			this.notify.forEach(f => f());
+			this.notifies.forEach(f => f());
 			this.subscribers.forEach(f => f(this._value));
 			this.thens.forEach(f => f(this._value));
 			this.thens = [];
 		}
 	}
 	drop () {}
-	tie (f) {
-		this.notify.push(f);
+	notify (f) {
+		this.notifies.push(f);
 		if (this._ready) {
 			f();
 		}
 	}
-	subscribe (f) {
+	tie (f) {
 		this.subscribers.push(f);
 		if (this._ready) {
 			f(this._value);
 		}
 		return this;
+	}
+	subscribe (f) {
+		console.warn(`Bond.subscribe is deprecated. Use Bond.tie instead.`);
+		return this.tie(f);
 	}
 	ready () { return this._ready; }
 	then (f) {
@@ -150,9 +161,9 @@ function isReady(x, deep = true) {
 		else if (x instanceof Promise)
 		  	return typeof(x._value) !== 'undefined';
 		else if (deep && x.constructor === Array)
-			return x.findIndex(i => !isReady(i, false)) === -1;
+			return x.every(i => isReady(i, false));
 		else if (deep && x.constructor === Object)
-			return Object.keys(x).findIndex(k => !isReady(x[k], false)) === -1;
+			return Object.keys(x).every(k => isReady(x[k], false));
 		else
 			return true;
 	else
@@ -163,10 +174,24 @@ function isReady(x, deep = true) {
 }
 
 function mapped(x, deep = true) {
+	if (!isReady(x, deep)) {
+		throw `Internal error: Unready value being mapped`;
+	}
 //	console.log(`x: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}`);
 	if (typeof(x) === 'object' && x !== null) {
-		if (x instanceof Bond || x instanceof Promise) {
+		if (x instanceof Bond) {
 //			console.log(`Bond/Promise: ${JSON.stringify(x._value)}`);
+			if (x._ready !== true) {
+				throw `Internal error: Unready Bond being mapped`;
+			}
+			if (typeof(x._value) === 'undefined') {
+				throw `Internal error: Ready Bond with undefined value in mapped`;
+			}
+			return x._value;
+		} else if (x instanceof Promise) {
+			if (typeof(x._value) === 'undefined') {
+				throw `Internal error: Ready Promise has undefined value`;
+			}
 			return x._value;
 		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1) {
 			let o = x.slice().map(i => mapped(i, false));
@@ -190,7 +215,7 @@ function mapped(x, deep = true) {
 function deepTie(x, poll, deep = true) {
 	if (typeof(x) === 'object' && x !== null) {
 		if (x instanceof Bond) {
-			x.tie(poll);
+			x.notify(poll);
 			return true;
 		} else if (x instanceof Promise) {
 			x.then(v => { x._value = v; poll(); });
@@ -216,16 +241,16 @@ export class ReactiveBond extends Bond {
 		super(mayBeNull);
 
 		let poll = () => {
-			if (a.findIndex(i => !isReady(i)) !== -1) {
-//				console.log("poll: One or more dependencies undefined");
-				this.reset();
-			} else {
+			if (a.every(isReady)) {
 //				console.log(`poll: All dependencies good: ${JSON.stringify(a.map(mapped))}`);
 				execute.bind(this)(a.map(mapped));
+			} else {
+//				console.log("poll: One or more dependencies undefined");
+				this.reset();
 			}
 		};
 
-		d.forEach(i => i.tie(poll));
+		d.forEach(i => i.notify(poll));
 		var nd = 0;
 		a.forEach(i => { if (deepTie(i, poll)) nd++; });
 		if (nd == 0 && d.length == 0) {
@@ -261,7 +286,10 @@ export class TransformBond extends ReactiveBond {
 		super(a, d, function (args) {
 //			console.log(`Applying: ${JSON.stringify(args)}`);
 			let r = f.apply(context, args);
-			if (r instanceof Promise) {
+			if (typeof(r) === 'undefined') {
+				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(args)}.`);
+				this.reset();
+			} else if (r instanceof Promise) {
 				if (!latched) {
 					this.reset();
 				}

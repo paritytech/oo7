@@ -42,7 +42,7 @@ describe('Bond', function() {
       let t = new Bond().subscriptable();
 
       var x = 0;
-      t.subscribe(a => { x = a; });
+      t.tie(a => { x = a; });
 
       x.should.equal(0);
 
@@ -56,7 +56,7 @@ describe('Bond', function() {
       let t = new Bond().subscriptable();
 
       var x = 0;
-      t[2].subscribe(a => { x = a; });
+      t[2].tie(a => { x = a; });
 
       x.should.equal(0);
 
@@ -71,7 +71,7 @@ describe('Bond', function() {
       let u = new Bond();
 
       var x = 0;
-      t[u].subscribe(a => { x = a; });
+      t[u].tie(a => { x = a; });
 
       x.should.equal(0);
 
