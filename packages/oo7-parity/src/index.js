@@ -79,7 +79,6 @@ function call(addr, method, args, options) {
 
 function post(addr, method, args, options) {
 	let toOptions = (addr, method, options, ...args) => {
-		console.log(`options: ${JSON.stringify(options)}`);
 		return overlay({to: addr, data: parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
 	};
 	return new Transaction(toOptions.bond(addr, method, options, ...args));
@@ -103,10 +102,12 @@ export function setupBonds(_api) {
 	let presub = function (f) {
 		return new Proxy(f, {
 			get (receiver, name) {
-				if ((name instanceof String || name instanceof Number) && typeof(receiver[name]) !== 'undefined') {
+				if ((typeof(name) === 'string' || typeof(name) === 'number') && typeof(receiver[name]) !== 'undefined') {
 					return receiver[name];
+				} else if (typeof(name) === 'symbol' && Bond.knowSymbol(name)) {
+					return receiver(Bond.fromSymbol(name));
 				} else {
-					return receiver(name);
+					throw `Weird value type to be subscripted by: ${typeof(name)}: ${JSON.stringify(name)}`;
 				}
 			}
 		});
@@ -161,7 +162,6 @@ export function setupBonds(_api) {
 		abi.forEach(i => {
 			if (i.type == 'function' && !i.constant) {
 				r[i.name] = function (...args) {
-					console.log(`args: ${JSON.stringify(args)}; i.inputs.length: ${i.inputs.length}`);
 					var options = args.length === i.inputs.length + 1 ? args.pop() : {};
 					if (args.length !== i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
