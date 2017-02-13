@@ -1,12 +1,14 @@
 import React from 'react';
 import TextField from 'material-ui/TextField';
-import {Bond, TimeBond, TransformBond} from 'oo7';
+import RaisedButton from 'material-ui/RaisedButton';
+import {Bond, TimeBond, ReactiveBond, TransformBond} from 'oo7';
 
 export class ReactiveComponent extends React.Component {
 	constructor(reactiveProps = [], bonds = {}) {
 		super();
 		this.reactiveProps = reactiveProps;
 		this.bonds = bonds;
+
 	}
 	componentWillMount() { this.initProps(); }
 	componentWillReceiveProps(nextProps) { this.updateProps(nextProps); }
@@ -14,57 +16,26 @@ export class ReactiveComponent extends React.Component {
 	initProps () {
 		this.manageProps({}, this.props);
 		let that = this;
-		Object.keys(this.bonds).forEach(f => {
-			if (this.bonds[f] instanceof Bond)
-				this.bonds[f].subscribe(a => {
-					var s = that.state || {};
-					s[f] = a;
-//					console.log(`Setting state via subscription: ${f} => ${a}`);
-					that.setState(s);
-				});
-			else if (this.bonds[f] instanceof Promise)
-				this.bonds[f].then(a => {
-					var s = that.state || {};
-					s[f] = a;
-//					console.log(`Setting state via subscription: ${f} => ${a}`);
-					that.setState(s);
-				});
-			else {
-				if (s === {})
-					s = that.state || {};
-				s[f] = this.bonds[f];
-			}
-		})
+		let bonds = this.bonds;
+		let bondKeys = Object.keys(bonds);
+		this._consolidatedExtraBonds = new ReactiveBond(bondKeys.map(f => bonds[f]), [], a => {
+			var s = that.state || {};
+			bondKeys.forEach((f, i) => { s[f] = a[i]; });
+			that.setState(s);
+		});
 	}
 	updateProps (nextProps) { this.manageProps(this.props, nextProps); }
 	manageProps (props, nextProps) {
-		var s = {};
 		var that = this;
-		this.reactiveProps.forEach(f => {
-//			console.log(`managing field ${f}`);
-			if (nextProps[f] !== props[f]) {
-				if (props[f] instanceof Bond)
-					props[f].drop();
-
-				let update = a => {
-					var s = that.state || {};
-					s[f] = a;
-//					console.log(`Setting state via subscription: ${f} => ${a}`);
-					that.setState(s);
-				};
-				if (nextProps[f] instanceof Bond)
-					nextProps[f].subscribe(update);
-				else if (nextProps[f] instanceof Promise)
-					nextProps[f].then(update);
-				else {
-					if (s === {})
-						s = this.state || {};
-					s[f] = nextProps[f];
-				}
-			}
+		if (this._consolidatedBonds) {
+			this._consolidatedBonds.drop();
+			delete this._consolidatedBonds;
+		}
+		this._consolidatedBonds = new ReactiveBond(this.reactiveProps.map(f => nextProps[f]), [], a => {
+			var s = that.state || {};
+			that.reactiveProps.forEach((f, i) => { s[f] = a[i]; });
+			that.setState(s);
 		});
-		if (s !== {})
-			this.setState(s);
 	}
 }
 
@@ -76,7 +47,7 @@ export class Rspan extends ReactiveComponent {
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{this.state.children}</span>
+			>{''+this.state.children}</span>
 		);
 	}
 }
@@ -89,7 +60,7 @@ export class Rdiv extends ReactiveComponent {
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{this.state.children}</div>
+			>{''+this.state.children}</div>
 		);
 	}
 }
@@ -106,7 +77,39 @@ export class Ra extends ReactiveComponent {
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{this.state.children}</a>
+			>{''+this.state.children}</a>
+		);
+	}
+}
+
+export class Rimg extends ReactiveComponent {
+	constructor() {
+		super(['src', 'className', 'style']);
+	}
+	render() {
+		return (
+			<img
+				src={this.state.src}
+				className={this.state.className}
+				style={this.state.style}
+				name={this.props.name}
+			/>
+		);
+	}
+}
+
+export class RRaisedButton extends ReactiveComponent {
+	constructor() {
+		super(['disabled', 'label']);
+	}
+	render() {
+		return (
+			<RaisedButton
+				disabled={this.state.disabled}
+				label={this.state.label}
+				onClick={this.props.onClick}
+				name={this.props.name}
+			/>
 		);
 	}
 }
