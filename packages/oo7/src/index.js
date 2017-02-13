@@ -5,6 +5,8 @@ export function setDefaultTransformBondContext(c) {
 }
 
 var subscripted = {};
+// Any names which should never be subscripted.
+const reservedNames = { toJSON: true };
 
 export class Bond {
 	constructor(mayBeNull = false) {
@@ -23,16 +25,18 @@ export class Bond {
 		return s;
 	}
 
-	subscriptable () {
+	subscriptable (depth = 1) {
+		if (depth === 0)
+			return this;
 		var r = new Proxy(this, {
 		    get (receiver, name) {
 //				console.log(`subscriptable.get: ${JSON.stringify(receiver)}, ${JSON.stringify(name)}, ${JSON.stringify(receiver)}: ${typeof(name)}, ${typeof(receiver[name])}`);
-				if ((typeof(name) === 'string' || typeof(name) === 'number') && typeof(receiver[name]) !== 'undefined') {
+				if ((typeof(name) === 'string' || typeof(name) === 'number') && (reservedNames[name] || typeof(receiver[name]) !== 'undefined')) {
 					return receiver[name];
 				} else if (typeof(name) === 'symbol' && Bond.knowSymbol(name)) {
-					return new TransformBond((r, n) => r[n], [receiver, Bond.fromSymbol(name)]);
+					return new TransformBond((r, n) => r[n], [receiver, Bond.fromSymbol(name)]).subscriptable(depth - 1);
 				} else {
-					return new TransformBond((r, n) => r[n], [receiver, name]);
+					return new TransformBond((r, n) => r[n], [receiver, name]).subscriptable(depth - 1);
 				}
 		    }
 		});
@@ -154,7 +158,6 @@ export class Bond {
 }
 
 function isReady(x, deep = true) {
-	let r = (() => {
 	if (typeof(x) === 'object' && x !== null)
 		if (x instanceof Bond)
 			return x._ready;
@@ -168,46 +171,62 @@ function isReady(x, deep = true) {
 			return true;
 	else
 		return true;
-	})();
-//	console.log(`isReady(${JSON.stringify(x)}) => ${r}`);
-	return r;
+}
+
+export function isBond(x, deep = true) {
+	if (typeof(x) === 'object' && x !== null)
+		if (x instanceof Bond)
+			return true;
+		else if (x instanceof Promise)
+		  	return false;
+		else if (deep && x.constructor === Array)
+			return x.some(i => isBond(i, false));
+		else if (deep && x.constructor === Object)
+			return Object.keys(x).some(k => isBond(x[k], false));
+		else
+			return false;
+	else
+		return false;
 }
 
 function mapped(x, deep = true) {
 	if (!isReady(x, deep)) {
 		throw `Internal error: Unready value being mapped`;
 	}
-//	console.log(`x: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}`);
+//	console.log(`x info: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}; deep: ${deep}`);
 	if (typeof(x) === 'object' && x !== null) {
 		if (x instanceof Bond) {
-//			console.log(`Bond/Promise: ${JSON.stringify(x._value)}`);
 			if (x._ready !== true) {
 				throw `Internal error: Unready Bond being mapped`;
 			}
 			if (typeof(x._value) === 'undefined') {
 				throw `Internal error: Ready Bond with undefined value in mapped`;
 			}
+//			console.log(`Bond: ${JSON.stringify(x._value)}}`);
 			return x._value;
 		} else if (x instanceof Promise) {
 			if (typeof(x._value) === 'undefined') {
 				throw `Internal error: Ready Promise has undefined value`;
 			}
+//			console.log(`Promise: ${JSON.stringify(x._value)}}`);
 			return x._value;
-		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1) {
+		} else if (deep && x.constructor === Array && x.some(i => i instanceof Bond || i instanceof Promise)) {
+//			console.log(`Deep array...`);
 			let o = x.slice().map(i => mapped(i, false));
-//			console.log(`Deep array: ${JSON.stringify(o)}`);
+//			console.log(`...Deep array: ${JSON.stringify(o)}`);
 			return o;
-		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1) {
+		} else if (deep && x.constructor === Object && Object.keys(x).some(i => x[i] instanceof Bond || x[i] instanceof Promise)) {
 			var o = {};
+//			console.log(`Deep object...`);
 			Object.keys(x).forEach(k => { o[k] = mapped(x[k], false); });
-//			console.log(`Deep object: ${JSON.stringify(o)}`);
+//			console.log(`...Deep object: ${JSON.stringify(o)}`);
 			return o;
 		} else {
-//			console.log(`Shallow object: ${JSON.stringify(x._value)}`);
+//			console.log(`Shallow object.`);
 			return x;
 		}
 	} else {
-//		console.log(`Basic value: ${JSON.stringify(x)}`);
+//		console.log(`Basic value.`);
 		return x;
 	}
 }
@@ -242,8 +261,10 @@ export class ReactiveBond extends Bond {
 
 		let poll = () => {
 			if (a.every(isReady)) {
-//				console.log(`poll: All dependencies good: ${JSON.stringify(a.map(mapped))}`);
-				execute.bind(this)(a.map(mapped));
+//				console.log(`poll: All dependencies good...`);
+				let am = a.map(i => mapped(i, true));
+//				console.log(`poll: Mapped dependencies: ${JSON.stringify(am)}`);
+				execute.bind(this)(am);
 			} else {
 //				console.log("poll: One or more dependencies undefined");
 				this.reset();
