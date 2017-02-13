@@ -3,8 +3,10 @@
   "version": "0.1.2",
   "description": "The Bond API",
   "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "files": [
-    "lib/*"
+    "lib/*",
+    "src/*"
   ],
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
