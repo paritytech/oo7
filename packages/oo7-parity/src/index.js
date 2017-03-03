@@ -107,8 +107,15 @@ function post(addr, method, args, options) {
 	return new Transaction(toOptions.bond(addr, method, options, ...args));
 };
 
+function intArrayToHex(a) {
+	return '0x' + a.map(i => ('0' + i.toString(16)).slice(-2)).join('');
+}
+
 export function setupBonds(_api) {
 	api = _api;
+	api.util.abiSig = function (name, inputs) {
+		return parity.api.util.sha3(`${name}(${inputs.join()})`);
+	};
 
 	window.TimeBond = TimeBond;
 
@@ -207,6 +214,76 @@ export function setupBonds(_api) {
 					if (args.length !== i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
 					return post(address, i, args, options).subscriptable();
+				};
+			}
+		});
+		var eventLookup = {};
+		abi.filter(i => i.type == 'event').forEach(i => {
+			eventLookup[api.util.abiSig(i.name, i.inputs.map(f => f.type))] = i.name;
+		});
+
+		abi.forEach(i => {
+			if (i.type == 'event') {
+				r[i.name] = function (indexed = {}, params = {}) {
+					return new TransformBond((addr, indexed) => {
+						var topics = [api.util.abiSig(i.name, i.inputs.map(f => f.type))];
+						i.inputs.filter(f => f.indexed).forEach(f => {
+							var val = null;
+							if (indexed[f.name]) {
+								if (f.type == 'string' || f.type == 'bytes') {
+									val = api.util.sha3(indexed[f.name]);
+								} else {
+									val = api.util.abiEncode(null, [f.type], [indexed[f.name]]);
+								}
+								if (val.length != 66) {
+									console.warn(`Couldn't encode indexed parameter ${f.name} of type ${f.type} with value ${indexed[f.name]}`);
+									val = null;
+								}
+							}
+							topics.push(val);
+						});
+						return api.eth.getLogs({
+							address: addr,
+							fromBlock: params.fromBlock || 0,
+							toBlock: params.toBlock || 'pending',
+							limit: params.limit || 10,
+							topics: topics
+						}).then(logs => logs.map(l => {
+							l.blockNumber = +l.blockNumber;
+							l.transactionIndex = +l.transactionIndex;
+							l.logIndex = +l.logIndex;
+							l.transactionLogIndex = +l.transactionLogIndex;
+							var e = {};
+							let unins = i.inputs.filter(f => !f.indexed);
+							api.util.abiDecode(unins.map(f => f.type), l.data).forEach((v, j) => {
+								let f = unins[j];
+								if (v instanceof Array) {
+									v = api.util.bytesToHex(v);
+								}
+								if (f.type.substr(0, 4) == 'uint' && +f.type.substr(4) <= 48) {
+									v = +v;
+								}
+								e[f.name] = v;
+							});
+							i.inputs.filter(f => f.indexed).forEach((f, j) => {
+								if (f.type == 'string' || f.type == 'bytes') {
+									l.args[f.name] = l.topics[1 + j];
+								} else {
+									var v = api.util.abiDecode([f.type], l.topics[1 + j])[0];
+									if (v instanceof Array) {
+										v = api.util.bytesToHex(v);
+									}
+									if (f.type.substr(0, 4) == 'uint' && +f.type.substr(4) <= 48) {
+										v = +v;
+									}
+									e[f.name] = v;
+								}
+							});
+							e.event = eventLookup[l.topics[0]];
+							e.log = l;
+							return e;
+						}));
+					}, [address, indexed], [bonds.blockNumber]).subscriptable();
 				};
 			}
 		});
