@@ -326,7 +326,7 @@ export class TransformBond extends ReactiveBond {
 			} else {
 				this.changed(r);
 			}
-		}, mayBeNull);
+		}, mayBeNull, context);
 	}
 }
 
