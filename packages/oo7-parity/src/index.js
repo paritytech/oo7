@@ -1,126 +1,154 @@
-import {Bond, TimeBond, TransformBond, ReactivePromise} from 'oo7';
+import {Bond, TimeBond, TransformBond as oo7TransformBond, ReactivePromise} from 'oo7';
 import BigNumber from 'bignumber.js';
 import {abiPolyfill} from './abis.js';
 
-var api = null;
-var bonds = {};
-
-// TODO: Use more generic means to check on number, ideally push notification.
-export class SubscriptionBond extends Bond {
-	constructor(rpc) {
-		super();
-		api.subscribe(rpc, (e, n) => {
-//			console.log(`Subscription ${rpc} firing ${+n}`)
-			this.trigger(n);
-		}).then(id => this.subscription = id);
-	}
-	drop () {
-		api.unsubscribe(this.subscription);
-	}
-}
-
-export class Signature extends ReactivePromise {
-	constructor(from, message) {
-		super([from, message], [], ([from, message]) => {
-			parity.api.parity.postSign(from, parity.api.util.asciiToHex(message))
-				.then(signerRequestId => {
-	//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
-					this.trigger({requested: signerRequestId});
-			    	return parity.api.pollMethod('parity_checkRequest', signerRequestId);
-			    })
-			    .then(signature => {
-	//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
-					this.trigger({signed: signature});
-				})
-				.catch(error => {
-	//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
-					this.trigger({failed: error});
-				});
-		});
-	}
-}
-
-function fillDefaults(tx) {
-	if (typeof(tx) === 'object' && !!tx && !(tx instanceof Bond || tx instanceof Promise)) {
-		// normal object.
-		if (!tx.from)
-			tx.from = bonds.defaultAccount;
-		if (!tx.gasPrice)
-			tx.gasPrice = bonds.gasPrice;
-		// TODO: fix.
-/*		if (!tx.gas)
-			tx.gas = api.eth.estimateGas.bond({
-				value: tx.value,
-				from: tx.from,
-				to: tx.to,
-				gasPrice: tx.gasPrice,
-				data: tx.data
-			});*/
-	}
-	return tx;
-}
-
-export class Transaction extends ReactivePromise {
-	constructor(tx) {
-		let ftx = fillDefaults(tx);
-		super([ftx], [], ([tx]) => {
-			api.parity.postTransaction(tx)
-				.then(signerRequestId => {
-	//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
-					this.trigger({requested: signerRequestId});
-			    	return api.pollMethod('parity_checkRequest', signerRequestId);
-			    })
-			    .then(transactionHash => {
-	//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
-					this.trigger({signed: transactionHash});
-					return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
-				})
-				.then(receipt => {
-	//				console.log('trackRequest', `received transaction receipt ${JSON.stringify(receipt)}`);
-					this.trigger({confirmed: receipt});
-				})
-				.catch(error => {
-	//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
-					this.trigger({failed: error});
-				});
-		});
-	}
-}
-
-function overlay(base, top) {
-	Object.keys(top).forEach(k => {
-		base[k] = top[k];
-	});
-	return base;
-}
-
-function call(addr, method, args, options) {
-	let data = parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
-	let decode = d => parity.api.util.abiDecode(method.outputs.map(f => f.type), d);
-	return parity.api.eth.call(overlay({to: addr, data: data}, options)).then(decode);
-};
-
-function post(addr, method, args, options) {
-	let toOptions = (addr, method, options, ...args) => {
-		return overlay({to: addr, data: parity.api.util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
-	};
-	return new Transaction(toOptions.bond(addr, method, options, ...args));
-};
-
-function intArrayToHex(a) {
-	return '0x' + a.map(i => ('0' + i.toString(16)).slice(-2)).join('');
-}
-
 export function setupBonds(_api) {
-	api = _api;
+	console.log("setupBonds...");
+	_api.parity.netChain().then(c => console.log(`setupBonds: on chain ${c}`));
+
+	let api = _api;
+	var bonds = {};
+
 	api.util.abiSig = function (name, inputs) {
-		return parity.api.util.sha3(`${name}(${inputs.join()})`);
+		return api.util.sha3(`${name}(${inputs.join()})`);
 	};
 
-	window.TimeBond = TimeBond;
+	class TransformBond extends oo7TransformBond {
+		constructor (f, a = [], d = [], latched = true, mayBeNull = false) {
+			super(f, a, d, latched, mayBeNull, api);
+		}
+		map (f) {
+	        return new TransformBond(f, [this]);
+	    }
+		sub (name) {
+			return new TransformBond((r, n) => r[n], [this, name]);
+		}
+		static all(list) {
+			return new TransformBond((...args) => args, list);
+		}
+	}
 
+	// TODO: Use more generic means to check on number, ideally push notification.
+	class SubscriptionBond extends Bond {
+		constructor(rpc) {
+			super();
+			api.subscribe(rpc, (e, n) => {
+	//			console.log(`Subscription ${rpc} firing ${+n}`)
+				this.trigger(n);
+			}).then(id => this.subscription = id);
+		}
+		drop () {
+			api.unsubscribe(this.subscription);
+		}
+		map (f) {
+	        return new TransformBond(f, [this]);
+	    }
+		sub (name) {
+			return new TransformBond((r, n) => r[n], [this, name]);
+		}
+		static all(list) {
+			return new TransformBond((...args) => args, list);
+		}
+	}
+
+	class Signature extends ReactivePromise {
+		constructor(from, message) {
+			super([from, message], [], ([from, message]) => {
+				api.parity.postSign(from, api.util.asciiToHex(message))
+					.then(signerRequestId => {
+		//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
+						this.trigger({requested: signerRequestId});
+				    	return api.pollMethod('parity_checkRequest', signerRequestId);
+				    })
+				    .then(signature => {
+		//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
+						this.trigger({signed: signature});
+					})
+					.catch(error => {
+		//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
+						this.trigger({failed: error});
+					});
+			});
+		}
+	}
+
+	function fillDefaults(tx) {
+		if (typeof(tx) === 'object' && !!tx && !(tx instanceof Bond || tx instanceof Promise)) {
+			// normal object.
+			if (!tx.from)
+				tx.from = bonds.defaultAccount;
+			if (!tx.gasPrice)
+				tx.gasPrice = bonds.gasPrice;
+			// TODO: fix.
+	/*		if (!tx.gas)
+				tx.gas = api.eth.estimateGas.bond({
+					value: tx.value,
+					from: tx.from,
+					to: tx.to,
+					gasPrice: tx.gasPrice,
+					data: tx.data
+				});*/
+		}
+		return tx;
+	}
+
+	class Transaction extends ReactivePromise {
+		constructor(tx) {
+			let ftx = fillDefaults(tx);
+			super([ftx], [], ([tx]) => {
+				api.parity.postTransaction(tx)
+					.then(signerRequestId => {
+		//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
+						this.trigger({requested: signerRequestId});
+				    	return api.pollMethod('parity_checkRequest', signerRequestId);
+				    })
+				    .then(transactionHash => {
+		//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
+						this.trigger({signed: transactionHash});
+						return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
+					})
+					.then(receipt => {
+		//				console.log('trackRequest', `received transaction receipt ${JSON.stringify(receipt)}`);
+						this.trigger({confirmed: receipt});
+					})
+					.catch(error => {
+		//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
+						this.trigger({failed: error});
+					});
+			});
+		}
+	}
+
+	function overlay(base, top) {
+		Object.keys(top).forEach(k => {
+			base[k] = top[k];
+		});
+		return base;
+	}
+
+	function call(addr, method, args, options) {
+		let data = api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
+		let decode = d => api.util.abiDecode(method.outputs.map(f => f.type), d);
+		return api.eth.call(overlay({to: addr, data: data}, options)).then(decode);
+	};
+
+	function post(addr, method, args, options) {
+		let toOptions = (addr, method, options, ...args) => {
+			return overlay({to: addr, data: api.util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
+		};
+		return new bonds.Transaction(toOptions.bond(addr, method, options, ...args));
+	};
+
+	function intArrayToHex(a) {
+		return '0x' + a.map(i => ('0' + i.toString(16)).slice(-2)).join('');
+	}
+
+	bonds.Transaction = Transaction;
+	bonds.Signature = Signature;
+	bonds.Subscription = SubscriptionBond;
+	bonds.Transform = TransformBond;
     bonds.time = new TimeBond;
-	bonds.blockNumber = new SubscriptionBond('eth_blockNumber').map(_=>+_);
+	bonds.blockNumber = new TransformBond(_=>+_, [new SubscriptionBond('eth_blockNumber')]);
 //	bonds.accounts = new SubscriptionBond('eth_accounts').subscriptable();
 //	bonds.accountsInfo = new SubscriptionBond('parity_accountsInfo').subscriptable();
 //	bonds.defaultAccount = new SubscriptionBond('parity_defaultAccount').subscriptable();
@@ -129,8 +157,8 @@ export function setupBonds(_api) {
 
 	Function.__proto__.bond = function(...args) { return new TransformBond(this, args); };
 	Function.__proto__.unlatchedBond = function(...args) { return new TransformBond(this, args, [], false, undefined); };
-    Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [parity.bonds.time]); };
-    Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [parity.bonds.blockNumber]); };
+    Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [bonds.time]); };
+    Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [bonds.blockNumber]); };
 
 	let presub = function (f) {
 		return new Proxy(f, {
@@ -153,7 +181,7 @@ export function setupBonds(_api) {
 	bonds.blocks = presub(bonds.blockByX);
 	bonds.block = bonds.blockByNumber(bonds.blockNumber);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
-	bonds.accounts = new TransformBond(api.eth.accounts, [], [bonds.time]).map(a => a.map(api.util.toChecksumAddress)).subscriptable();
+	bonds.accounts = new TransformBond(a => a.map(api.util.toChecksumAddress), [new TransformBond(api.eth.accounts, [], [bonds.time])]).subscriptable();
 	bonds.defaultAccount = bonds.accounts[0];	// TODO: make this use its subscription
 
 	bonds.balance = (x => new TransformBond(api.eth.getBalance, [x], [bonds.blockNumber]));
