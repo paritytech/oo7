@@ -6,7 +6,7 @@ export function setDefaultTransformBondContext(c) {
 
 var subscripted = {};
 // Any names which should never be subscripted.
-const reservedNames = { toJSON: true };
+const reservedNames = { toJSON: true, toString: true };
 
 export class Bond {
 	constructor(mayBeNull = false) {
@@ -20,6 +20,7 @@ export class Bond {
 	}
 
 	toString () {
+//		console.log(`Converting Bond to string: ${JSON.stringify(this)}`)
 		let s = Symbol();
 		subscripted[s] = this;
 		return s;
@@ -33,13 +34,20 @@ export class Bond {
 //				console.log(`subscriptable.get: ${JSON.stringify(receiver)}, ${JSON.stringify(name)}, ${JSON.stringify(receiver)}: ${typeof(name)}, ${typeof(receiver[name])}`);
 				if ((typeof(name) === 'string' || typeof(name) === 'number') && (reservedNames[name] || typeof(receiver[name]) !== 'undefined')) {
 					return receiver[name];
-				} else if (typeof(name) === 'symbol' && Bond.knowSymbol(name)) {
-					return new TransformBond((r, n) => r[n], [receiver, Bond.fromSymbol(name)]).subscriptable(depth - 1);
+				} else if (typeof(name) === 'symbol') {
+					if (Bond.knowSymbol(name)) {
+						return receiver.sub(Bond.fromSymbol(name)).subscriptable(depth - 1);
+					} else {
+//						console.warn(`Unknown symbol given`);
+						return null;
+					}
 				} else {
-					return new TransformBond((r, n) => r[n], [receiver, name]).subscriptable(depth - 1);
+//					console.log(`Subscripting: ${JSON.stringify(name)}`)
+					return receiver.sub(name).subscriptable(depth - 1);
 				}
 		    }
 		});
+//		r.toString = Bond.prototype.toString.bind(this);
 		return r;
 	}
 

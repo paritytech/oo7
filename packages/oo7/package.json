@@ -1,6 +1,6 @@
 {
   "name": "oo7",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "The Bond API",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
