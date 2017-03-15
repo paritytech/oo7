@@ -131,6 +131,19 @@ export class Bond {
 		return new TransformBond((r, n) => r[n], [this, name]);
 	}
 
+	// Takes a Bond which evaluates to a = [a[0], a[1], ...]
+	// Returns Bond which evaluates to:
+	// null iff a.length === 0
+	// f(i, a[0])[0] iff f(i, a[0])[1] === true
+	// fold(f(0, a[0]), a.mid(1)) otherwise
+	reduce (accum, init) {
+		var nextItem = function (acc, rest) {
+			let next = rest.pop();
+			return Bond.promise([accum(acc, next)]).then(([[v, i]]) => i ? v : rest.length > 0 ? nextItem(v, rest) : null);
+		};
+		return this.map(a => nextItem(init, a));
+	};
+
 	static all(list) {
 		return new TransformBond((...args) => args, list);
 	}
