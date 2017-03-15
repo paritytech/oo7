@@ -2,7 +2,7 @@ import {Bond, TimeBond, TransformBond as oo7TransformBond, ReactivePromise} from
 import BigNumber from 'bignumber.js';
 import {abiPolyfill} from './abis.js';
 
-export function setupBonds(_api) {
+export function setupBonds(_api = parity.api) {
 	console.log("setupBonds...");
 	_api.parity.netChain().then(c => console.log(`setupBonds: on chain ${c}`));
 
@@ -12,6 +12,51 @@ export function setupBonds(_api) {
 	api.util.abiSig = function (name, inputs) {
 		return api.util.sha3(`${name}(${inputs.join()})`);
 	};
+
+	api.util.cleanup = function (value, type) {
+		// TODO: make work with arbitrary depth arrays
+		if (value instanceof Array && type.match(/bytes[0-9]+/)) {
+			// figure out if it's an ASCII string hiding in there:
+			var ascii = '';
+			for (var i = 0, ended = false; i < value.length && ascii !== null; ++i) {
+				if (value[i] === 0) {
+					ended = true;
+				} else {
+					ascii += String.fromCharCode(value[i]);
+				}
+				if ((ended && value[i] !== 0) || (!ended && (value[i] < 32 || value[i] >= 128))) {
+					ascii = null;
+				}
+			}
+			value = ascii === null ? api.util.bytesToHex(value) : ascii;
+		}
+		if (type.substr(0, 4) == 'uint' && +type.substr(4) <= 48) {
+			value = +value;
+		}
+		return value;
+	}
+
+	// returns [functionName, argsByName]
+	api.util.abiUnencode = function (abi, data) {
+		let s = data.substr(2, 8);
+		let op = abi.find(f =>
+			f.type == 'function' &&
+			api.util.abiSig(f.name, f.inputs.map(i => i.type))
+				.substr(2, 8) === s
+		);
+		if (!op) {
+			console.warn(`Unknown function ID: ${s}`);
+			return null;
+		}
+		let argsByIndex = api.util.abiDecode(
+				op.inputs.map(f => f.type), '0x' + data.substr(10)
+			).map((v, i) => api.util.cleanup(v, op.inputs[i].type));
+		let argsByName = {};
+		op.inputs.forEach((f, i) => {
+			argsByName[f.name] = argsByIndex[i];
+		});
+		return [op.name, argsByName, argsByIndex];
+	}
 
 	class TransformBond extends oo7TransformBond {
 		constructor (f, a = [], d = [], latched = true, mayBeNull = false) {
@@ -56,65 +101,54 @@ export function setupBonds(_api) {
 			super([from, message], [], ([from, message]) => {
 				api.parity.postSign(from, api.util.asciiToHex(message))
 					.then(signerRequestId => {
-		//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
 						this.trigger({requested: signerRequestId});
 				    	return api.pollMethod('parity_checkRequest', signerRequestId);
 				    })
 				    .then(signature => {
-		//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
 						this.trigger({signed: signature});
 					})
 					.catch(error => {
-		//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
 						this.trigger({failed: error});
 					});
 			});
 		}
 	}
 
-	function fillDefaults(tx) {
-		if (typeof(tx) === 'object' && !!tx && !(tx instanceof Bond || tx instanceof Promise)) {
-			// normal object.
-			if (!tx.from)
-				tx.from = bonds.defaultAccount;
-			if (!tx.gasPrice)
-				tx.gasPrice = bonds.gasPrice;
-			// TODO: fix.
-	/*		if (!tx.gas)
-				tx.gas = api.eth.estimateGas.bond({
-					value: tx.value,
-					from: tx.from,
-					to: tx.to,
-					gasPrice: tx.gasPrice,
-					data: tx.data
-				});*/
-		}
-		return tx;
-	}
-
 	class Transaction extends ReactivePromise {
 		constructor(tx) {
-			let ftx = fillDefaults(tx);
-			super([ftx], [], ([tx]) => {
-				api.parity.postTransaction(tx)
-					.then(signerRequestId => {
-		//		    	console.log('trackRequest', `posted to signer with requestId ${signerRequestId}`);
-						this.trigger({requested: signerRequestId});
-				    	return api.pollMethod('parity_checkRequest', signerRequestId);
-				    })
-				    .then(transactionHash => {
-		//				console.log('trackRequest', `received transaction hash ${transactionHash}`);
-						this.trigger({signed: transactionHash});
-						return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
-					})
-					.then(receipt => {
-		//				console.log('trackRequest', `received transaction receipt ${JSON.stringify(receipt)}`);
-						this.trigger({confirmed: receipt});
-					})
-					.catch(error => {
-		//				console.log('trackRequest', `transaction failed ${JSON.stringify(error)}`);
-						this.trigger({failed: error});
-					});
+			super([tx], [], ([tx]) => {
+				let progress = this.trigger.bind(this);
+				progress({estimating: null});
+				let from = tx.from || bonds.defaultAccount;
+				let gasPrice = tx.gasPrice || bonds.gasPrice;
+				let gas = tx.gas || bonds.estimateGas({
+					value: tx.value,
+					from: tx.from || bonds.defaultAccount,
+					to: tx.to,
+					gasPrice: tx.gasPrice || bonds.gasPrice,
+					data: tx.data
+				});
+				new ReactivePromise([from, gasPrice, gas], [], ([from, gasPrice, gas]) => {
+					console.log(`Finally posting ${JSON.stringify(tx)} with gas: ${gas}, gasPrice: ${gasPrice}, from: ${from}`);
+					tx.gas = gas;
+					tx.gasPrice = gasPrice;
+					tx.from = from;
+					api.parity.postTransaction(tx)
+						.then(signerRequestId => {
+							progress({requested: signerRequestId});
+					    	return api.pollMethod('parity_checkRequest', signerRequestId);
+					    })
+					    .then(transactionHash => {
+							progress({signed: transactionHash});
+							return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
+						})
+						.then(receipt => {
+							progress({confirmed: receipt});
+						})
+						.catch(error => {
+							progress({failed: error});
+						});
+				});
 			});
 		}
 	}
@@ -138,10 +172,6 @@ export function setupBonds(_api) {
 		};
 		return new bonds.Transaction(toOptions.bond(addr, method, options, ...args));
 	};
-
-	function intArrayToHex(a) {
-		return '0x' + a.map(i => ('0' + i.toString(16)).slice(-2)).join('');
-	}
 
 	bonds.Transaction = Transaction;
 	bonds.Signature = Signature;
@@ -194,6 +224,7 @@ export function setupBonds(_api) {
 	bonds.mining = new TransformBond(api.eth.mining, [], [bonds.time]);
 	bonds.protocolVersion = new TransformBond(api.eth.protocolVersion, [], [bonds.time]);
 	bonds.gasPrice = new TransformBond(api.eth.gasPrice, [], [bonds.time]);
+	bonds.estimateGas = (x => new TransformBond(api.eth.estimateGas, [x], [bonds.blockNumber]));
 
 	// Weird compound
 
@@ -285,7 +316,7 @@ export function setupBonds(_api) {
 							let unins = i.inputs.filter(f => !f.indexed);
 							api.util.abiDecode(unins.map(f => f.type), l.data).forEach((v, j) => {
 								let f = unins[j];
-								if (v instanceof Array) {
+								if (v instanceof Array && !f.type.endsWith(']')) {
 									v = api.util.bytesToHex(v);
 								}
 								if (f.type.substr(0, 4) == 'uint' && +f.type.substr(4) <= 48) {
