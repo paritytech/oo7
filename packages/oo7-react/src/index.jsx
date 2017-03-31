@@ -8,10 +8,11 @@ export class ReactiveComponent extends React.Component {
 		super();
 		this.reactiveProps = reactiveProps;
 		this.bonds = bonds;
-
+		this.allBondKeys = [].concat(reactiveProps).concat(Object.keys(bonds));
 	}
 	componentWillMount() { this.initProps(); }
 	componentWillReceiveProps(nextProps) { this.updateProps(nextProps); }
+	componentWillUnmount() { this.finiProps(); }
 
 	initProps () {
 		this.manageProps({}, this.props);
@@ -22,7 +23,17 @@ export class ReactiveComponent extends React.Component {
 			var s = that.state || {};
 			bondKeys.forEach((f, i) => { s[f] = a[i]; });
 			that.setState(s);
-		});
+		}).use();
+	}
+	finiProps () {
+		if (this._consolidatedExtraBonds) {
+			this._consolidatedExtraBonds.drop();
+			delete this._consolidatedExtraBonds;
+		}
+		if (this._consolidatedBonds) {
+			this._consolidatedBonds.drop();
+			delete this._consolidatedBonds;
+		}
 	}
 	updateProps (nextProps) { this.manageProps(this.props, nextProps); }
 	manageProps (props, nextProps) {
@@ -35,7 +46,23 @@ export class ReactiveComponent extends React.Component {
 			var s = that.state || {};
 			that.reactiveProps.forEach((f, i) => { s[f] = a[i]; });
 			that.setState(s);
-		});
+		}).use();
+	}
+
+	ready() {
+		return this.allBondKeys.every(k => this.state[k] !== undefined);
+	}
+
+	readyRender() {
+		return this.unreadyRender();
+	}
+
+	unreadyRender() {
+		return (<span />);
+	}
+
+	render() {
+		return this.ready() ? this.readyRender() : this.unreadyRender();
 	}
 }
 
