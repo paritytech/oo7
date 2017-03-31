@@ -5,6 +5,7 @@ import {abiPolyfill} from './abis.js';
 export function setupBonds(_api = parity.api) {
 	console.log("setupBonds...");
 	_api.parity.netChain().then(c => console.log(`setupBonds: on chain ${c}`));
+	console.log('Kill subscriptions');
 
 	let api = _api;
 	var bonds = {};
@@ -77,12 +78,13 @@ export function setupBonds(_api = parity.api) {
 	class SubscriptionBond extends Bond {
 		constructor(rpc) {
 			super();
-			api.subscribe(rpc, (e, n) => {
-	//			console.log(`Subscription ${rpc} firing ${+n}`)
-				this.trigger(n);
-			}).then(id => this.subscription = id);
+			this.rpc = rpc;
 		}
-		drop () {
+		initialise () {
+			api.subscribe(this.rpc, (_, n) => this.trigger(n))
+				.then(id => this.subscription = id);
+		}
+		finalise () {
 			api.unsubscribe(this.subscription);
 		}
 		map (f) {
@@ -160,6 +162,15 @@ export function setupBonds(_api = parity.api) {
 		return base;
 	}
 
+	function memoized(f) {
+		var memo;
+		return function() {
+			if (memo === undefined)
+				memo = f();
+			return memo;
+		};
+	}
+
 	function call(addr, method, args, options) {
 		let data = api.util.abiEncode(method.name, method.inputs.map(f => f.type), args);
 		let decode = d => api.util.abiDecode(method.outputs.map(f => f.type), d);
@@ -178,7 +189,8 @@ export function setupBonds(_api = parity.api) {
 	bonds.Subscription = SubscriptionBond;
 	bonds.Transform = TransformBond;
     bonds.time = new TimeBond;
-	bonds.blockNumber = new TransformBond(_=>+_, [new SubscriptionBond('eth_blockNumber')]);
+	bonds.blockNumber = new TransformBond(() => api.eth.blockNumber().then(_=>+_), [], [bonds.time]);
+//	bonds.blockNumber = new TransformBond(_=>+_, [new SubscriptionBond('eth_blockNumber')]);
 //	bonds.accounts = new SubscriptionBond('eth_accounts').subscriptable();
 //	bonds.accountsInfo = new SubscriptionBond('parity_accountsInfo').subscriptable();
 //	bonds.defaultAccount = new SubscriptionBond('parity_defaultAccount').subscriptable();
@@ -205,9 +217,9 @@ export function setupBonds(_api = parity.api) {
 	};
 
 	// eth_
-	bonds.blockByNumber = (x => new TransformBond(api.eth.getBlockByNumber, [x], [/* TODO: chain reorg that includes number x */]).subscriptable());
+	bonds.blockByNumber = (x => new TransformBond(api.eth.getBlockByNumber, [x], []).subscriptable());// TODO: chain reorg that includes number x
 	bonds.blockByHash = (x => new TransformBond(api.eth.getBlockByHash, [x]).subscriptable());
-	bonds.blockByX = (x => new TransformBond(n => typeof(n) === 'number' || (typeof(n) === 'string' && n.match(/^[0-9]+$/)) ? api.eth.getBlockByNumber(x) : api.eth.getBlockByHash(x), [x], [/* TODO: chain reorg that includes number x, if x is a number */]).subscriptable());
+	bonds.blockByX = (x => new TransformBond(n => typeof(n) === 'number' || (typeof(n) === 'string' && n.match(/^[0-9]+$/)) ? api.eth.getBlockByNumber(x) : api.eth.getBlockByHash(x), [x], []).subscriptable());// TODO: chain reorg that includes number x, if x is a number
 	bonds.blocks = presub(bonds.blockByX);
 	bonds.block = bonds.blockByNumber(bonds.blockNumber);
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
@@ -248,7 +260,7 @@ export function setupBonds(_api = parity.api) {
 					let f = (addr, ...fargs) => call(addr, i, fargs, options).then(unwrapIfOne);
 					return new TransformBond(f, [address, ...args], [bonds.blockNumber]).subscriptable();	// TODO: should be subscription on contract events
 				};
-				r[i.name] = (i.inputs.length === 1) ? presub(f) : f;
+				r[i.name] = (i.inputs.length === 0) ? memoized(f) : (i.inputs.length === 1) ? presub(f) : f;
 			}
 		});
 		extras.forEach(i => {
