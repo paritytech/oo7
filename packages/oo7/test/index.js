@@ -4,7 +4,8 @@ var should = require('chai').should(),
     TimeBond = oo7.TimeBond,
     ReactiveBond = oo7.ReactiveBond,
     ReactivePromise = oo7.ReactivePromise,
-    TransformBond = oo7.TransformBond;
+    TransformBond = oo7.TransformBond,
+    testIntervals = oo7.testIntervals;
 
 describe('Bond', function() {
   it('should be constructable', () => {
@@ -29,7 +30,7 @@ describe('Bond', function() {
       let t = new Bond();
       var x = null;
 
-      let u = new TransformBond(n => n + 1, [t])
+      let u = new TransformBond(n => n + 1, [t]);
       u.then(n => { x = n; });
 
       // when
@@ -56,7 +57,7 @@ describe('Bond', function() {
       let t = new Bond().subscriptable();
 
       var x = 0;
-      t[2].tie(a => { x = a; });
+      t[2].use().tie(a => { x = a; });
 
       x.should.equal(0);
 
@@ -127,13 +128,16 @@ describe('ReactiveBond', function() {
                 this.itWorks = false;
             }
         };
-        let u = new MyBond(t);
+        let u = new MyBond(t).use();
 
         // when
         t.trigger(69);
 
         // then
         u.itWorks.should.equal(true);
+
+        // finally
+        u.drop();
     });
     it('should not propagate undefined values', () => {
         let t = new Bond();
@@ -143,7 +147,7 @@ describe('ReactiveBond', function() {
                 this.argsType = '';
             }
         };
-        let u = new MyBond(t);
+        let u = new MyBond(t).use();
 
         u.argsType.should.equal('');
 
@@ -158,7 +162,21 @@ describe('ReactiveBond', function() {
 
         // then
         u.argsType.should.equal('number');
+
+        // finally
+        u.drop();
     });
+    it('should not try to use/drop basic values', () => {
+        let t = new Bond();
+        class MyBond extends ReactiveBond {
+            constructor(d) {
+                super([d], [], () => { this.itWorks = true; });
+                this.itWorks = false;
+            }
+        };
+        let u = new MyBond(t).use();
+        u.drop();
+    })
 });
 
 describe('TransformBond', function() {
@@ -171,7 +189,7 @@ describe('TransformBond', function() {
         let b = new TransformBond((a, b, c) => {
             x = a + b.n + c[0];
             return true;
-        }, [t, {n: u, m: {w}}, [v]]);
+        }, [t, {n: u, m: {w}}, [v]]).use();
 
         b.ready().should.equal(false);
         x.should.equal(0);
@@ -187,13 +205,62 @@ describe('TransformBond', function() {
         v.trigger(3);
         b.ready().should.equal(true);
         x.should.equal(69);
+
+        // finally
+        b.drop();
     });
 })
+
+function intervalCount () { return Object.keys(testIntervals).length; }
 
 describe('TimeBond', function() {
   it('should be constructable', () => {
       let t = new TimeBond();
       t.should.be.a('object');
       t.should.have.property('then');
+  });
+  it('should create timer when used', () => {
+    let t = new TimeBond().use();
+    intervalCount().should.equal(1);
+    t.drop();
+  });
+  it('should kill timer when dropped', () => {
+    let t = new TimeBond().use();
+    t.drop();
+    intervalCount().should.equal(0);
+  });
+  it('should kill timer when mapped', () => {
+    let t = new TimeBond().map(x => +x * 2).use();
+    intervalCount().should.equal(1);
+
+    t.drop();
+    intervalCount().should.equal(0);
+  });
+  it('should kill timers when multiple mapped', () => {
+    let t = Bond.all([new TimeBond, new TimeBond]).map(([a, b]) => +a + +b).use();
+    intervalCount().should.equal(2);
+
+    t.drop();
+    intervalCount().should.equal(0);
+  });
+  it('should kill timer when multiply-refered', () => {
+    let t = new TimeBond;
+    let t1 = t.map(x => +x * 2).use();
+    let t2 = t.map(x => +x * 3).use();
+    intervalCount().should.equal(1);
+
+    t1.drop();
+    intervalCount().should.equal(1);
+
+    t2.drop();
+    intervalCount().should.equal(0);
+  });
+  it('should kill timer when multiply-refered via Bond.all', () => {
+    let tb = new TimeBond;
+    let t = Bond.all([tb, tb]).map(([a, b]) => +a + +b).use();
+    intervalCount().should.equal(1);
+
+    t.drop();
+    intervalCount().should.equal(0);
   });
 });

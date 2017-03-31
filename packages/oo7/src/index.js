@@ -8,14 +8,19 @@ var subscripted = {};
 // Any names which should never be subscripted.
 const reservedNames = { toJSON: true, toString: true };
 
+function symbolValues(o) {
+	return Object.getOwnPropertySymbols(o).map(k => o[k]);
+}
+
 export class Bond {
 	constructor(mayBeNull = false) {
-		this.subscribers = [];
-		this.notifies = [];
+		this.subscribers = {};
+		this.notifies = {};
 		this.thens = [];
 		this._ready = false;
 		this._value = null;
 		this.mayBeNull = mayBeNull;
+		this._users = 0;
 //		return this.subscriptable();
 	}
 
@@ -64,7 +69,7 @@ export class Bond {
 		if (this._ready) {
 			this._ready = false;
 			this._value = null;
-			this.notifies.forEach(f => f());
+			symbolValues(this.notifies).forEach(f => f());
 		}
 	}
 	changed (v) {
@@ -90,26 +95,72 @@ export class Bond {
 //			console.log(`firing (${JSON.stringify(v)})`);
 			this._ready = true;
 			this._value = v;
-			this.notifies.forEach(f => f());
-			this.subscribers.forEach(f => f(this._value));
-			this.thens.forEach(f => f(this._value));
+			symbolValues(this.notifies).forEach(f => f());
+			symbolValues(this.subscribers).forEach(f => f(this._value));
+			this.thens.forEach(f => {
+				f(this._value);
+				this.drop();
+			});
 			this.thens = [];
 		}
 	}
-	drop () {}
+	// If you use this, you are responsible for calling drop exactly once
+	// at some point later. Some Bonds won't work properly unless you call
+	// this.
+	use () {
+		if (this._users == 0) {
+			this.initialise();
+		}
+		this._users++;
+		return this;
+	}
+	// To be called exactly once for each time you call pick. The object won't
+	// work properly after calling this.
+	drop () {
+		if (this._users == 0) {
+			throw `mismatched use()/drop(): drop() called once more than expected!`;
+		}
+		this._users--;
+		if (this._users == 0) {
+			this.finalise();
+		}
+	}
+
+	// Will be called at most once. Object must work properly after this.
+	initialise () {}
+	// Will be called at most once. Object must clean up after this.
+	finalise () {}
+
+	// must call unnotify exactly once when finished with it.
 	notify (f) {
-		this.notifies.push(f);
+		this.use();
+		let id = Symbol();
+		this.notifies[id] = f;
 		if (this._ready) {
 			f();
 		}
+		return id;
 	}
+	unnotify (id) {
+		delete this.notifies[id];
+		this.drop();
+	}
+
+	// must call untie exactly once when finished with it.
 	tie (f) {
-		this.subscribers.push(f);
+		this.use();
+		let id = Symbol();
+		this.subscribers[id] = f;
 		if (this._ready) {
 			f(this._value);
 		}
-		return this;
+		return id;
 	}
+	untie (id) {
+		delete this.subscribers[id];
+		this.drop();
+	}
+
 	subscribe (f) {
 		console.warn(`Bond.subscribe is deprecated. Use Bond.tie instead.`);
 		return this.tie(f);
@@ -119,6 +170,7 @@ export class Bond {
 		if (this._ready) {
 			f(this._value);
 		} else {
+			this.use();
 			this.thens.push(f);
 		}
 		return this;
@@ -252,21 +304,42 @@ function mapped(x, deep = true) {
 	}
 }
 
-function deepTie(x, poll, deep = true) {
+function deepNotify(x, poll, ids, deep = true) {
 	if (typeof(x) === 'object' && x !== null) {
 		if (x instanceof Bond) {
-			x.notify(poll);
+			ids.push(x.notify(poll));
 			return true;
 		} else if (x instanceof Promise) {
 			x.then(v => { x._value = v; poll(); });
 			return true;
 		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1) {
 			var r = false;
-			x.forEach(i => { r = deepTie(i, poll, false) || r; });
+			x.forEach(i => { r = deepNotify(i, poll, ids, false) || r; });
 			return r;
 		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1) {
 			var r = false;
-			Object.keys(x).forEach(k => { r = deepTie(x[k], poll, false) || r; });
+			Object.keys(x).forEach(k => { r = deepNotify(x[k], poll, ids, false) || r; });
+			return r;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
+function deepUnnotify(x, ids, deep = true) {
+	if (typeof(x) === 'object' && x !== null) {
+		if (x instanceof Bond) {
+			x.unnotify(ids.shift());
+			return true;
+		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond) != -1) {
+			var r = false;
+			x.forEach(i => { r = deepUnnotify(i, ids, false) || r; });
+			return r;
+		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond) != -1) {
+			var r = false;
+			Object.keys(x).forEach(k => { r = deepUnnotify(x[k], ids, false) || r; });
 			return r;
 		} else {
 			return false;
@@ -280,7 +353,7 @@ export class ReactiveBond extends Bond {
 	constructor(a, d, execute = args => this.changed(args), mayBeNull = false) {
 		super(mayBeNull);
 
-		let poll = () => {
+		this._poll = () => {
 			if (a.every(isReady)) {
 //				console.log(`poll: All dependencies good...`);
 				let am = a.map(i => mapped(i, true));
@@ -291,16 +364,22 @@ export class ReactiveBond extends Bond {
 				this.reset();
 			}
 		};
-
-		d.forEach(i => i.notify(poll));
+		this._active = false;
+		this._d = d.slice();
+		this._a = a.slice();
+	}
+	initialise () {
+		this._ids = [];
+		this._d.forEach(_=>this._ids.push(_.notify(this._poll)));
 		var nd = 0;
-		a.forEach(i => { if (deepTie(i, poll)) nd++; });
-		if (nd == 0 && d.length == 0) {
-			poll();
+		this._a.forEach(i => { if (deepNotify(i, this._poll, this._ids)) nd++; });
+		if (nd == 0 && this._d.length == 0) {
+			this._poll();
 		}
 	}
-	drop () {
-		// TODO clear up all our dependency `notify`s.
+	finalise () {
+		this._d.forEach(_=>_.unnotify(this._ids.shift()));
+		this._a.forEach(_=>deepUnnotify(_, this._ids));
 	}
 }
 
@@ -343,16 +422,31 @@ export class TransformBond extends ReactiveBond {
 	}
 }
 
+export var testIntervals = {};
+
 export class TimeBond extends Bond {
 	constructor() {
 		super();
-		let t = function() { this.trigger(Date.now()); }.bind(this);
-		if (typeof(window) !== 'undefined')
-			this.interval = window.setInterval(t, 1000);
-		t();
+		this.poll();
 	}
-	drop () {
+	poll () {
+		this.trigger(Date.now());
+	}
+	initialise () {
+		if (typeof(window) !== 'undefined')
+			this.interval = window.setInterval(this.poll.bind(this), 1000);
+		else {
+			this.interval = Object.keys(testIntervals).length + 1;
+			testIntervals[this.interval] = this.poll.bind(this);
+		}
+	}
+	finalise () {
 		if (typeof(window) !== 'undefined')
 			window.clearInterval(this.interval);
+		else {
+			if (!testIntervals[this.interval])
+				throw `finalise() called multiple time on same timer!`;
+			delete testIntervals[this.interval];
+		}
 	}
 }
