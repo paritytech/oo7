@@ -120,37 +120,34 @@ export function setupBonds(_api = parity.api) {
 		constructor(tx) {
 			super([tx], [], ([tx]) => {
 				let progress = this.trigger.bind(this);
-				progress({estimating: null});
-				let from = tx.from || bonds.defaultAccount;
-				let gasPrice = tx.gasPrice || bonds.gasPrice;
-				let gas = tx.gas || bonds.estimateGas({
-					value: tx.value,
-					from: tx.from || bonds.defaultAccount,
-					to: tx.to,
-					gasPrice: tx.gasPrice || bonds.gasPrice,
-					data: tx.data
-				});
-				new ReactivePromise([from, gasPrice, gas], [], ([from, gasPrice, gas]) => {
-					console.log(`Finally posting ${JSON.stringify(tx)} with gas: ${gas}, gasPrice: ${gasPrice}, from: ${from}`);
-					tx.gas = gas;
-					tx.gasPrice = gasPrice;
-					tx.from = from;
-					api.parity.postTransaction(tx)
-						.then(signerRequestId => {
-							progress({requested: signerRequestId});
-					    	return api.pollMethod('parity_checkRequest', signerRequestId);
-					    })
-					    .then(transactionHash => {
-							progress({signed: transactionHash});
-							return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
-						})
-						.then(receipt => {
-							progress({confirmed: receipt});
-						})
-						.catch(error => {
-							progress({failed: error});
-						});
-				});
+				progress({initialising: null});
+				Promise.all([api.eth.accounts(), api.eth.gasPrice()])
+					.then(([a, p]) => {
+						progress({estimating: null});
+						tx.from = tx.from || a[0];
+						tx.gasPrice = tx.gasPrice || p;
+						return api.eth.estimateGas(tx);
+					})
+					.then(g => {
+						progress({estimated: g});
+						tx.gas = tx.gas || g;
+						console.log(`Finally posting ${JSON.stringify(tx)}`);
+						return api.parity.postTransaction(tx);
+					})
+					.then(signerRequestId => {
+						progress({requested: signerRequestId});
+				    	return api.pollMethod('parity_checkRequest', signerRequestId);
+				    })
+				    .then(transactionHash => {
+						progress({signed: transactionHash});
+						return api.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0));
+					})
+					.then(receipt => {
+						progress({confirmed: receipt});
+					})
+					.catch(error => {
+						progress({failed: error});
+					});
 			});
 		}
 	}
@@ -225,6 +222,7 @@ export function setupBonds(_api = parity.api) {
 	bonds.coinbase = new TransformBond(api.eth.coinbase, [], [bonds.time]);
 	bonds.accounts = new TransformBond(a => a.map(api.util.toChecksumAddress), [new TransformBond(api.eth.accounts, [], [bonds.time])]).subscriptable();
 	bonds.defaultAccount = bonds.accounts[0];	// TODO: make this use its subscription
+	bonds.me = bonds.accounts[0];
 
 	bonds.balance = (x => new TransformBond(api.eth.getBalance, [x], [bonds.blockNumber]));
 	bonds.code = (x => new TransformBond(api.eth.getCode, [x], [bonds.blockNumber]));
