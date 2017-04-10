@@ -259,8 +259,8 @@ export function setupBonds(_api = parity.api) {
 
 	bonds.syncing = new TransformBond(api.eth.syncing, [], [onSyncingChanged]);
 	bonds.hashrate = new TransformBond(api.eth.hashrate, [], [onAuthoringDetailsChanged]);
-	bonds.mining = new TransformBond(api.eth.mining, [], [onAuthoringDetailsChanged]);
-	bonds.protocolVersion = new TransformBond(api.eth.protocolVersion, [], []);
+	bonds.authoring = new TransformBond(api.eth.mining, [], [onAuthoringDetailsChanged]);
+	bonds.ethProtocolVersion = new TransformBond(api.eth.protocolVersion, [], []);
 	bonds.gasPrice = new TransformBond(api.eth.gasPrice, [], [onHeadChanged]);
 	bonds.estimateGas = (x => new TransformBond(api.eth.estimateGas, [x], [onHeadChanged, onPendingChanged]));
 
