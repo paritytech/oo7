@@ -406,25 +406,38 @@ export function setupBonds(_api = parity.api) {
 			eventLookup[api.util.abiSig(i.name, i.inputs.map(f => f.type))] = i.name;
 		});
 
+		function prepareIndexEncode(v, t, top = true) {
+			if (v instanceof Array) {
+				if (top) {
+					return v.map(x => prepareIndexEncode(x, t, false));
+				} else {
+					throw 'Invalid type';
+				}
+			}
+			var val;
+			if (t == 'string' || t == 'bytes') {
+				val = api.util.sha3(v);
+			} else {
+				val = api.util.abiEncode(null, [t], [v]);
+			}
+			if (val.length != 66) {
+				throw 'Invalid length';
+			}
+			return val;
+		}
+
 		abi.forEach(i => {
 			if (i.type == 'event') {
 				r[i.name] = function (indexed = {}, params = {}) {
 					return new TransformBond((addr, indexed) => {
 						var topics = [api.util.abiSig(i.name, i.inputs.map(f => f.type))];
 						i.inputs.filter(f => f.indexed).forEach(f => {
-							var val = null;
-							if (indexed[f.name]) {
-								if (f.type == 'string' || f.type == 'bytes') {
-									val = api.util.sha3(indexed[f.name]);
-								} else {
-									val = api.util.abiEncode(null, [f.type], [indexed[f.name]]);
-								}
-								if (val.length != 66) {
-									console.warn(`Couldn't encode indexed parameter ${f.name} of type ${f.type} with value ${indexed[f.name]}`);
-									val = null;
-								}
+							try {
+								topics.push(indexed[f.name] ? prepareIndexEncode(indexed[f.name], f.type) : null);
 							}
-							topics.push(val);
+							catch (e) {
+								throw `Couldn't encode indexed parameter ${f.name} of type ${f.type} with value ${indexed[f.name]}`;
+							}
 						});
 						return api.eth.getLogs({
 							address: addr,
