@@ -74,7 +74,7 @@ export class Rspan extends ReactiveComponent {
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{''+this.state.children}</span>
+			>{this.state.children}</span>
 		);
 	}
 }
@@ -87,7 +87,7 @@ export class Rdiv extends ReactiveComponent {
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{''+this.state.children}</div>
+			>{this.state.children}</div>
 		);
 	}
 }
@@ -104,7 +104,7 @@ export class Ra extends ReactiveComponent {
 				className={this.state.className}
 				style={this.state.style}
 				name={this.props.name}
-			>{''+this.state.children}</a>
+			>{this.state.children}</a>
 		);
 	}
 }
@@ -167,14 +167,32 @@ Hash.defaultProps = {
 export class TextBond extends React.Component {
 	constructor() {
 		super();
-		this.state = { value: '' };
+		this.state = { value: '', validity: false };
 	}
 
 	fixValue(v) {
-		if (this.props.bond instanceof Bond && (typeof(this.props.validator) !== 'function' || this.props.validator(v)))
-			this.props.bond.changed(v);
-		else
-			this.props.bond.reset();
+		let f = function (b) {
+			this.setState({ value: v, validity: b });
+			if (this.props.bond instanceof Bond) {
+				if (b)
+					this.props.bond.changed(v);
+				else
+					this.props.bond.reset();
+			}
+		}.bind(this);
+
+		this.setState({ value: v, validity: null });
+
+		if (typeof(this.props.validator) !== 'function') {
+			f(true);
+		} else {
+			let a = v !== undefined && this.props.validator(v);
+			if (a instanceof Promise || a instanceof Bond) {
+				a.then(f);
+			} else {
+				f(a);
+			}
+		}
 	}
 
 	componentWillMount() { this.fixValue(this.state.value); }
@@ -187,11 +205,8 @@ export class TextBond extends React.Component {
 				name={this.props.name}
 				value={this.state.value}
 				floatingLabelText={this.props.floatingLabelText}
-				errorText={this.props.errorText || (typeof(this.props.validator) === 'function' && !this.props.validator(this.state.value) ? this.props.invalidText : null)}
-				onChange={(e, v) => {
-					this.setState({value: v});
-					this.fixValue(v);
-				}}
+				errorText={this.props.errorText || (!this.state.validity ? this.props.invalidText : null)}
+				onChange={(e, v) => this.fixValue(v)}
 			/>
 		);
 	}
