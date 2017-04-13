@@ -3,60 +3,14 @@ import BigNumber from 'bignumber.js';
 import {abiPolyfill} from './abis.js';
 
 export function setupBonds(_api = parity.api) {
-	console.log("setupBonds...");
-	_api.parity.netChain().then(c => console.log(`setupBonds: on chain ${c}`));
-	console.log('Kill subscriptions');
-
 	let api = _api;
 	var bonds = {};
 
-	api.util.abiSig = function (name, inputs) {
-		return api.util.sha3(`${name}(${inputs.join()})`);
-	};
-
-	api.util.cleanup = function (value, type) {
-		// TODO: make work with arbitrary depth arrays
-		if (value instanceof Array && type.match(/bytes[0-9]+/)) {
-			// figure out if it's an ASCII string hiding in there:
-			var ascii = '';
-			for (var i = 0, ended = false; i < value.length && ascii !== null; ++i) {
-				if (value[i] === 0) {
-					ended = true;
-				} else {
-					ascii += String.fromCharCode(value[i]);
-				}
-				if ((ended && value[i] !== 0) || (!ended && (value[i] < 32 || value[i] >= 128))) {
-					ascii = null;
-				}
-			}
-			value = ascii === null ? api.util.bytesToHex(value) : ascii;
-		}
-		if (type.substr(0, 4) == 'uint' && +type.substr(4) <= 48) {
-			value = +value;
-		}
-		return value;
-	}
-
-	// returns [functionName, argsByName]
-	api.util.abiUnencode = function (abi, data) {
-		let s = data.substr(2, 8);
-		let op = abi.find(f =>
-			f.type == 'function' &&
-			api.util.abiSig(f.name, f.inputs.map(i => i.type))
-				.substr(2, 8) === s
-		);
-		if (!op) {
-			console.warn(`Unknown function ID: ${s}`);
-			return null;
-		}
-		let argsByIndex = api.util.abiDecode(
-				op.inputs.map(f => f.type), '0x' + data.substr(10)
-			).map((v, i) => api.util.cleanup(v, op.inputs[i].type));
-		let argsByName = {};
-		op.inputs.forEach((f, i) => {
-			argsByName[f.name] = argsByIndex[i];
-		});
-		return [op.name, argsByName, argsByIndex];
+	if (!api.util.abiSig) {
+		console.info("Polyfilling api.util.abiSig");
+		api.util.abiSig = function (name, inputs) {
+			return api.util.sha3(`${name}(${inputs.join()})`);
+		};
 	}
 
 	class TransformBond extends oo7TransformBond {
@@ -99,21 +53,27 @@ export function setupBonds(_api = parity.api) {
 	}
 
 	class Signature extends ReactivePromise {
-		constructor(from, message) {
-			super([from, message], [], ([from, message]) => {
+		constructor(message, from) {
+			super([message, from], [], ([message, from]) => {
 				api.parity.postSign(from, api.util.asciiToHex(message))
 					.then(signerRequestId => {
 						this.trigger({requested: signerRequestId});
 				    	return api.pollMethod('parity_checkRequest', signerRequestId);
 				    })
 				    .then(signature => {
-						this.trigger({signed: signature});
+						this.trigger({
+							signed: splitSignature(signature)
+						});
 					})
 					.catch(error => {
+						console.error(error);
 						this.trigger({failed: error});
 					});
-			});
+			}, false);
 			this.then(_ => null);
+		}
+		isDone(s) {
+			return !!s.failed || !!s.signed;
 		}
 	}
 
@@ -129,7 +89,6 @@ export function setupBonds(_api = parity.api) {
 			.then(g => {
 				progress({estimated: g});
 				tx.gas = tx.gas || g;
-				console.log(`Finally posting ${JSON.stringify(tx)}`);
 				return api.parity.postTransaction(tx);
 			})
 			.then(signerRequestId => {
@@ -154,8 +113,11 @@ export function setupBonds(_api = parity.api) {
 			super([tx], [], ([tx]) => {
 				let progress = this.trigger.bind(this);
 				transactionPromise(tx, progress, _ => _);
-			});
+			}, false);
 			this.then(_ => null);
+		}
+		isDone(s) {
+			return !!(s.failed || s.confirmed);
 		}
 	}
 
@@ -185,11 +147,9 @@ export function setupBonds(_api = parity.api) {
 		let toOptions = (addr, method, options, ...args) => {
 			return overlay({to: addr, data: api.util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
 		};
-		return new bonds.Transaction(toOptions.bond(addr, method, options, ...args));
+		return new Transaction(toOptions.bond(addr, method, options, ...args));
 	};
 
-	bonds.Transaction = Transaction;
-	bonds.Signature = Signature;
 	bonds.Subscription = SubscriptionBond;
 	bonds.Transform = TransformBond;
     bonds.time = new TimeBond;
@@ -250,7 +210,7 @@ export function setupBonds(_api = parity.api) {
 	bonds.defaultAccount = bonds.accounts[0];	// TODO: make this use its subscription
 	bonds.me = bonds.accounts[0];
 	bonds.post = tx => new Transaction(tx);
-	bonds.sign = (from, message) => new Signature(from, message);
+	bonds.sign = (message, from = parity.bonds.me) => new Signature(message, from);
 
 	bonds.balance = (x => new TransformBond(api.eth.getBalance, [x], [onHeadChanged]));
 	bonds.code = (x => new TransformBond(api.eth.getCode, [x], [onHeadChanged]));
@@ -341,7 +301,7 @@ export function setupBonds(_api = parity.api) {
 
 	class DeployContract extends ReactivePromise {
 		constructor(initBond, abiBond, optionsBond) {
-			super([initBond, abiBond, optionsBond, bonds.registry], ([init, abi, options, registry]) => {
+			super([initBond, abiBond, optionsBond, bonds.registry], [], ([init, abi, options, registry]) => {
 				options.data = init;
 				delete options.to;
 				let progress = this.trigger.bind(this);
@@ -352,8 +312,11 @@ export function setupBonds(_api = parity.api) {
 					return status;
 				});
 				// TODO: consider allowing registry of the contract here.
-			});
+			}, false);
 			this.then(_ => null);
+		}
+		isDone(s) {
+			return !!(s.failed || s.confirmed);
 		}
 	}
 
@@ -564,6 +527,45 @@ export function formatBlockNumber(n) {
 
 export function isNullData(a) {
 	return !a || typeof(a) !== 'string' || a.match(/^(0x)?0+$/) !== null;
+}
+
+export function splitSignature (vrs) {
+	return [vrs.substr(0, 4), `0x${vrs.substr(4, 64)}`, `0x${vrs.substr(68, 64)}`];
+};
+
+export function removeSigningPrefix (message) {
+	if (!message.startsWith('\x19Ethereum Signed Message:\n')) {
+		throw 'Invalid message - doesn\'t contain security prefix';
+	}
+	for (var i = 1; i < 6; ++i) {
+		if (message.length == 26 + i + +message.substr(26, i)) {
+			return message.substr(26 + i);
+		}
+	}
+	throw 'Invalid message - invalid security prefix';
+};
+
+export function cleanup (value, type) {
+	// TODO: make work with arbitrary depth arrays
+	if (value instanceof Array && type.match(/bytes[0-9]+/)) {
+		// figure out if it's an ASCII string hiding in there:
+		var ascii = '';
+		for (var i = 0, ended = false; i < value.length && ascii !== null; ++i) {
+			if (value[i] === 0) {
+				ended = true;
+			} else {
+				ascii += String.fromCharCode(value[i]);
+			}
+			if ((ended && value[i] !== 0) || (!ended && (value[i] < 32 || value[i] >= 128))) {
+				ascii = null;
+			}
+		}
+		value = ascii === null ? api.util.bytesToHex(value) : ascii;
+	}
+	if (type.substr(0, 4) == 'uint' && +type.substr(4) <= 48) {
+		value = +value;
+	}
+	return value;
 }
 
 export { abiPolyfill };
