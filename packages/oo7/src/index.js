@@ -21,6 +21,7 @@ export class Bond {
 		this._value = null;
 		this.mayBeNull = mayBeNull;
 		this._users = 0;
+		this._triggering = false;
 //		return this.subscriptable();
 	}
 
@@ -74,7 +75,6 @@ export class Bond {
 	}
 	changed (v) {
 		if (typeof(v) === 'undefined') {
-			console.error(`Trigger called with undefined value`);
 			return;
 		}
 //		console.log(`maybe changed (${this._value} -> ${v})`);
@@ -89,6 +89,11 @@ export class Bond {
 			console.error(`Trigger called with undefined value`);
 			return;
 		}
+		if (this._triggering) {
+			console.error(`Trigger cannot be called while already triggering.`);
+			return;
+		}
+		this._triggering = true;
 		if (!this.mayBeNull && v === null) {
 			this.reset();
 		} else {
@@ -103,6 +108,7 @@ export class Bond {
 			});
 			this.thens = [];
 		}
+		this._triggering = false;
 	}
 	// If you use this, you are responsible for calling drop exactly once
 	// at some point later. Some Bonds won't work properly unless you call
@@ -173,6 +179,20 @@ export class Bond {
 			this.use();
 			this.thens.push(f);
 		}
+		return this;
+	}
+	done(f) {
+		if (this.isDone === undefined) {
+			throw 'Cannot call done() on Bond that has no implementation of isDone.';
+		}
+		var id;
+		let h = s => {
+			if (this.isDone(s)) {
+				f(s);
+				this.untie(id);
+			}
+		};
+		id = this.tie(h);
 		return this;
 	}
 
@@ -368,6 +388,7 @@ export class ReactiveBond extends Bond {
 		this._d = d.slice();
 		this._a = a.slice();
 	}
+	// TODO: implement isDone.
 	initialise () {
 		this._ids = [];
 		this._d.forEach(_=>this._ids.push(_.notify(this._poll)));
@@ -381,6 +402,7 @@ export class ReactiveBond extends Bond {
 		this._d.forEach(_=>_.unnotify(this._ids.shift()));
 		this._a.forEach(_=>deepUnnotify(_, this._ids));
 	}
+
 }
 
 // Just a one-off.
@@ -418,7 +440,7 @@ export class TransformBond extends ReactiveBond {
 			} else {
 				this.changed(r);
 			}
-		}, mayBeNull, context);
+		}, mayBeNull);
 	}
 }
 
