@@ -6,22 +6,15 @@ export function setupBonds(_api = parity.api) {
 	let api = _api;
 	var bonds = {};
 
-	if (!api.util.abiSig) {
-		console.info("Polyfilling api.util.abiSig");
-		api.util.abiSig = function (name, inputs) {
-			return api.util.sha3(`${name}(${inputs.join()})`);
-		};
-	}
-
 	class TransformBond extends oo7TransformBond {
-		constructor (f, a = [], d = [], latched = true, mayBeNull = false) {
-			super(f, a, d, latched, mayBeNull, api);
+		constructor (f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true) {
+			super(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api);
 		}
-		map (f) {
-	        return new TransformBond(f, [this]);
+		map (f, outResolveDepth = 0, resolveDepth = 1) {
+	        return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
 	    }
-		sub (name) {
-			return new TransformBond((r, n) => r[n], [this, name]);
+		sub (name, outResolveDepth = 0, resolveDepth = 1) {
+			return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);
 		}
 		static all(list) {
 			return new TransformBond((...args) => args, list);
@@ -186,7 +179,7 @@ export function setupBonds(_api = parity.api) {
 	let onAccountsChanged = bonds.time; // TODO: more accurate notification
 	let onHardwareAccountsChanged = bonds.time; // TODO: more accurate notification
 	let onHeadChanged = bonds.blockNumber;	// TODO: more accurate notification
-	let onReorg = null;	// TODO make more accurate.
+//	let onReorg = undefined;	// TODO make more accurate.
 	let onSyncingChanged = bonds.time;
 	let onAuthoringDetailsChanged = bonds.time;
 	let onPeerNetChanged = bonds.time; // TODO: more accurate notification
@@ -201,7 +194,7 @@ export function setupBonds(_api = parity.api) {
 	bonds.findBlock = (hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
 		? api.eth.getBlockByNumber(hashOrNumber)
 		: api.eth.getBlockByHash(hashOrNumber),
-		[hashOrNumberBond], [onReorg]).subscriptable());// TODO: chain reorg that includes number x, if x is a number
+		[hashOrNumberBond], [/*onReorg*/]).subscriptable());// TODO: chain reorg that includes number x, if x is a number
 	bonds.blocks = presub(bonds.findBlock);
 	bonds.block = bonds.blockByNumber(bonds.blockNumber);	// TODO: DEPRECATE AND REMOVE
 	bonds.head = new TransformBond(() => api.eth.getBlockByNumber('latest'), [], [onHeadChanged]).subscriptable();// TODO: chain reorgs
@@ -228,17 +221,17 @@ export function setupBonds(_api = parity.api) {
 		hashOrNumber => isNumber(hashOrNumber)
 			? api.eth.getBlockTransactionCountByNumber(hashOrNumber).then(_ => +_)
 			: api.eth.getBlockTransactionCountByHash(hashOrNumber).then(_ => +_),
-		[hashOrNumberBond], isNumber(hashOrNumber) ? [onReorg] : []));
+		[hashOrNumberBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []));
 	bonds.uncleCount = (hashOrNumberBond => new TransformBond(
 		hashOrNumber => isNumber(hashOrNumber)
 			? api.eth.getUncleCountByBlockNumber(hashOrNumber).then(_ => +_)
 			: api.eth.getUncleCountByBlockHash(hashOrNumber).then(_ => +_),
-		[hashOrNumberBond], isNumber(hashOrNumber) ? [onReorg] : []).subscriptable());
+		[hashOrNumberBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []).subscriptable());
 	bonds.uncle = ((hashOrNumberBond, indexBond) => new TransformBond(
 		(hashOrNumber, index) => isNumber(hashOrNumber)
 			? api.eth.getUncleByBlockNumber(hashOrNumber, index)
 			: api.eth.getUncleByBlockHash(hashOrNumber, index),
-		[hashOrNumberBond, indexBond], isNumber(hashOrNumber) ? [onReorg] : []).subscriptable());
+		[hashOrNumberBond, indexBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []).subscriptable());
 	bonds.transaction = ((hashOrNumberBond, indexOrNullBond) => new TransformBond(
 		(hashOrNumber, indexOrNull) =>
 			indexOrNull === undefined || indexOrNull === null
@@ -246,7 +239,7 @@ export function setupBonds(_api = parity.api) {
 				: isNumber(hashOrNumber)
 					? api.eth.getTransactionByBlockNumberAndIndex(hashOrNumber, indexOrNull)
 					: api.eth.getTransactionByBlockHashAndIndex(hashOrNumber, indexOrNull),
-			[hashOrNumberBond, indexOrNullBond], isNumber(hashOrNumber) ? [onReorg] : []).subscriptable());
+			[hashOrNumberBond, indexOrNullBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []).subscriptable());
 	bonds.receipt = (hashBond => new TransformBond(api.eth.getTransactionReceipt, [hashBond], []).subscriptable());
 
 	// web3_
@@ -333,7 +326,9 @@ export function setupBonds(_api = parity.api) {
 					var options = args.length === i.inputs.length + 1 ? args.unshift() : {};
 					if (args.length != i.inputs.length)
 						throw `Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`;
-					let f = (addr, ...fargs) => call(addr, i, fargs, options).then(unwrapIfOne);
+					let f = (addr, ...fargs) => call(addr, i, fargs, options)
+						.then(rets => rets.map((r, o) => cleanup(r, i.outputs[o].type, api)))
+						.then(unwrapIfOne);
 					return new TransformBond(f, [address, ...args], [bonds.blockNumber]).subscriptable();	// TODO: should be subscription on contract events
 				};
 				r[i.name] = (i.inputs.length === 0) ? memoized(f) : (i.inputs.length === 1) ? presub(f) : f;
@@ -366,7 +361,7 @@ export function setupBonds(_api = parity.api) {
 		});
 		var eventLookup = {};
 		abi.filter(i => i.type == 'event').forEach(i => {
-			eventLookup[api.util.abiSig(i.name, i.inputs.map(f => f.type))] = i.name;
+			eventLookup[api.util.abiSignature(i.name, i.inputs.map(f => f.type))] = i.name;
 		});
 
 		function prepareIndexEncode(v, t, top = true) {
@@ -393,7 +388,7 @@ export function setupBonds(_api = parity.api) {
 			if (i.type == 'event') {
 				r[i.name] = function (indexed = {}, params = {}) {
 					return new TransformBond((addr, indexed) => {
-						var topics = [api.util.abiSig(i.name, i.inputs.map(f => f.type))];
+						var topics = [api.util.abiSignature(i.name, i.inputs.map(f => f.type))];
 						i.inputs.filter(f => f.indexed).forEach(f => {
 							try {
 								topics.push(indexed[f.name] ? prepareIndexEncode(indexed[f.name], f.type) : null);
@@ -453,6 +448,40 @@ export function setupBonds(_api = parity.api) {
 	bonds.registry = bonds.makeContract(new TransformBond(api.parity.registryAddress, [], [bonds.time]), api.abi.registry, api.abi.registryExtras);	// TODO should be subscription.
 	bonds.githubhint = bonds.makeContract(bonds.registry.lookupAddress('githubhint', 'A'), api.abi.githubhint);
 	bonds.operations = bonds.makeContract(bonds.registry.lookupAddress('operations', 'A'), api.abi.operations);
+	bonds.badgereg = bonds.makeContract(bonds.registry.lookupAddress('badgereg', 'A'), api.abi.badgereg);
+	bonds.tokenreg = bonds.makeContract(bonds.registry.lookupAddress('tokenreg', 'A'), api.abi.tokenreg);
+
+	bonds.badges = new TransformBond(n => {
+		var ret = [];
+		for (var i = 0; i < +n; ++i) {
+			let id = i;
+			ret.push(Bond.all([
+					bonds.badgereg.badge(id),
+					bonds.badgereg.meta(id, 'IMG'),
+					bonds.badgereg.meta(id, 'CAPTION')
+				]).map(([[addr, name, owner], img, caption]) => ({
+					id,
+					name,
+					img,
+					caption,
+					badge: bonds.makeContract(addr, api.abi.badge)
+				}))
+			);
+		}
+		return ret;
+	}, [bonds.badgereg.badgeCount()], [], 1);
+
+	bonds.badgesOf = address => new TransformBond(
+		(addr, bads) => bads.map(b => ({
+			certified: b.badge.certified(addr),
+			addr: addr,
+			id: b.id,
+			img: b.img,
+			caption: b.caption,
+			name: b.name
+		})),
+		[address, bonds.badges], [], 2
+	).map(all => all.filter(_=>_.certified));
 
 	return bonds;
 }
@@ -545,7 +574,7 @@ export function removeSigningPrefix (message) {
 	throw 'Invalid message - invalid security prefix';
 };
 
-export function cleanup (value, type) {
+export function cleanup (value, type = 'bytes32', api = parity.api) {
 	// TODO: make work with arbitrary depth arrays
 	if (value instanceof Array && type.match(/bytes[0-9]+/)) {
 		// figure out if it's an ASCII string hiding in there:
@@ -560,7 +589,7 @@ export function cleanup (value, type) {
 				ascii = null;
 			}
 		}
-		value = ascii === null ? api.util.bytesToHex(value) : ascii;
+		value = ascii === null ? '0x' + value.map(n => ('0' + n.toString(16)).slice(-2)).join('') : ascii;
 	}
 	if (type.substr(0, 4) == 'uint' && +type.substr(4) <= 48) {
 		value = +value;
