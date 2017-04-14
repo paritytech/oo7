@@ -177,6 +177,28 @@ describe('ReactiveBond', function() {
         let u = new MyBond(t).use();
         u.drop();
     })
+    it('should resolve depth 2 dependencies', () => {
+        let t = new Bond();
+        var x = null;
+        class MyBond extends ReactiveBond {
+            constructor(d) {
+                super([[{foo: d}]], [], v => x = v[0], false, 2);
+            }
+        };
+        let u = new MyBond(t).use();
+
+        // initially
+        (x === null).should.equal(true);
+
+        // when
+        t.trigger(69);
+
+        // then
+        x[0].foo.should.equal(69);
+
+        // finally
+        u.drop();
+    });
 });
 
 describe('TransformBond', function() {
@@ -208,6 +230,91 @@ describe('TransformBond', function() {
 
         // finally
         b.drop();
+    });
+    it('should deal with returned Bonds', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => t, [], []);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(false);
+        t.trigger(60);
+        b.ready().should.equal(true);
+        x.should.equal(60);
+
+        b.drop();
+    });
+    it('should not deal with level 1 returned Bonds at 0 depth resolution', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => [t], [], [], 0, 1);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(true);
+        Object.getPrototypeOf(x[0]).constructor.name.should.equal('Bond');
+
+        b.drop();
+    });
+    it('should deal with level 1 returned Bonds at 1 depth resolution', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => [t], [], [], 1, 1);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(false);
+        t.trigger(60);
+        b.ready().should.equal(true);
+        x[0].should.equal(60);
+
+        b.drop();
+    });
+    it('should deal with level 1 returned Bonds at 2 depth resolution', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => [t], [], [], 2, 1);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(false);
+        t.trigger(60);
+        b.ready().should.equal(true);
+        x[0].should.equal(60);
+
+        b.drop();
+    });
+    it('should not deal with level 2 returned Bonds at 0 depth resolution', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => [{foo: t}], [], [], 0, 1);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(true);
+        Object.getPrototypeOf(x[0].foo).constructor.name.should.equal('Bond');
+
+        b.drop();
+    });
+    it('should not deal with level 2 returned Bonds at 1 depth resolution', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => [{foo: t}], [], [], 1, 1);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(true);
+        Object.getPrototypeOf(x[0].foo).constructor.name.should.equal('Bond');
+
+        c.drop();
+    });
+    it('should deal with level 2 returned Bonds at 2 depth resolution', () => {
+        var x = null;
+        let t = new Bond;
+        let b = new TransformBond(() => [{foo: t}], [], [], 2, 1);
+        let c = b.map(v => x = v).use();
+
+        b.ready().should.equal(false);
+        t.trigger(60);
+        b.ready().should.equal(true);
+        x[0].foo.should.equal(60);
+
+        c.drop();
     });
 })
 

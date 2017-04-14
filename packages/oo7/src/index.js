@@ -173,10 +173,11 @@ export class Bond {
 	}
 	ready () { return this._ready; }
 	then (f) {
+		this.use();
 		if (this._ready) {
 			f(this._value);
+			this.drop();
 		} else {
-			this.use();
 			this.thens.push(f);
 		}
 		return this;
@@ -196,11 +197,11 @@ export class Bond {
 		return this;
 	}
 
-    map (f) {
-        return new TransformBond(f, [this]);
+    map (f, outResolveDepth = 0, resolveDepth = 1) {
+        return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
     }
-	sub (name) {
-		return new TransformBond((r, n) => r[n], [this, name]);
+	sub (name, outResolveDepth = 0, resolveDepth = 1) {
+		return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);
 	}
 
 	// Takes a Bond which evaluates to a = [a[0], a[1], ...]
@@ -218,6 +219,10 @@ export class Bond {
 
 	static all(list) {
 		return new TransformBond((...args) => args, list);
+	}
+
+	static mapAll(list, f, outResolveDepth = 0, resolveDepth = 1) {
+		return new TransformBond((...args) => f(...args), list, [], outResolveDepth, resolveDepth);
 	}
 
 	static promise(list) {
@@ -250,43 +255,63 @@ export class Bond {
 	}
 }
 
-function isReady(x, deep = true) {
+function isReady(x, depthLeft) {
 	if (typeof(x) === 'object' && x !== null)
 		if (x instanceof Bond)
 			return x._ready;
 		else if (x instanceof Promise)
 		  	return typeof(x._value) !== 'undefined';
-		else if (deep && x.constructor === Array)
-			return x.every(i => isReady(i, false));
-		else if (deep && x.constructor === Object)
-			return Object.keys(x).every(k => isReady(x[k], false));
+		else if (depthLeft > 0 && x.constructor === Array)
+			return x.every(i => isReady(i, depthLeft - 1));
+		else if (depthLeft > 0 && x.constructor === Object)
+			return Object.keys(x).every(k => isReady(x[k], depthLeft - 1));
 		else
 			return true;
 	else
 		return true;
 }
 
-export function isBond(x, deep = true) {
+function isPlain(x, depthLeft) {
 	if (typeof(x) === 'object' && x !== null)
 		if (x instanceof Bond)
-			return true;
+			return false;
 		else if (x instanceof Promise)
 		  	return false;
-		else if (deep && x.constructor === Array)
-			return x.some(i => isBond(i, false));
-		else if (deep && x.constructor === Object)
-			return Object.keys(x).some(k => isBond(x[k], false));
+		else if (depthLeft > 0 && x.constructor === Array)
+			return x.every(i => isPlain(i, depthLeft - 1));
+		else if (depthLeft > 0 && x.constructor === Object)
+			return Object.keys(x).every(k => isPlain(x[k], depthLeft - 1));
 		else
-			return false;
+			return true;
 	else
-		return false;
+		return true;
 }
 
-function mapped(x, deep = true) {
-	if (!isReady(x, deep)) {
+function isArrayWithNonPlainItems(x, depthLeft) {
+	return depthLeft > 0 &&
+		x.constructor === Array &&
+		(
+			(depthLeft == 1 && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1)
+		||
+			(depthLeft > 1 && x.findIndex(i => i instanceof Bond || i instanceof Promise || i instanceof Array || i instanceof Object) != -1)
+		);
+}
+
+function isObjectWithNonPlainItems(x, depthLeft) {
+	return depthLeft > 0 &&
+		x.constructor === Object &&
+		(
+			(depthLeft == 1 && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1)
+		||
+			(depthLeft > 1 && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise || x[i] instanceof Array || x[i] instanceof Object) != -1)
+		);
+}
+
+function mapped(x, depthLeft) {
+	if (!isReady(x, depthLeft)) {
 		throw `Internal error: Unready value being mapped`;
 	}
-//	console.log(`x info: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}; deep: ${deep}`);
+//	console.log(`x info: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}; depthLeft: ${depthLeft}`);
 	if (typeof(x) === 'object' && x !== null) {
 		if (x instanceof Bond) {
 			if (x._ready !== true) {
@@ -303,15 +328,15 @@ function mapped(x, deep = true) {
 			}
 //			console.log(`Promise: ${JSON.stringify(x._value)}}`);
 			return x._value;
-		} else if (deep && x.constructor === Array && x.some(i => i instanceof Bond || i instanceof Promise)) {
+		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
 //			console.log(`Deep array...`);
-			let o = x.slice().map(i => mapped(i, false));
+			let o = x.slice().map(i => mapped(i, depthLeft - 1));
 //			console.log(`...Deep array: ${JSON.stringify(o)}`);
 			return o;
-		} else if (deep && x.constructor === Object && Object.keys(x).some(i => x[i] instanceof Bond || x[i] instanceof Promise)) {
+		} else if (isObjectWithNonPlainItems(x, depthLeft)) {
 			var o = {};
 //			console.log(`Deep object...`);
-			Object.keys(x).forEach(k => { o[k] = mapped(x[k], false); });
+			Object.keys(x).forEach(k => { o[k] = mapped(x[k], depthLeft - 1); });
 //			console.log(`...Deep object: ${JSON.stringify(o)}`);
 			return o;
 		} else {
@@ -324,7 +349,8 @@ function mapped(x, deep = true) {
 	}
 }
 
-function deepNotify(x, poll, ids, deep = true) {
+function deepNotify(x, poll, ids, depthLeft) {
+//	console.log(`Setitng up deep notification on object: ${JSON.stringify(x)} - ${typeof(x)}/${x === null}/${x.constructor.name} (depthLeft: ${depthLeft})`);
 	if (typeof(x) === 'object' && x !== null) {
 		if (x instanceof Bond) {
 			ids.push(x.notify(poll));
@@ -332,13 +358,13 @@ function deepNotify(x, poll, ids, deep = true) {
 		} else if (x instanceof Promise) {
 			x.then(v => { x._value = v; poll(); });
 			return true;
-		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1) {
+		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
 			var r = false;
-			x.forEach(i => { r = deepNotify(i, poll, ids, false) || r; });
+			x.forEach(i => { r = deepNotify(i, poll, ids, depthLeft - 1) || r; });
 			return r;
-		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1) {
+		} else if (isObjectWithNonPlainItems(x, depthLeft)) {
 			var r = false;
-			Object.keys(x).forEach(k => { r = deepNotify(x[k], poll, ids, false) || r; });
+			Object.keys(x).forEach(k => { r = deepNotify(x[k], poll, ids, depthLeft - 1) || r; });
 			return r;
 		} else {
 			return false;
@@ -348,18 +374,18 @@ function deepNotify(x, poll, ids, deep = true) {
 	}
 }
 
-function deepUnnotify(x, ids, deep = true) {
+function deepUnnotify(x, ids, depthLeft) {
 	if (typeof(x) === 'object' && x !== null) {
 		if (x instanceof Bond) {
 			x.unnotify(ids.shift());
 			return true;
-		} else if (deep && x.constructor === Array && x.findIndex(i => i instanceof Bond) != -1) {
+		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
 			var r = false;
-			x.forEach(i => { r = deepUnnotify(i, ids, false) || r; });
+			x.forEach(i => { r = deepUnnotify(i, ids, depthLeft - 1) || r; });
 			return r;
-		} else if (deep && x.constructor === Object && Object.keys(x).findIndex(i => x[i] instanceof Bond) != -1) {
+		} else if (isObjectWithNonPlainItems(x, depthLeft)) {
 			var r = false;
-			Object.keys(x).forEach(k => { r = deepUnnotify(x[k], ids, false) || r; });
+			Object.keys(x).forEach(k => { r = deepUnnotify(x[k], ids, depthLeft - 1) || r; });
 			return r;
 		} else {
 			return false;
@@ -370,13 +396,14 @@ function deepUnnotify(x, ids, deep = true) {
 }
 
 export class ReactiveBond extends Bond {
-	constructor(a, d, execute = args => this.changed(args), mayBeNull = false) {
+	constructor(a, d, execute = args => this.changed(args), mayBeNull = false, resolveDepth = 1) {
 		super(mayBeNull);
 
 		this._poll = () => {
-			if (a.every(isReady)) {
+//			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
+			if (a.every(i => isReady(i, resolveDepth))) {
 //				console.log(`poll: All dependencies good...`);
-				let am = a.map(i => mapped(i, true));
+				let am = a.map(i => mapped(i, resolveDepth));
 //				console.log(`poll: Mapped dependencies: ${JSON.stringify(am)}`);
 				execute.bind(this)(am);
 			} else {
@@ -387,34 +414,37 @@ export class ReactiveBond extends Bond {
 		this._active = false;
 		this._d = d.slice();
 		this._a = a.slice();
+		this.resolveDepth = resolveDepth;
 	}
+
 	// TODO: implement isDone.
 	initialise () {
+//		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
 		this._ids = [];
 		this._d.forEach(_=>this._ids.push(_.notify(this._poll)));
 		var nd = 0;
-		this._a.forEach(i => { if (deepNotify(i, this._poll, this._ids)) nd++; });
+		this._a.forEach(i => { if (deepNotify(i, this._poll, this._ids, this.resolveDepth)) nd++; });
 		if (nd == 0 && this._d.length == 0) {
 			this._poll();
 		}
 	}
 	finalise () {
+//		console.log(`Finalising ReactiveBond with resolveDepth ${this.resolveDepth}`);
 		this._d.forEach(_=>_.unnotify(this._ids.shift()));
-		this._a.forEach(_=>deepUnnotify(_, this._ids));
+		this._a.forEach(_=>deepUnnotify(_, this._ids, this.resolveDepth));
 	}
-
 }
 
 // Just a one-off.
 export class ReactivePromise extends ReactiveBond {
-	constructor(a, d, execute = args => this.changed(args), mayBeNull = false) {
+	constructor(a, d, execute = args => this.changed(args), mayBeNull = false, resolveDepth = 1) {
 		var done = false;
 		super(a, d, args => {
 			if (!done) {
 				done = true;
 				execute.bind(this)(args);
 			}
-		}, mayBeNull)
+		}, mayBeNull, resolveDepth)
 	}
 }
 
@@ -425,9 +455,10 @@ export class ReactivePromise extends ReactiveBond {
 ///
 /// we return a bond (an ongoing promise).
 export class TransformBond extends ReactiveBond {
-	constructor(f, a = [], d = [], latched = true, mayBeNull = false, context = defaultContext) {
+	constructor(f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true, context = defaultContext) {
 		super(a, d, function (args) {
 //			console.log(`Applying: ${JSON.stringify(args)}`);
+			this.dropOut();
 			let r = f.apply(context, args);
 			if (typeof(r) === 'undefined') {
 				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(args)}.`);
@@ -437,10 +468,30 @@ export class TransformBond extends ReactiveBond {
 					this.reset();
 				}
 				r.then(this.changed.bind(this));
+			} else if (!isPlain(r, outResolveDepth)) {
+//				console.log(`Using ReactiveBond to resolve and trigger non-plain result (at depth ${outResolveDepth})`);
+				this.useOut(new ReactiveBond([r], [], ([v]) => {
+//					console.log(`Resolved results: ${JSON.stringify(v)}. Triggering...`);
+					this.changed.bind(this)(v);
+				}, false, outResolveDepth));
 			} else {
 				this.changed(r);
 			}
-		}, mayBeNull);
+		}, mayBeNull, resolveDepth);
+		this._outBond = null;
+	}
+	useOut (b) {
+		this._outBond = b.use();
+	}
+	dropOut () {
+		if (this._outBond !== null) {
+			this._outBond.drop();
+		}
+		this._outBond = null;
+	}
+	finalise () {
+		this.dropOut();
+		ReactiveBond.prototype.finalise.call(this);
 	}
 }
 
