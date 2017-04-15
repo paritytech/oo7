@@ -6,6 +6,12 @@ export function setupBonds(_api = parity.api) {
 	let api = _api;
 	var bonds = {};
 
+	if (!api.util.abiSignature) {		
+		console.info("Polyfilling api.util.abiSignature");
+		api.util.abiSignature = function (name, inputs) {
+			return api.util.sha3(`${name}(${inputs.join()})`);
+		};
+	}
 	class TransformBond extends oo7TransformBond {
 		constructor (f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true) {
 			super(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api);
@@ -482,6 +488,11 @@ export function setupBonds(_api = parity.api) {
 		})),
 		[address, bonds.badges], [], 2
 	).map(all => all.filter(_=>_.certified));
+
+	bonds.namesOf = address => new TransformBond((reg, addr, accs) => ({
+		owned: accs[addr] ? accs[addr].name : null,
+		registry: reg || null
+	}), [bonds.registry.reverse(address), address, bonds.accountsInfo]);
 
 	return bonds;
 }
