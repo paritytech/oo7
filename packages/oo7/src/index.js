@@ -32,6 +32,10 @@ export class Bond {
 		return s;
 	}
 
+	mapToString () {
+		return this.map(_ => _.toString());
+	}
+
 	subscriptable (depth = 1) {
 		if (depth === 0)
 			return this;
