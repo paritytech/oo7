@@ -1,6 +1,4 @@
 import React from 'react';
-import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
 import {Bond, TimeBond, ReactiveBond, TransformBond} from 'oo7';
 
 export class ReactiveComponent extends React.Component {
@@ -125,22 +123,6 @@ export class Rimg extends ReactiveComponent {
 	}
 }
 
-export class RRaisedButton extends ReactiveComponent {
-	constructor() {
-		super(['disabled', 'label']);
-	}
-	render() {
-		return (
-			<RaisedButton
-				disabled={this.state.disabled}
-				label={this.state.label}
-				onClick={this.props.onClick}
-				name={this.props.name}
-			/>
-		);
-	}
-}
-
 export class Hash extends ReactiveComponent {
 	constructor() {
 		super(['value', 'className', 'style']);
@@ -163,68 +145,3 @@ export class Hash extends ReactiveComponent {
 Hash.defaultProps = {
 	className: '_hash'
 };
-
-export class TextBond extends React.Component {
-	constructor() {
-		super();
-		this.state = { value: '', validity: false };
-	}
-
-	fixValue(v) {
-		let f = function (b) {
-			this.setState({ value: v, validity: b });
-			if (this.props.bond instanceof Bond) {
-				if (b)
-					this.props.bond.changed(v);
-				else
-					this.props.bond.reset();
-			}
-		}.bind(this);
-
-		this.setState({ value: v, validity: null });
-
-		if (typeof(this.props.validator) !== 'function') {
-			f(true);
-		} else {
-			let a = v !== undefined && this.props.validator(v);
-			if (a instanceof Promise || a instanceof Bond) {
-				a.then(f);
-			} else {
-				f(a);
-			}
-		}
-	}
-
-	componentWillMount() { this.fixValue(this.state.value); }
-
-	render() {
-		return (
-			<TextField
-				className={this.props.className}
-				style={this.props.style}
-				name={this.props.name}
-				value={this.state.value}
-				floatingLabelText={this.props.floatingLabelText}
-				errorText={this.props.errorText || (!this.state.validity ? this.props.invalidText : null)}
-				onChange={(e, v) => this.fixValue(v)}
-			/>
-		);
-	}
-}
-TextBond.defaultProps = {
-	invalidText: 'Invalid'
-};
-
-export class HashBond extends TextBond {}
-HashBond.defaultProps = {
-	floatingLabelText: 'Enter a hash to look up',
-	invalidText: 'Invalid 32-byte hash',
-	validator: v => v.startsWith('0x') && v.length == 66
-};
-
-export class URLBond extends TextBond {}
-URLBond.defaultProps = {
-	floatingLabelText: 'Enter a URL',
-	invalidText: 'Not a URL',
-	validator: u => { try { return new URL(u) && true; } catch (e) { return false; } }
-}

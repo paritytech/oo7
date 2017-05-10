@@ -29,7 +29,6 @@
   },
   "homepage": "https://github.com/ethcore/oo7-react#readme",
   "dependencies": {
-    "material-ui": "^0.16.7",
     "oo7": "^0.4.0",
     "react": "^15.4.2"
   },
