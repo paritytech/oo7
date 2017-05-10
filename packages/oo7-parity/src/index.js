@@ -6,7 +6,7 @@ export function setupBonds(_api = parity.api) {
 	let api = _api;
 	var bonds = {};
 
-	if (!api.util.abiSignature) {		
+	if (!api.util.abiSignature) {
 		console.info("Polyfilling api.util.abiSignature");
 		api.util.abiSignature = function (name, inputs) {
 			return api.util.sha3(`${name}(${inputs.join()})`);
@@ -428,7 +428,7 @@ export function setupBonds(_api = parity.api) {
 							});
 							i.inputs.filter(f => f.indexed).forEach((f, j) => {
 								if (f.type == 'string' || f.type == 'bytes') {
-									l.args[f.name] = l.topics[1 + j];
+									e[f.name] = l.topics[1 + j];
 								} else {
 									var v = api.util.abiDecode([f.type], l.topics[1 + j])[0];
 									if (v instanceof Array) {
