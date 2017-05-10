@@ -13,7 +13,7 @@ function symbolValues(o) {
 }
 
 export class Bond {
-	constructor(mayBeNull = false) {
+	constructor(mayBeNull = true) {
 		this.subscribers = {};
 		this.notifies = {};
 		this.thens = [];
@@ -200,6 +200,8 @@ export class Bond {
 		id = this.tie(h);
 		return this;
 	}
+
+	log () { this.then(console.log); return this; }
 
     map (f, outResolveDepth = 0, resolveDepth = 1) {
         return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
@@ -400,7 +402,7 @@ function deepUnnotify(x, ids, depthLeft) {
 }
 
 export class ReactiveBond extends Bond {
-	constructor(a, d, execute = args => this.changed(args), mayBeNull = false, resolveDepth = 1) {
+	constructor(a, d, execute = args => this.changed(args), mayBeNull = true, resolveDepth = 1) {
 		super(mayBeNull);
 
 		this._poll = () => {
@@ -441,7 +443,7 @@ export class ReactiveBond extends Bond {
 
 // Just a one-off.
 export class ReactivePromise extends ReactiveBond {
-	constructor(a, d, execute = args => this.changed(args), mayBeNull = false, resolveDepth = 1) {
+	constructor(a, d, execute = args => this.changed(args), mayBeNull = true, resolveDepth = 1) {
 		var done = false;
 		super(a, d, args => {
 			if (!done) {
