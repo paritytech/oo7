@@ -12,6 +12,11 @@ export function setupBonds(_api = parity.api) {
 			return api.util.sha3(`${name}(${inputs.join()})`);
 		};
 	}
+
+	if (!api.abi) {
+		api.abi = abiPolyfill();
+	}
+
 	class TransformBond extends oo7TransformBond {
 		constructor (f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true) {
 			super(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api);
@@ -494,6 +499,14 @@ export function setupBonds(_api = parity.api) {
 		registry: reg || null
 	}), [bonds.registry.reverse(address), address, bonds.accountsInfo]);
 
+	bonds.registry.names = Bond.mapAll([bonds.registry.ReverseConfirmed({}, {limit: 100}), bonds.accountsInfo],
+		(reg, info) => {
+			let r = {};
+			Object.keys(info).forEach(k => r[k] = info[k].name);
+			reg.forEach(a => r[a.reverse] = bonds.registry.reverse(a.reverse));
+			return r;
+		}, 1)
+
 	return bonds;
 }
 
@@ -569,8 +582,14 @@ export function isNullData(a) {
 	return !a || typeof(a) !== 'string' || a.match(/^(0x)?0+$/) !== null;
 }
 
-export function splitSignature (vrs) {
-	return [vrs.substr(0, 4), `0x${vrs.substr(4, 64)}`, `0x${vrs.substr(68, 64)}`];
+export function splitSignature (sig) {
+	if ((sig.substr(2, 2) === '1b' || sig.substr(2, 2) === '1c') && (sig.substr(66, 2) !== '1b' && sig.substr(66, 2) !== '1c')) {
+		// vrs
+		return [sig.substr(0, 4), `0x${sig.substr(4, 64)}`, `0x${sig.substr(68, 64)}`];
+	} else {
+		// rsv
+		return [`0x${sig.substr(130, 2)}`, `0x${sig.substr(2, 64)}`, `0x${sig.substr(66, 64)}`];
+	}
 };
 
 export function removeSigningPrefix (message) {
