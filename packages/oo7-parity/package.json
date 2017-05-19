@@ -1,6 +1,6 @@
 {
   "name": "oo7-parity",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "The Parity Bond API",
   "main": "lib/index.js",
   "files": [
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/ethcore/oo7-parity#readme",
   "dependencies": {
+    "@parity/parity.js": "^1.7.82",
     "bignumber.js": "^4.0.0",
     "oo7": "^0.4.2"
   },
