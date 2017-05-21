@@ -51,7 +51,7 @@ function createBonds(options) {
 
 	class TransformBond extends oo7TransformBond {
 		constructor (f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true) {
-			super(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api);
+			super(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api());
 		}
 		map (f, outResolveDepth = 0, resolveDepth = 1) {
 	        return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
@@ -186,8 +186,6 @@ function createBonds(options) {
 		return new Transaction(toOptions.bond(addr, method, options, ...args));
 	};
 
-	bonds.Subscription = SubscriptionBond;
-	bonds.Transform = TransformBond;
     bonds.time = new TimeBond;
 	// TODO: rename `height`
 	bonds.blockNumber = new TransformBond(() => api().eth.blockNumber().then(_=>+_), [], [bonds.time]);
@@ -517,7 +515,7 @@ function createBonds(options) {
 	bonds.badgesOf = address => new TransformBond(
 		(addr, bads) => bads.map(b => ({
 			certified: b.badge.certified(addr),
-			addr: addr,
+			badge: b.badge,
 			id: b.id,
 			img: b.img,
 			caption: b.caption,
@@ -545,8 +543,19 @@ function createBonds(options) {
 export var options = { api: new Parity.Api(defaultTransport()) };
 export const bonds = createBonds(options);
 
-export { abiPolyfill, RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
+export const asciiToHex = Parity.Api.util.asciiToHex;
+export const bytesToHex = Parity.Api.util.bytesToHex;
+export const hexToAscii = Parity.Api.util.hexToAscii;
+export const isAddressValid = Parity.Api.util.isAddressValid;
+export const sha3 = Parity.Api.util.sha3;
+export const toChecksumAddress = Parity.Api.util.toChecksumAddress;
+
+// Deprecated.
+export { abiPolyfill };
+
+export { RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
 	BadgeRegABI, TokenRegABI, BadgeABI, TokenABI };
+
 
 ////
 // Parity Utilities
@@ -575,15 +584,58 @@ export function denominationMultiplier(s) {
     return (new BigNumber(1000)).pow(i);
 }
 
+export function interpretRender(s, defaultDenom = 6) {
+    try {
+        let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
+		let di = m[4] ? denominations.indexOf(m[4]) : defaultDenom;
+		if (di === -1) {
+			return null;
+		}
+		let n = (m[1].replace(',', '').replace(/^0*/, '')) || '0';
+		let d = (m[3] || '').replace(/0*$/, '');
+		return { denom: di, units: n, decimals: d, origNum: m[1] + (m[2] || ''), origDenom: m[4] || '' };
+    }
+    catch (e) {
+        return null;
+    }
+}
+
+export function combineValue(v) {
+	let d = (new BigNumber(1000)).pow(v.denom);
+	let n = v.units;
+	if (v.decimals) {
+		n += v.decimals;
+		d = d.div((new BigNumber(10)).pow(v.decimals.length));
+	}
+	return new BigNumber(n).mul(d);
+}
+
+export function defDenom(v, d) {
+	if (v.denom === null) {
+		v.denom = d;
+	}
+	return v;
+}
+
+export function formatValue(n) {
+	return `${formatValueNoDenom(n)} ${denominations[n.denom]}`;
+}
+
+export function formatValueNoDenom(n) {
+	return `${n.units.toString().replace(/(\d)(?=(\d{3})+$)/g, "$1,")}${n.decimals ? '.' + n.decimals : ''}`;
+}
+
 export function interpretQuantity(s) {
     try {
-        let m = s.toLowerCase().match('([0-9,.]+) *([a-zA-Z]+)?');
-        let d = denominationMultiplier(m[2] || 'ether');
+        let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
+        let d = denominationMultiplier(m[4] || 'ether');
         let n = +m[1].replace(',', '');
-        while (n !== Math.round(n)) {
-            n *= 10;
-            d = d.div(10);
-        }
+		if (m[2]) {
+			n += m[3];
+			for (let i = 0; i < m[3].length; ++i) {
+	            d = d.div(10);
+	        }
+		}
         return new BigNumber(n).mul(d);
     }
     catch (e) {
@@ -608,8 +660,8 @@ export function splitValue(a) {
 
 export function formatBalance(n) {
 	let a = splitValue(n);
-	let b = Math.floor(a.base * 1000) / 1000;
-	return `${b} ${denominations[a.denom]}`;
+//	let b = Math.floor(a.base * 1000) / 1000;
+	return `${a.base} ${denominations[a.denom]}`;
 }
 
 export function formatBlockNumber(n) {
