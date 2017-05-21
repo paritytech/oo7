@@ -408,9 +408,9 @@ export class ReactiveBond extends Bond {
 		this._poll = () => {
 //			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
 			if (a.every(i => isReady(i, resolveDepth))) {
-//				console.log(`poll: All dependencies good...`);
+//				console.log(`poll: All dependencies good...`, a, resolveDepth);
 				let am = a.map(i => mapped(i, resolveDepth));
-//				console.log(`poll: Mapped dependencies: ${JSON.stringify(am)}`);
+//				console.log(`poll: Mapped dependencies:`, am);
 				execute.bind(this)(am);
 			} else {
 //				console.log("poll: One or more dependencies undefined");
