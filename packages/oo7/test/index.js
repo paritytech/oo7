@@ -12,7 +12,7 @@ describe('Bond', function() {
       let t = new Bond();
       t.should.be.a('object');
       t.should.have.property('ready');
-      t.ready().should.equal(false);
+      t.isReady().should.equal(false);
   });
   it('should be triggerable', () => {
       let t = new Bond();
@@ -22,7 +22,7 @@ describe('Bond', function() {
       t.trigger(69);
       t.then(y => {x = y;});
 
-      t.ready().should.equal(true);
+      t.isReady().should.equal(true);
       x.should.equal(69);
       z.should.equal(69);
   });
@@ -213,19 +213,19 @@ describe('TransformBond', function() {
             return true;
         }, [t, {n: u, m: {w}}, [v]]).use();
 
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         x.should.equal(0);
 
         t.trigger(60);
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         x.should.equal(0);
 
         u.trigger(6);
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         x.should.equal(0);
 
         v.trigger(3);
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         x.should.equal(69);
 
         // finally
@@ -237,9 +237,9 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => t, [], []);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         t.trigger(60);
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         x.should.equal(60);
 
         b.drop();
@@ -250,7 +250,7 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => [t], [], [], 0, 1);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         Object.getPrototypeOf(x[0]).constructor.name.should.equal('Bond');
 
         b.drop();
@@ -261,9 +261,9 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => [t], [], [], 1, 1);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         t.trigger(60);
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         x[0].should.equal(60);
 
         b.drop();
@@ -274,9 +274,9 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => [t], [], [], 2, 1);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         t.trigger(60);
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         x[0].should.equal(60);
 
         b.drop();
@@ -287,7 +287,7 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => [{foo: t}], [], [], 0, 1);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         Object.getPrototypeOf(x[0].foo).constructor.name.should.equal('Bond');
 
         b.drop();
@@ -298,7 +298,7 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => [{foo: t}], [], [], 1, 1);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         Object.getPrototypeOf(x[0].foo).constructor.name.should.equal('Bond');
 
         c.drop();
@@ -309,9 +309,9 @@ describe('TransformBond', function() {
         let b = new TransformBond(() => [{foo: t}], [], [], 2, 1);
         let c = b.map(v => x = v).use();
 
-        b.ready().should.equal(false);
+        b.isReady().should.equal(false);
         t.trigger(60);
-        b.ready().should.equal(true);
+        b.isReady().should.equal(true);
         x[0].foo.should.equal(60);
 
         c.drop();

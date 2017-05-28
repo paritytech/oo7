@@ -175,7 +175,19 @@ export class Bond {
 		console.warn(`Bond.subscribe is deprecated. Use Bond.tie instead.`);
 		return this.tie(f);
 	}
-	ready () { return this._ready; }
+	isReady () { return this._ready; }
+	ready () {
+		if (!this._readyBond) {
+			this._readyBond = new ReadyBond(this);
+		}
+		return this._readyBond;
+	}
+	notReady () {
+		if (!this._notReadyBond) {
+			this._notReadyBond = new NotReadyBond(this);
+		}
+		return this._notReadyBond;
+	}
 	then (f) {
 		this.use();
 		if (this._ready) {
@@ -258,6 +270,40 @@ export class Bond {
 				}
 			});
 		});
+	}
+}
+
+export class ReadyBond extends Bond {
+	constructor(b) {
+		super(false);
+
+		this._poll = () => this.changed(b._ready);
+		this._b = b;
+	}
+
+	initialise () {
+		this._id = this._b.notify(this._poll);
+		this._poll();
+	}
+	finalise () {
+		this._b.unnotify(this._id);
+	}
+}
+
+export class NotReadyBond extends Bond {
+	constructor(b) {
+		super(false);
+
+		this._poll = () => this.changed(!b._ready);
+		this._b = b;
+	}
+
+	initialise () {
+		this._id = this._b.notify(this._poll);
+		this._poll();
+	}
+	finalise () {
+		this._b.unnotify(this._id);
 	}
 }
 
