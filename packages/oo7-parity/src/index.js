@@ -5,6 +5,7 @@ const Parity = require('@parity/parity.js');
 import { abiPolyfill, RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
 	BadgeRegABI, TokenRegABI, BadgeABI, TokenABI } from './abis.js';
 
+// DEPRECATED. TODO: REMOVE
 export function setupBonds(_api = parity.api) {
 	return createBonds({ api: _api });
 }
@@ -230,8 +231,8 @@ function createBonds(options) {
 
 	// eth_
 	bonds.height = bonds.blockNumber;
-	bonds.blockByNumber = (x => new TransformBond(() => api().eth.getBlockByNumber(), [x], []).subscriptable());// TODO: chain reorg that includes number x
-	bonds.blockByHash = (x => new TransformBond(() => api().eth.getBlockByHash(), [x]).subscriptable());
+	bonds.blockByNumber = (x => new TransformBond(x => api().eth.getBlockByNumber(x), [x], []).subscriptable());// TODO: chain reorg that includes number x
+	bonds.blockByHash = (x => new TransformBond(x => api().eth.getBlockByHash(x), [x]).subscriptable());
 	bonds.findBlock = (hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
 		? api().eth.getBlockByNumber(hashOrNumber)
 		: api().eth.getBlockByHash(hashOrNumber),
@@ -244,35 +245,35 @@ function createBonds(options) {
 	bonds.defaultAccount = bonds.accounts[0];	// TODO: make this use its subscription
 	bonds.me = bonds.accounts[0];
 	bonds.post = tx => new Transaction(tx);
-	bonds.sign = (message, from = parity.bonds.me) => new Signature(message, from);
+	bonds.sign = (message, from = bonds.me) => new Signature(message, from);
 
-	bonds.balance = (x => new TransformBond(() => api().eth.getBalance(), [x], [onHeadChanged]));
-	bonds.code = (x => new TransformBond(() => api().eth.getCode(), [x], [onHeadChanged]));
-	bonds.nonce = (x => new TransformBond(() => api().eth.getTransactionCount().then(_ => +_), [x], [onHeadChanged]));
-	bonds.storageAt = ((x, y) => new TransformBond(() => api().eth.getStorageAt(), [x, y], [onHeadChanged]));
+	bonds.balance = (x => new TransformBond(x => api().eth.getBalance(x), [x], [onHeadChanged]));
+	bonds.code = (x => new TransformBond(x => api().eth.getCode(x), [x], [onHeadChanged]));
+	bonds.nonce = (x => new TransformBond(x => api().eth.getTransactionCount(x).then(_ => +_), [x], [onHeadChanged]));
+	bonds.storageAt = ((x, y) => new TransformBond((x, y) => api().eth.getStorageAt(x, y), [x, y], [onHeadChanged]));
 
 	bonds.syncing = new TransformBond(() => api().eth.syncing(), [], [onSyncingChanged]);
 	bonds.hashrate = new TransformBond(() => api().eth.hashrate(), [], [onAuthoringDetailsChanged]);
 	bonds.authoring = new TransformBond(() => api().eth.mining(), [], [onAuthoringDetailsChanged]);
 	bonds.ethProtocolVersion = new TransformBond(() => api().eth.protocolVersion(), [], []);
 	bonds.gasPrice = new TransformBond(() => api().eth.gasPrice(), [], [onHeadChanged]);
-	bonds.estimateGas = (x => new TransformBond(() => api().eth.estimateGas(), [x], [onHeadChanged, onPendingChanged]));
+	bonds.estimateGas = (x => new TransformBond(x => api().eth.estimateGas(x), [x], [onHeadChanged, onPendingChanged]));
 
 	bonds.blockTransactionCount = (hashOrNumberBond => new TransformBond(
 		hashOrNumber => isNumber(hashOrNumber)
 			? api().eth.getBlockTransactionCountByNumber(hashOrNumber).then(_ => +_)
 			: api().eth.getBlockTransactionCountByHash(hashOrNumber).then(_ => +_),
-		[hashOrNumberBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []));
+		[hashOrNumberBond], [/*onReorg*/]));
 	bonds.uncleCount = (hashOrNumberBond => new TransformBond(
 		hashOrNumber => isNumber(hashOrNumber)
 			? api().eth.getUncleCountByBlockNumber(hashOrNumber).then(_ => +_)
 			: api().eth.getUncleCountByBlockHash(hashOrNumber).then(_ => +_),
-		[hashOrNumberBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []).subscriptable());
+		[hashOrNumberBond], [/*onReorg*/]).subscriptable());
 	bonds.uncle = ((hashOrNumberBond, indexBond) => new TransformBond(
 		(hashOrNumber, index) => isNumber(hashOrNumber)
 			? api().eth.getUncleByBlockNumber(hashOrNumber, index)
 			: api().eth.getUncleByBlockHash(hashOrNumber, index),
-		[hashOrNumberBond, indexBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []).subscriptable());
+		[hashOrNumberBond, indexBond], [/*onReorg*/]).subscriptable());
 	bonds.transaction = ((hashOrNumberBond, indexOrNullBond) => new TransformBond(
 		(hashOrNumber, indexOrNull) =>
 			indexOrNull === undefined || indexOrNull === null
@@ -280,8 +281,8 @@ function createBonds(options) {
 				: isNumber(hashOrNumber)
 					? api().eth.getTransactionByBlockNumberAndIndex(hashOrNumber, indexOrNull)
 					: api().eth.getTransactionByBlockHashAndIndex(hashOrNumber, indexOrNull),
-			[hashOrNumberBond, indexOrNullBond], isNumber(hashOrNumber) ? [/*onReorg*/] : []).subscriptable());
-	bonds.receipt = (hashBond => new TransformBond(() => api().eth.getTransactionReceipt(), [hashBond], []).subscriptable());
+			[hashOrNumberBond, indexOrNullBond], [/*onReorg*/]).subscriptable());
+	bonds.receipt = (hashBond => new TransformBond(x => api().eth.getTransactionReceipt(x), [hashBond], []).subscriptable());
 
 	// web3_
 	bonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);
