@@ -12,7 +12,63 @@ function symbolValues(o) {
 	return Object.getOwnPropertySymbols(o).map(k => o[k]);
 }
 
+/**
+ * An object which tracks a single, potentially variable, value. {@link Bond}s may
+ * be updated to new values with {@link Bond#change} and reset to an indeterminate
+ * ("not ready") value with {@link Bond#reset}.
+ *
+ * {@link Bond}s track their dependents - aspects of the program, including other {@link Bond}s,
+ * which reference their current value. Dependents may be added with {@link Bond#use} and
+ * removed with {@link Bond#drop}.
+ *
+ * A {@link Bond} may be tied to a particular function to ensure it is called whenever
+ * the value changes. This implies a dependency, and can be registered with {@link Bond#tie} and
+ * dropped with {@link Bond#untie}. A function may also be called should the {@link Bond} be reverted
+ * to an undefined value; in this case {@link Bond#notify} and {@link Bond#unnotify} should
+ * be used.
+ *
+ * {@link Bond}s can be made to execute a function once their value becomes ready
+ * using {@link Bond#then}, which in some sense replicates the same function in the
+ * context of a `Promise`. The similar function {@link Bond#done} is also supplied which
+ * executes a given function when the {@link Bond} reaches a value which is considered
+ * "final", determined by `Bond#isDone` being implemented and `true`. Precisely
+ * what any given {@link Bond} considers final depends entirely on the subclass of
+ * {@link Bond}; for the {@link Bond} class itself, `isDone` is left unimplemented and thus
+ * `Bond#done` is unusable. The value of the {@link Bond}, once _ready_, may
+ * be logged to the console with the {@link Bond#log} function.
+ *
+ * A {@link Bond} can provide a derivative {@link Bond} whose value reflects the "readiness"
+ * of the original, using {@link Bond#ready} and conversely {@link Bond#notReady}. This
+ * can also be queried normally with {@link Bond#isReady}.
+ *
+ * One or a number of {@link Bond}s can be converted into a single `Promise`s with the
+ * {@link Bond#promise} function.
+ *
+ * `Bonds` can be composed. {@link Bond#map} creates a new {@link Bond} whose value is a
+ * transformation. {@link Bond#all} creates a new {@link Bond} which evaluates to the array
+ * of values of each of a number of dependent {@link Bond}s. {@link Bond#mapAll} combines
+ * both. {@link Bond#reduce} allows a {@link Bond} that evaluates to array to be
+ * transformed into some other value recursively.
+ *
+ * {@link Bond#sub} forms a derivative {@link Bond} as the subscript (square-bracket
+ * indexing). {@link Bond#subscriptable} may be used to return a `Proxy` object that
+ * allows the {@link Bond} to be subscripted (square-bracket indexed) directly without
+ * need of the {@link Bond#sub} function.
+ *
+ * {@link Bond} is built to be subscripted. When subscripting, three functions are
+ * useful to implement. {@link Bond#isDone} (`undefined` in {@link Bond}) may be implemented
+ * in order to make `Bond#done` be useful. {@link Bond#initialise} is called exactly once
+ * when there becomes at least one dependent; {@link Bond#finalise} is called when there
+ * are no longer any dependents.
+ */
 export class Bond {
+	/**
+	 * Constructs a new {@link Bond} object whose value is _not ready_.
+	 *
+	 * @param {boolean} mayBeNull - `true` if this instance's value may ever
+	 * validly be `null`. If `false`, then setting this object's value to `null`
+	 * is equivalent to reseting back to being _not ready_.
+	 */
 	constructor(mayBeNull = true) {
 		this.subscribers = {};
 		this.notifies = {};
@@ -36,6 +92,27 @@ export class Bond {
 		return this.map(_ => _.toString());
 	}
 
+	/**
+	 * Provides a transparently subscriptable version of this object.
+	 *
+	 * The object that is returned from this function is a convenience `Proxy`
+	 * which acts exactly equivalent
+	 * to the original {@link Bond}, except that any subscripting of fields that are
+	 * not members of the {@link Bond} object will create a new {@link Bond} that
+	 * itself evaluates to this {@link Bond}'s value when subscripted with the same
+	 * field.
+	 *
+	 * @example
+	 * let x = (new Bond).subscriptable();
+	 * let y = x.foo;
+	 * y.log(); // nothing yet
+	 * x.changed({foo: 42, bar: 69});	// logs 42
+	 *
+	 * @param {number} depth - The maximum number of levels of subscripting that
+	 * the returned `Proxy` will support.
+	 * @return {object} `Proxy` object that acts as a subscriptable variation
+	 * for convenience.
+	 */
 	subscriptable (depth = 1) {
 		if (depth === 0)
 			return this;
@@ -70,13 +147,62 @@ export class Bond {
 		return sub;
 	}
 
+	/**
+	 * Alters this object so that it is always _ready_.
+	 *
+	 * If this object is ever {@link Bond#reset}, then it will be changed to the
+	 * value given.
+	 *
+	 * @example
+	 * let x = (new Bond).defaultTo(42);
+	 * x.log();	// 42
+	 * x.changed(69);
+	 * x.log();	// 69
+	 * x.reset();
+	 * x.log() // 42
+	 *
+	 * @param {} x - The value that this object represents if it would otherwise
+	 * be _not ready_.
+	 * @returns This (mutated) object.
+	 */
+	defaultTo (x) {
+		this._defaultTo = x;
+		if (!this._ready) {
+			this.trigger(x);
+		}
+		return this;
+	}
+
+	/**
+	 * Resets the state of this Bond into being _not ready_.
+	 *
+	 * Any functions that are registered for _notification_ (see {@link Bond#notify})
+	 * will be called if this {@link Bond} is currently _ready_.
+	 */
 	reset () {
+		if (this._defaultTo !== undefined) {
+			this.trigger(this._defaultTo);
+			return;
+		}
 		if (this._ready) {
 			this._ready = false;
 			this._value = null;
 			symbolValues(this.notifies).forEach(f => f());
 		}
 	}
+	/**
+	 * Makes the object _ready_ and sets its current value.
+	 *
+	 * Any functions that are registered for _notification_ (see {@link Bond#notify})
+	 * or are _tied_ (see {@link Bond#tie}) will be called if this {@link Bond} is not
+	 * currently _ready_ or is _ready_ but has a different value.
+	 *
+	 * This function is a no-op if the JSON representations of `v` and of the
+	 * current value, if any, are equal.
+	 *
+	 * @param {} v - The new value that this object should represent. If `undefined`
+	 * then the function does nothing.
+	 */
 	changed (v) {
 		if (typeof(v) === 'undefined') {
 			return;
@@ -88,6 +214,19 @@ export class Bond {
 			this.trigger(v);
 		}
 	}
+	/**
+	 * Makes the object _ready_ and sets its current value.
+	 *
+	 * Any functions that are registered for _notification_ (see {@link Bond#notify})
+	 * or are _tied_ (see {@link Bond#tie}) will be called if this {@link Bond} is not
+	 * currently _ready_ or is _ready_ but has a different value.
+	 *
+	 * Unlike {@link Bond#changed}, this function doesn't check equivalence
+	 * between the new value and the current value.
+	 *
+	 * @param {} v - The new value that this object should represent. If `undefined`
+	 * then the function does nothing.
+	 */
 	trigger (v) {
 		if (typeof(v) === 'undefined') {
 			console.error(`Trigger called with undefined value`);
@@ -114,9 +253,16 @@ export class Bond {
 		}
 		this._triggering = false;
 	}
-	// If you use this, you are responsible for calling drop exactly once
-	// at some point later. Some Bonds won't work properly unless you call
-	// this.
+
+	/**
+	 * Register a single dependency for this object.
+	 *
+	 * Notes that the object's value is in use, and that it should be computed.
+	 * {@link Bond} sub-classes are allowed to not work properly unless there is
+	 * at least one dependency registered.
+	 *
+	 * @see {@link Bond#initialise}, {@link Bond#finalise}.
+	 */
 	use () {
 		if (this._users == 0) {
 			this.initialise();
@@ -124,8 +270,13 @@ export class Bond {
 		this._users++;
 		return this;
 	}
-	// To be called exactly once for each time you call pick. The object won't
-	// work properly after calling this.
+
+	/**
+	 * Unregister a single dependency for this object.
+	 *
+	 * Notes that a previously registered dependency has since expired. Must be
+	 * called exactly once for each time {@link Bond#use} was called.
+	 */
 	drop () {
 		if (this._users == 0) {
 			throw `mismatched use()/drop(): drop() called once more than expected!`;
@@ -136,12 +287,50 @@ export class Bond {
 		}
 	}
 
-	// Will be called at most once. Object must work properly after this.
+	/**
+	 * Initialise the object.
+	 *
+	 * Will be called at most once before an accompanying {@link Bond#finalise}
+	 * and should initialise/open/create any resources that are required for the
+	 * sub-class to maintain its value.
+	 *
+	 * @access protected
+	 */
 	initialise () {}
-	// Will be called at most once. Object must clean up after this.
+
+	/**
+	 * Uninitialise the object.
+	 *
+	 * Will be called at most once after an accompanying {@link Bond#initialise}
+	 * and should close/finalise/drop any resources that are required for the
+	 * sub-class to maintain its value.
+	 *
+	 * @access protected
+	 */
 	finalise () {}
 
-	// must call unnotify exactly once when finished with it.
+	/**
+	 * Returns whether the object is currently in a terminal state.
+	 *
+	 * @returns {boolean} `true` when the value should be interpreted as being
+	 * in a final state.
+	 *
+	 * @access protected
+	 * @see {@link Bond#done}
+	 */
+	isDone () { return false; }
+
+	/**
+	 * Register a function to be called when the value or the _readiness_
+	 * changes.
+	 *
+	 * Calling this function already implies calling {@link Bond#use} - there
+	 * is no need to call both.
+	 *
+	 * @param {function} f - The function to be called. Takes no parameters.
+	 * @returns {Symbol} An identifier for this registration. Must be provided
+	 * to {@link Bond#unnotify} when the function no longer needs to be called.
+	 */
 	notify (f) {
 		this.use();
 		let id = Symbol();
@@ -151,43 +340,67 @@ export class Bond {
 		}
 		return id;
 	}
+
+	/**
+	 * Unregister a function previously registered with {@link Bond#notify}.
+	 *
+	 * Calling this function already implies calling {@link Bond#drop} - there
+	 * is no need to call both.
+	 *
+	 * @param {Symbol} id - The identifier returned from the corresponding
+	 * {@link Bond#notify} call.
+	 */
 	unnotify (id) {
 		delete this.notifies[id];
 		this.drop();
 	}
 
 	// must call untie exactly once when finished with it.
+	/**
+	 *
+	 */
 	tie (f) {
 		this.use();
 		let id = Symbol();
 		this.subscribers[id] = f;
 		if (this._ready) {
-			f(this._value);
+			f(this._value, id);
 		}
 		return id;
 	}
+	/**
+	 *
+	 */
 	untie (id) {
 		delete this.subscribers[id];
 		this.drop();
 	}
 
-	subscribe (f) {
-		console.warn(`Bond.subscribe is deprecated. Use Bond.tie instead.`);
-		return this.tie(f);
-	}
+	/**
+	 *
+	 */
 	isReady () { return this._ready; }
+	/**
+	 *
+	 */
 	ready () {
 		if (!this._readyBond) {
 			this._readyBond = new ReadyBond(this);
 		}
 		return this._readyBond;
 	}
+	/**
+	 *
+	 */
 	notReady () {
 		if (!this._notReadyBond) {
 			this._notReadyBond = new NotReadyBond(this);
 		}
 		return this._notReadyBond;
 	}
+	/**
+	 *
+	 */
 	then (f) {
 		this.use();
 		if (this._ready) {
@@ -198,6 +411,9 @@ export class Bond {
 		}
 		return this;
 	}
+	/**
+	 *
+	 */
 	done(f) {
 		if (this.isDone === undefined) {
 			throw 'Cannot call done() on Bond that has no implementation of isDone.';
@@ -213,11 +429,20 @@ export class Bond {
 		return this;
 	}
 
+	/**
+	 *
+	 */
 	log () { this.then(console.log); return this; }
 
+	/**
+	 *
+	 */
     map (f, outResolveDepth = 0, resolveDepth = 1) {
         return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
     }
+	/**
+	 *
+	 */
 	sub (name, outResolveDepth = 0, resolveDepth = 1) {
 		return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);
 	}
@@ -227,6 +452,9 @@ export class Bond {
 	// null iff a.length === 0
 	// f(i, a[0])[0] iff f(i, a[0])[1] === true
 	// fold(f(0, a[0]), a.mid(1)) otherwise
+	/**
+	 *
+	 */
 	reduce (accum, init) {
 		var nextItem = function (acc, rest) {
 			let next = rest.pop();
@@ -235,14 +463,23 @@ export class Bond {
 		return this.map(a => nextItem(init, a));
 	};
 
+	/**
+	 *
+	 */
 	static all(list) {
 		return new TransformBond((...args) => args, list);
 	}
 
+	/**
+	 *
+	 */
 	static mapAll(list, f, outResolveDepth = 0, resolveDepth = 1) {
 		return new TransformBond((...args) => f(...args), list, [], outResolveDepth, resolveDepth);
 	}
 
+	/**
+	 *
+	 */
 	static promise(list) {
 		return new Promise((resolve, reject) => {
 			var finished = 0;

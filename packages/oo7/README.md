@@ -30,10 +30,10 @@ work with basic values, `Promise`s and other `Bonds` abstractly.
   let t = new TimeBond;
 
   // Prints the Unix time every second.
-  t.subscribe(console.log);
+  t.tie(console.log);
 
   // Prints the formatted date every second.
-  new TransformBond(x => new Date(x), [t]).subscribe(console.log);
+  new TransformBond(x => new Date(x), [t]).tie(console.log);
 ```
 
 ## Tests
