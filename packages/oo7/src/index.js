@@ -13,8 +13,8 @@ function symbolValues(o) {
 }
 
 /**
- * An object which tracks a single, potentially variable, value. {@link Bond}s may
- * be updated to new values with {@link Bond#change} and reset to an indeterminate
+ * @summary An object which tracks a single, potentially variable, value.
+ * @description {@link Bond}s may be updated to new values with {@link Bond#change} and reset to an indeterminate
  * ("not ready") value with {@link Bond#reset}.
  *
  * {@link Bond}s track their dependents - aspects of the program, including other {@link Bond}s,
@@ -60,6 +60,10 @@ function symbolValues(o) {
  * in order to make `Bond#done` be useful. {@link Bond#initialise} is called exactly once
  * when there becomes at least one dependent; {@link Bond#finalise} is called when there
  * are no longer any dependents.
+ *
+ * _WARNING_: You should not attempt to use the `toString` function with this
+ * class. It cannot be meaningfully converted into a string, and to attempt it
+ * will give an undefined result.
  */
 export class Bond {
 	/**
@@ -110,7 +114,7 @@ export class Bond {
 	 *
 	 * @param {number} depth - The maximum number of levels of subscripting that
 	 * the returned `Proxy` will support.
-	 * @return {object} `Proxy` object that acts as a subscriptable variation
+	 * @returns {Proxy} - `Proxy` object that acts as a subscriptable variation
 	 * for convenience.
 	 */
 	subscriptable (depth = 1) {
@@ -163,7 +167,7 @@ export class Bond {
 	 *
 	 * @param {} x - The value that this object represents if it would otherwise
 	 * be _not ready_.
-	 * @returns This (mutated) object.
+	 * @returns {@link Bond} - This (mutated) object.
 	 */
 	defaultTo (x) {
 		this._defaultTo = x;
@@ -214,6 +218,7 @@ export class Bond {
 			this.trigger(v);
 		}
 	}
+
 	/**
 	 * Makes the object _ready_ and sets its current value.
 	 *
@@ -224,10 +229,11 @@ export class Bond {
 	 * Unlike {@link Bond#changed}, this function doesn't check equivalence
 	 * between the new value and the current value.
 	 *
-	 * @param {} v - The new value that this object should represent. If `undefined`
-	 * then the function does nothing.
+	 * @param {} v - The new value that this object should represent. By default,
+	 * it will reissue the current value. It is an error to call it without
+	 * an argument if it is not _ready_.
 	 */
-	trigger (v) {
+	trigger (v = this._value) {
 		if (typeof(v) === 'undefined') {
 			console.error(`Trigger called with undefined value`);
 			return;
@@ -312,7 +318,11 @@ export class Bond {
 	/**
 	 * Returns whether the object is currently in a terminal state.
 	 *
-	 * @returns {boolean} `true` when the value should be interpreted as being
+	 * _WARNING_: The output of this function should not change outside of a
+	 * value change. If it ever changes without the value changing, `trigger`
+	 * should be called to force an update.
+	 *
+	 * @returns {boolean} - `true` when the value should be interpreted as being
 	 * in a final state.
 	 *
 	 * @access protected
@@ -321,13 +331,22 @@ export class Bond {
 	isDone () { return false; }
 
 	/**
+	 * Notification callback.
+	 * @callback Bond~notifyCallback
+	 */
+
+	/**
 	 * Register a function to be called when the value or the _readiness_
 	 * changes.
 	 *
 	 * Calling this function already implies calling {@link Bond#use} - there
 	 * is no need to call both.
 	 *
-	 * @param {function} f - The function to be called. Takes no parameters.
+	 * Use this only when you need to be notified should the object be reset to
+	 * a not _ready_ state. In general you will want to use {@link Bond#tie}
+	 * instead.
+	 *
+	 * @param {Bond~notifyCallback} f - The function to be called. Takes no parameters.
 	 * @returns {Symbol} An identifier for this registration. Must be provided
 	 * to {@link Bond#unnotify} when the function no longer needs to be called.
 	 */
@@ -355,9 +374,25 @@ export class Bond {
 		this.drop();
 	}
 
-	// must call untie exactly once when finished with it.
 	/**
+	 * Tie callback.
+	 * @callback Bond~tieCallback
+	 * @param {} value - The current value to which the object just changed.
+	 * @param {Symbol} id - The identifier of the registration for this callback.
+	 */
+
+	/**
+	 * Register a function to be called when the value changes.
 	 *
+	 * Calling this function already implies calling {@link Bond#use} - there
+	 * is no need to call both.
+	 *
+	 * Unlike {@link Bond#notify}, this does not get
+	 * called should the object become reset into being not _ready_.
+	 *
+	 * @param {Bond~tieCallback} f - The function to be called.
+	 * @returns {Symbol} - An identifier for this registration. Must be provided
+	 * to {@link Bond#untie} when the function no longer needs to be called.
 	 */
 	tie (f) {
 		this.use();
@@ -368,8 +403,15 @@ export class Bond {
 		}
 		return id;
 	}
+
 	/**
+	 * Unregister a function previously registered with {@link Bond#tie}.
 	 *
+	 * Calling this function already implies calling {@link Bond#drop} - there
+	 * is no need to call both.
+	 *
+	 * @param {Symbol} id - The identifier returned from the corresponding
+	 * {@link Bond#tie} call.
 	 */
 	untie (id) {
 		delete this.subscribers[id];
@@ -377,11 +419,20 @@ export class Bond {
 	}
 
 	/**
+	 * Determine if there is a definite value that this object represents at
+	 * present.
 	 *
+	 * @returns {boolean} - `true` if there is presently a value that this object represents.
 	 */
 	isReady () { return this._ready; }
+
 	/**
+	 * Provide a {@link Bond} which represents whether this object itself represents
+	 * a particular value.
 	 *
+	 * @returns {@link Bond} - Object representing the value returned by
+	 * this {@link Bond}'s {@link Bond#isReady} result. The returned object is
+	 * itself always _ready_.
 	 */
 	ready () {
 		if (!this._readyBond) {
@@ -389,8 +440,19 @@ export class Bond {
 		}
 		return this._readyBond;
 	}
+
 	/**
+	 * Convenience function for the logical negation of {@link Bond#ready}.
 	 *
+	 * @example
+	 * // These two expressions are exactly equivalent:
+	 * bond.notReady();
+	 * bond.ready().map(_ => !_);
+	 *
+	 * @returns {@link Bond} Object representing the logical opposite
+	 * of the value returned by
+	 * this {@link Bond}'s {@link Bond#isReady} result. The returned object is
+	 * itself always _ready_.
 	 */
 	notReady () {
 		if (!this._notReadyBond) {
@@ -398,8 +460,29 @@ export class Bond {
 		}
 		return this._notReadyBond;
 	}
+
 	/**
+	 * Then callback.
+	 * @callback Bond~thenCallback
+	 * @param {} value - The current value to which the object just changed.
+	 */
+
+	/**
+	 * Register a function to be called when this object becomes _ready_.
 	 *
+	 * For an object to be considered _ready_, it must represent a definite
+	 * value. In this case, {@link Bond#isReady} will return `true`.
+	 *
+	 * If the object is already _ready_, then `f` will be called immediately. If
+	 * not, `f` will be deferred until the object assumes a value. `f` will be
+	 * called at most once.
+	 *
+	 * @param {Bond~thenCallback} f The callback to be made once the object is ready.
+	 *
+	 * @example
+	 * let x = new Bond;
+	 * x.then(console.log);
+	 * x.changed(42); // 42 is written to the console.
 	 */
 	then (f) {
 		this.use();
@@ -411,8 +494,23 @@ export class Bond {
 		}
 		return this;
 	}
+
 	/**
+	 * Register a function to be called when this object becomes _done_.
 	 *
+	 * For an object to be considered `done`, it must be _ready_ and the
+	 * function {@link Bond#isDone} should exist and return `true`.
+	 *
+	 * If the object is already _done_, then `f` will be called immediately. If
+	 * not, `f` will be deferred until the object assumes a value. `f` will be
+	 * called at most once.
+	 *
+	 * @param {Bond~thenCallback} f The callback to be made once the object is ready.
+	 *
+	 * @example
+	 * let x = new Bond;
+	 * x.then(console.log);
+	 * x.changed(42); // 42 is written to the console.
 	 */
 	done(f) {
 		if (this.isDone === undefined) {
@@ -430,21 +528,144 @@ export class Bond {
 	}
 
 	/**
+	 * Logs the current value to the console.
 	 *
+	 * @returns {@link Bond} The current object.
 	 */
 	log () { this.then(console.log); return this; }
 
 	/**
+	 * Make a new {@link Bond} which is the functional transformation of this object.
 	 *
+	 * @example
+	 * let b = new Bond;
+	 * let t = b.map(_ => _ * 2);
+	 * t.tie(console.log);
+	 * b.changed(21); // logs 42
+	 * b.changed(34.5); // logs 69
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * let t = b.map(_ => { let r = new Bond; r.changed(_ * 2); return r; });
+	 * t.tie(console.log);
+	 * b.changed(21); // logs 42
+	 * b.changed(34.5); // logs 69
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * let t = b.map(_ => { let r = new Bond; r.changed(_ * 2); return [r]; }, 1);
+	 * t.tie(console.log);
+	 * b.changed(21); // logs [42]
+	 * b.changed(34.5); // logs [69]
+	 *
+	 * @param {function} f - The transformation to apply to the value represented
+	 * by this {@link Bond}.
+	 * @param {number} outResolveDepth - The number of levels deep in any array
+	 * object values of the result of the transformation that {@link Bond} values
+	 * will be resolved.
+	 * @default 0
+	 * @returns {@link Bond} - An object representing this object's value with
+	 * the function `f` applied to it.
 	 */
-    map (f, outResolveDepth = 0, resolveDepth = 1) {
-        return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
+    map (f, outResolveDepth = 0) {
+        return new TransformBond(f, [this], [], outResolveDepth);
     }
+
 	/**
+	 * Create a new {@link Bond} which represents this object's value when
+	 * subscripted.
 	 *
+	 * @example
+	 * let b = new Bond;
+	 * let t = b.sub('foo');
+	 * t.tie(console.log);
+	 * b.changed({foo: 42}); // logs 42
+	 * b.changed({foo: 69}); // logs 69
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * let c = new Bond;
+	 * let t = b.sub(c);
+	 * t.tie(console.log);
+	 * b.changed([42, 4, 2]);
+	 * c.changed(0); // logs 42
+	 * c.changed(1); // logs 4
+	 * b.changed([68, 69, 70]); // logs 69
+	 *
+	 * @param {} name - The field or index by which to subscript this object's
+	 * represented value. May itself be a {@link Bond}, in which case, the
+	 * resolved value is used.
+	 * @param {number} outResolveDepth - The depth in any returned structure
+	 * that a {@link Bond} may be for it to be resolved.
+	 * @returns {@link Bond} - The object representing the value which is the
+	 * value represented by this object subscripted by the value represented by
+	 * `name`.
 	 */
-	sub (name, outResolveDepth = 0, resolveDepth = 1) {
-		return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);
+	sub (name, outResolveDepth = 0) {
+		return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, 1);
+	}
+
+	/**
+	 * Create a new {@link Bond} which represents the array of many objects'
+	 * representative values.
+	 *
+	 * This object will be _ready_ if and only if all objects in `list` are
+	 * themselves _ready_.
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * let c = new Bond;
+	 * let t = Bond.all([b, c]);
+	 * t.tie(console.log);
+	 * b.changed(42);
+	 * c.changed(69); // logs [42, 69]
+	 * b.changed(3); // logs [3, 69]
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * let c = new Bond;
+	 * let t = Bond.all(['a', {b, c}, 'd'], 2);
+	 * t.tie(console.log);
+	 * b.changed(42);
+	 * c.changed(69); // logs ['a', {b: 42, c: 69}, 'd']
+	 * b.changed(null); // logs ['a', {b: null, c: 69}, 'd']
+	 *
+	 * @param {array} list - An array of {@link Bond} objects, plain values or
+	 * structures (arrays/objects) which contain either of these.
+	 * @param {number} resolveDepth - The depth in a structure (array or object)
+	 * that a {@link Bond} may be in any of `list`'s items for it to be resolved.
+	 * @returns {@link Bond} - The object representing the value of the array of
+	 * each object's representative value in `list`.
+	 */
+	static all(list, resolveDepth = 1) {
+		return new TransformBond((...args) => args, list, [], 0, resolveDepth);
+	}
+
+	/**
+	 * Create a new {@link Bond} which represents a functional transformation of
+	 * many objects' representative values.
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * b.changed(23);
+	 * let c = new Bond;
+	 * c.changed(3);
+	 * let multiply = (x, y) => x * y;
+	 * // These two are exactly equivalent:
+	 * let bc = Bond.all([b, c]).map(([b, c]) => multiply(b, c));
+	 * let bc2 = Bond.mapAll([b, c], multiply);
+	 *
+	 * @param {array} list - An array of {@link Bond} objects or plain values.
+	 * @param {function} f - A function which accepts as many parameters are there
+	 * values in `list` and transforms it into a {@link Bond}, {@link Promise}
+	 * or other value.
+	 * @param {number} resolveDepth - The depth in a structure (array or object)
+	 * that a {@link Bond} may be in any of `list`'s items for it to be resolved.
+	 * @param {number} outResolveDepth - The depth in any returned structure
+	 * that a {@link Bond} may be for it to be resolved.
+	 */
+	static mapAll(list, f, outResolveDepth = 0, resolveDepth = 1) {
+		return new TransformBond((...args) => f(...args), list, [], outResolveDepth, resolveDepth);
 	}
 
 	// Takes a Bond which evaluates to a = [a[0], a[1], ...]
@@ -453,32 +674,53 @@ export class Bond {
 	// f(i, a[0])[0] iff f(i, a[0])[1] === true
 	// fold(f(0, a[0]), a.mid(1)) otherwise
 	/**
+	 * Lazily transforms the contents of this object's value when it is an array.
 	 *
+	 * This operates on a {@link Bond} which should represent an array. It
+	 * transforms this into a value based on a number of elements at the
+	 * beginning of that array using a recursive _reduce_ algorithm.
+	 *
+	 * The reduce algorithm works around an accumulator model. It begins with
+	 * the `init` value, and incremenetally accumulates
+	 * elements from the array by changing its value to one returned from the
+	 * `accum` function, when passed the current accumulator and the next value
+	 * from the array. The `accum` function may return a {@link Bond}, in which case it
+	 * will be resolved (using {@link Bond#then}) and that value used.
+	 *
+	 * The `accum` function returns a value (or a {@link Bond} which resolves to a value)
+	 * of an array with exactly two elements; the first is the new value for the
+	 * accumulator. The second is a boolean _early exit_ flag.
+	 *
+	 * Accumulation will continue until either there are no more elements in the
+	 * array to be processed, or until the _early exit_ flag is true, which ever
+	 * happens first.
+	 *
+	 * @param {function} accum - The reduce's accumulator function.
+	 * @param {} init - The initialisation value for the reduce algorithm.
+	 * @returns {} - A {@link Bond} representing `init` when the input array is empty,
+	 * otherwise the reduction of that array.
 	 */
 	reduce (accum, init) {
 		var nextItem = function (acc, rest) {
 			let next = rest.pop();
 			return Bond.promise([accum(acc, next)]).then(([[v, i]]) => i ? v : rest.length > 0 ? nextItem(v, rest) : null);
 		};
-		return this.map(a => nextItem(init, a));
+		return this.map(a => a.length > 0 ? nextItem(init, a) : init);
 	};
 
 	/**
+	 * Create a Promise which represents one or more {@link Bond}s.
 	 *
-	 */
-	static all(list) {
-		return new TransformBond((...args) => args, list);
-	}
-
-	/**
+	 * @example
+	 * let b = new Bond;
+ 	 * let p = Bond.promise([b, 42])
+	 * p.then(console.log);
+	 * b.changed(69); // logs [69, 42]
+	 * b.changed(42); // nothing.
 	 *
-	 */
-	static mapAll(list, f, outResolveDepth = 0, resolveDepth = 1) {
-		return new TransformBond((...args) => f(...args), list, [], outResolveDepth, resolveDepth);
-	}
-
-	/**
-	 *
+	 * @param {array} list - A list of values, {Promise}s or {@link Bond}s.
+	 * @returns {Promise} - A object which resolves to an array of values
+	 * corresponding to those passed in `list`.
 	 */
 	static promise(list) {
 		return new Promise((resolve, reject) => {
@@ -510,7 +752,7 @@ export class Bond {
 	}
 }
 
-export class ReadyBond extends Bond {
+class ReadyBond extends Bond {
 	constructor(b) {
 		super(false);
 
@@ -527,7 +769,7 @@ export class ReadyBond extends Bond {
 	}
 }
 
-export class NotReadyBond extends Bond {
+class NotReadyBond extends Bond {
 	constructor(b) {
 		super(false);
 
