@@ -1,5 +1,10 @@
 var defaultContext = typeof(parity) === 'undefined' ? null : parity.api;
 
+/**
+ * Set the default context under which {@link Bond} transformations run.
+ *
+ * @see {@link Bond#map} {@link Bond#mapAll} {@link TransformBond}
+ */
 export function setDefaultTransformBondContext(c) {
 	defaultContext = c;
 }
@@ -13,8 +18,8 @@ function symbolValues(o) {
 }
 
 /**
- * @summary An object which tracks a single, potentially variable, value.
- * @description {@link Bond}s may be updated to new values with {@link Bond#change} and reset to an indeterminate
+ * An object which tracks a single, potentially variable, value.
+ * {@link Bond}s may be updated to new values with {@link Bond#changed} and reset to an indeterminate
  * ("not ready") value with {@link Bond#reset}.
  *
  * {@link Bond}s track their dependents - aspects of the program, including other {@link Bond}s,
@@ -31,10 +36,10 @@ function symbolValues(o) {
  * using {@link Bond#then}, which in some sense replicates the same function in the
  * context of a `Promise`. The similar function {@link Bond#done} is also supplied which
  * executes a given function when the {@link Bond} reaches a value which is considered
- * "final", determined by `Bond#isDone` being implemented and `true`. Precisely
+ * "final", determined by {@link Bond#isDone} being implemented and `true`. Precisely
  * what any given {@link Bond} considers final depends entirely on the subclass of
- * {@link Bond}; for the {@link Bond} class itself, `isDone` is left unimplemented and thus
- * `Bond#done` is unusable. The value of the {@link Bond}, once _ready_, may
+ * {@link Bond}; for the {@link Bond} class itself, `isDone` always returns `false` and thus
+ * {@link Bond#done} is unusable. The value of the {@link Bond}, once _ready_, may
  * be logged to the console with the {@link Bond#log} function.
  *
  * A {@link Bond} can provide a derivative {@link Bond} whose value reflects the "readiness"
@@ -45,8 +50,8 @@ function symbolValues(o) {
  * {@link Bond#promise} function.
  *
  * `Bonds` can be composed. {@link Bond#map} creates a new {@link Bond} whose value is a
- * transformation. {@link Bond#all} creates a new {@link Bond} which evaluates to the array
- * of values of each of a number of dependent {@link Bond}s. {@link Bond#mapAll} combines
+ * transformation. {@link Bond.all} creates a new {@link Bond} which evaluates to the array
+ * of values of each of a number of dependent {@link Bond}s. {@link Bond.mapAll} combines
  * both. {@link Bond#reduce} allows a {@link Bond} that evaluates to array to be
  * transformed into some other value recursively.
  *
@@ -56,8 +61,8 @@ function symbolValues(o) {
  * need of the {@link Bond#sub} function.
  *
  * {@link Bond} is built to be subscripted. When subscripting, three functions are
- * useful to implement. {@link Bond#isDone} (`undefined` in {@link Bond}) may be implemented
- * in order to make `Bond#done` be useful. {@link Bond#initialise} is called exactly once
+ * useful to implement. {@link Bond#isDone} may be implemented
+ * in order to make {@link Bond#done} be useful. {@link Bond#initialise} is called exactly once
  * when there becomes at least one dependent; {@link Bond#finalise} is called when there
  * are no longer any dependents.
  *
@@ -664,8 +669,8 @@ export class Bond {
 	 * @param {number} outResolveDepth - The depth in any returned structure
 	 * that a {@link Bond} may be for it to be resolved.
 	 */
-	static mapAll(list, f, outResolveDepth = 0, resolveDepth = 1) {
-		return new TransformBond((...args) => f(...args), list, [], outResolveDepth, resolveDepth);
+	static mapAll(list, transform, outResolveDepth = 0, resolveDepth = 1) {
+		return new TransformBond(transform, list, [], outResolveDepth, resolveDepth);
 	}
 
 	// Takes a Bond which evaluates to a = [a[0], a[1], ...]
@@ -926,43 +931,82 @@ function deepUnnotify(x, ids, depthLeft) {
 	}
 }
 
+/**
+ * @summary A {@link Bond} which retains dependencies on other {@link Bond}s.
+ * @description This inherits from the {@link Bond} class, providing its full API,
+ * but also allows for dependencies to other `Bond`s to be registered. When
+ * any dependency changes value (or _readiness_), a callback is executed and
+ * is passed the new set of underlying values corresponding to each dependency.
+ *
+ * The callback is made if and only if this object is in use (i.e. {@link Bond#use}
+ * or one of its dependents has been called).
+ */
 export class ReactiveBond extends Bond {
-	constructor(a, d, execute = args => this.changed(args), mayBeNull = true, resolveDepth = 1) {
+	/**
+	 * Constructs a new object.
+	 *
+	 * @param {array} args - Each item that this object's representative value
+	 * is dependent upon, and which needs to be used by the callback function
+	 * (presumably to determine that value to be passed into {@link Bond#changed}).
+	 * @param {array} deps - {@link Bond}s or {Promise}s that the representative
+	 * value is dependent on, but which are not needed for passing into the
+	 * callback.
+	 * @param {function} execute - The callback function which is called when
+	 * any item of `args` or `deps` changes its underlying value. A value corresponding
+	 * to each item in `args` are passed to the callback:
+	 * items that are {@link Bond}s are resolved to the value they represent before
+	 * being passed into the callback `execute` function. {Promise} objects are
+	 * likewise resolved for their underlying value. Structures such as arrays
+	 * and objects are traversed recursively and likewise interpreted. Other
+	 * types are passed straight through.
+	 * The callback is only made when all items of `args` are considered _ready_.
+	 * @param {boolean} mayBeNull - Noramlly, `null` is a valid value for dependent `Bond`s
+	 * and `Promise`s to represent. Pass `false` here to disallow `null` to be
+	 * considered valid (and thus any `null` dependencies in `args` will mean that
+	 * dependency is considered not _ready_ and no callback will happen).
+	 * @defaultValue true
+	 * @param {number} resolveDepth - The maximum number of times to recurse into
+	 * arrays or objects of `args` items in searching for {@link Bond}s or {Promise}s
+	 * to resolve.
+	 * @defaultValue 1
+	 */
+	constructor(args, deps, execute = this.changed.bind(this), mayBeNull = true, resolveDepth = 1) {
 		super(mayBeNull);
 
 		this._poll = () => {
 //			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
-			if (a.every(i => isReady(i, resolveDepth))) {
+			if (args.every(i => isReady(i, resolveDepth))) {
 //				console.log(`poll: All dependencies good...`, a, resolveDepth);
-				let am = a.map(i => mapped(i, resolveDepth));
+				let mappedArgs = args.map(i => mapped(i, resolveDepth));
 //				console.log(`poll: Mapped dependencies:`, am);
-				execute.bind(this)(am);
+				execute.bind(this)(mappedArgs);
 			} else {
 //				console.log("poll: One or more dependencies undefined");
 				this.reset();
 			}
 		};
 		this._active = false;
-		this._d = d.slice();
-		this._a = a.slice();
-		this.resolveDepth = resolveDepth;
+		this._deps = deps.slice();
+		this._args = args.slice();
+		this._resolveDepth = resolveDepth;
 	}
 
 	// TODO: implement isDone.
 	initialise () {
 //		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
 		this._ids = [];
-		this._d.forEach(_=>this._ids.push(_.notify(this._poll)));
+		this._deps.forEach(_=>this._ids.push(_.notify(this._poll)));
 		var nd = 0;
-		this._a.forEach(i => { if (deepNotify(i, this._poll, this._ids, this.resolveDepth)) nd++; });
-		if (nd == 0 && this._d.length == 0) {
+		this._args.forEach(i => { if (deepNotify(i, this._poll, this._ids, this._resolveDepth)) nd++; });
+		if (nd == 0 && this._deps.length == 0) {
 			this._poll();
 		}
 	}
+
 	finalise () {
 //		console.log(`Finalising ReactiveBond with resolveDepth ${this.resolveDepth}`);
-		this._d.forEach(_=>_.unnotify(this._ids.shift()));
-		this._a.forEach(_=>deepUnnotify(_, this._ids, this.resolveDepth));
+		this._deps.forEach(_=>_.unnotify(this._ids.shift()));
+		this._args.forEach(_=>deepUnnotify(_, this._ids, this._resolveDepth));
 	}
 }
 
@@ -985,14 +1029,59 @@ export class ReactivePromise extends ReactiveBond {
 /// underlying value which is passed.
 ///
 /// we return a bond (an ongoing promise).
+/**
+ * @summary Configurable {@link Bond}-derivation representing a functional transformation
+ * of a number of other items.
+ * @description This is the underlying class which powers the {@link Bond#map} and {@link Bond#mapAll}
+ * functions; you'll generally want to use those unless there is some particular
+ * aspect of this class's configurability that you need.
+ *
+ * It is constructed with a transform function and a number of arguments; this
+ * {@link Bond} represents the result of the function when applied to those arguemnts'
+ * representative values. `Bond`s and `Promises`, are resolved automatically at
+ * a configurable depth within complex structures, both as input items and
+ * the value resulting from the transform function.
+ */
 export class TransformBond extends ReactiveBond {
-	constructor(f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true, context = defaultContext) {
-		super(a, d, function (args) {
+	/**
+	 * Constructs a new object.
+	 *
+	 * @param {function} transform - The transformation function. It is called with
+	 * values corresponding (in order) to the items of `args`. It may return a
+	 * {@link Bond}, {Promise} or plain value resolving to representative values.
+	 * @param {array} args - A list of items whose representative values should be
+	 * passed to `transform`.
+	 * @defaultValue [].
+	 * @param {array} deps - A list of {@link Bond}s on which `transform` indirectly
+	 * depends.
+	 * @defaultValue [].
+	 * @param {number} outResolveDepth - The depth in any returned structure
+	 * that a {@link Bond} may be for it to be resolved.
+	 * @defaultValue 0.
+	 * @param {number} resolveDepth - The depth in a structure (array or object)
+	 * that a {@link Bond} may be in any of `args`'s items for it to be resolved
+	 * (in place) to its representative value. Beyond this depth, {@link Bond}s amd
+	 * {Promise}s will be left alone.
+	 * @defaultValue 1.
+	 * @param {number} latched - If `false`, this object becomes _not ready_ as
+	 * long as there is an output value waiting for resolution.
+	 * @defaultValue `true`
+	 * @param {boolean} mayBeNull - If `false`, a resultant value of `null` from
+	 * `transform` causes this {@link Bond} to become _not ready_. Optional.
+	 * @defaultValue `true`
+	 * @param {object} context - The context (i.e. `this` object) that `transform`
+	 * is bound to. Optional; defaults to the value set by {@link setDefaultTransformBondContext}.
+	 * @defaultValue `null`
+	 *
+	 *
+	 */
+	constructor(transform, args = [], deps = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true, context = defaultContext) {
+		super(args, deps, function (values) {
 //			console.log(`Applying: ${JSON.stringify(args)}`);
 			this.dropOut();
-			let r = f.apply(context, args);
+			let r = transform.apply(context, values);
 			if (typeof(r) === 'undefined') {
-				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(args)}.`);
+				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(values)}.`);
 				this.reset();
 			} else if (r instanceof Promise) {
 				if (!latched) {
@@ -1001,6 +1090,9 @@ export class TransformBond extends ReactiveBond {
 				r.then(this.changed.bind(this));
 			} else if (!isPlain(r, outResolveDepth)) {
 //				console.log(`Using ReactiveBond to resolve and trigger non-plain result (at depth ${outResolveDepth})`);
+				if (!latched) {
+					this.reset();
+				}
 				this.useOut(new ReactiveBond([r], [], ([v]) => {
 //					console.log(`Resolved results: ${JSON.stringify(v)}. Triggering...`);
 					this.changed.bind(this)(v);
@@ -1028,13 +1120,22 @@ export class TransformBond extends ReactiveBond {
 
 export var testIntervals = {};
 
+/**
+ * @summary {@link Bond} object which represents the current time rounded down
+ * to the second.
+ *
+ * @example
+ * let b = new TimeBond;
+ * b.log(); // logs 1497080209000
+ * window.setTimeout(() => b.log(), 1000); // logs 1497080210000
+ */
 export class TimeBond extends Bond {
 	constructor() {
 		super();
 		this.poll();
 	}
 	poll () {
-		this.trigger(Date.now());
+		this.trigger(Math.floor(Date.now() / 1000) * 1000);
 	}
 	initialise () {
 		if (typeof(window) !== 'undefined')
