@@ -17,14 +17,11 @@ for more information on usage.
 
 ```javascript
   var oo7parity = require('oo7-parity'),
-      setupBonds = oo7parity.setupBonds,
+      bonds = oo7parity.bonds,
 	  formatBlockNumber = oo7parity.formatBlockNumber;
 
-  // We assume parity has been polluted into the global namespace.
-  parity.bonds = setupBonds(parity.api);
-
   // Prints a nicely formatted block number each time there's a new block.
-  parity.bonds.blockNumber.map(formatBlockNumber).subscribe(console.log);
+  bonds.blockNumber.map(formatBlockNumber).tie(console.log);
 ```
 
 ## Tests

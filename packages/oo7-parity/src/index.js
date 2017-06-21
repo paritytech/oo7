@@ -189,8 +189,8 @@ function createBonds(options) {
 
     bonds.time = new TimeBond;
 	// TODO: rename `height`
-	bonds.blockNumber = new TransformBond(() => api().eth.blockNumber().then(_=>+_), [], [bonds.time]);
-//	bonds.blockNumber = new TransformBond(_=>+_, [new SubscriptionBond('eth_blockNumber')]);
+	bonds.height = new TransformBond(() => api().eth.blockNumber().then(_=>+_), [], [bonds.time]);
+//	bonds.height = new TransformBond(_=>+_, [new SubscriptionBond('eth_blockNumber')]);
 //	bonds.accounts = new SubscriptionBond('eth_accounts').subscriptable();
 //	bonds.accountsInfo = new SubscriptionBond('parity_accountsInfo').subscriptable();
 //	bonds.defaultAccount = new SubscriptionBond('parity_defaultAccount').subscriptable();
@@ -200,7 +200,7 @@ function createBonds(options) {
 	Function.__proto__.bond = function(...args) { return new TransformBond(this, args); };
 	Function.__proto__.unlatchedBond = function(...args) { return new TransformBond(this, args, [], false, undefined); };
     Function.__proto__.timeBond = function(...args) { return new TransformBond(this, args, [bonds.time]); };
-    Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [bonds.blockNumber]); };
+    Function.__proto__.blockBond = function(...args) { return new TransformBond(this, args, [bonds.height]); };
 
 	let presub = function (f) {
 		return new Proxy(f, {
@@ -220,17 +220,17 @@ function createBonds(options) {
 
 	let onAccountsChanged = bonds.time; // TODO: more accurate notification
 	let onHardwareAccountsChanged = bonds.time; // TODO: more accurate notification
-	let onHeadChanged = bonds.blockNumber;	// TODO: more accurate notification
+	let onHeadChanged = bonds.height;	// TODO: more accurate notification
 //	let onReorg = undefined;	// TODO make more accurate.
 	let onSyncingChanged = bonds.time;
 	let onAuthoringDetailsChanged = bonds.time;
 	let onPeerNetChanged = bonds.time; // TODO: more accurate notification
 	let onPendingChanged = bonds.time; // TODO: more accurate notification
 	let onUnsignedChanged = bonds.time; // TODO: more accurate notification
-	let onAutoUpdateChanged = bonds.blockNumber;
+	let onAutoUpdateChanged = bonds.height;
 
 	// eth_
-	bonds.height = bonds.blockNumber;
+	bonds.blockNumber = bonds.height;
 	bonds.blockByNumber = (x => new TransformBond(x => api().eth.getBlockByNumber(x), [x], []).subscriptable());// TODO: chain reorg that includes number x
 	bonds.blockByHash = (x => new TransformBond(x => api().eth.getBlockByHash(x), [x]).subscriptable());
 	bonds.findBlock = (hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
@@ -238,7 +238,7 @@ function createBonds(options) {
 		: api().eth.getBlockByHash(hashOrNumber),
 		[hashOrNumberBond], [/*onReorg*/]).subscriptable());// TODO: chain reorg that includes number x, if x is a number
 	bonds.blocks = presub(bonds.findBlock);
-	bonds.block = bonds.blockByNumber(bonds.blockNumber);	// TODO: DEPRECATE AND REMOVE
+	bonds.block = bonds.blockByNumber(bonds.height);	// TODO: DEPRECATE AND REMOVE
 	bonds.head = new TransformBond(() => api().eth.getBlockByNumber('latest'), [], [onHeadChanged]).subscriptable();// TODO: chain reorgs
 	bonds.author = new TransformBond(() => api().eth.coinbase(), [], [onAccountsChanged]);
 	bonds.accounts = new TransformBond(a => a.map(util.toChecksumAddress), [new TransformBond(() => api().eth.accounts(), [], [onAccountsChanged])]).subscriptable();
@@ -297,7 +297,7 @@ function createBonds(options) {
 	bonds.gasPriceHistogram = new TransformBond(() => api().parity.gasPriceHistogram(), [], [onHeadChanged]).subscriptable();
 	bonds.accountsInfo = new TransformBond(() => api().parity.accountsInfo(), [], [onAccountsChanged]).subscriptable(2);
 	bonds.hardwareAccountsInfo = new TransformBond(() => api().parity.hardwareAccountsInfo(), [], [onHardwareAccountsChanged]).subscriptable(2);
-	bonds.mode = new TransformBond(() => api().parity.mode(), [], [bonds.blockNumber]);
+	bonds.mode = new TransformBond(() => api().parity.mode(), [], [bonds.height]);
 
 	// ...authoring
 	bonds.defaultExtraData = new TransformBond(() => api().parity.defaultExtraData(), [], [onAuthoringDetailsChanged]);
@@ -371,7 +371,7 @@ function createBonds(options) {
 					let f = (addr, ...fargs) => call(addr, i, fargs, options)
 						.then(rets => rets.map((r, o) => cleanup(r, i.outputs[o].type, api)))
 						.then(unwrapIfOne);
-					return new TransformBond(f, [address, ...args], [bonds.blockNumber]).subscriptable();	// TODO: should be subscription on contract events
+					return new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();	// TODO: should be subscription on contract events
 				};
 				r[i.name] = (i.inputs.length === 0) ? memoized(f) : (i.inputs.length === 1) ? presub(f) : f;
 			}
@@ -387,7 +387,7 @@ function createBonds(options) {
 					let args = i.args.map((v, index) => v === null ? fargs[index] : typeof(v) === 'function' ? v(fargs[index]) : v);
 					return call(addr, c, args, options).then(unwrapIfOne);
 				};
-				return new TransformBond(f, [address, ...args], [bonds.blockNumber]).subscriptable();	// TODO: should be subscription on contract events
+				return new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();	// TODO: should be subscription on contract events
 			};
 			r[i.name] = (i.args.length === 1) ? presub(f) : f;
 		});
@@ -480,7 +480,7 @@ function createBonds(options) {
 							e.log = l;
 							return e;
 						}));
-					}, [address, indexed], [bonds.blockNumber]).subscriptable();
+					}, [address, indexed], [bonds.height]).subscriptable();
 				};
 			}
 		});
@@ -525,6 +525,42 @@ function createBonds(options) {
 		[address, bonds.badges], [], 2
 	).map(all => all.filter(_=>_.certified));
 
+	bonds.tokens = new TransformBond(n => {
+		var ret = [];
+		for (var i = 0; i < +n; ++i) {
+			let id = i;
+			ret.push(Bond.all([
+					bonds.tokenreg.token(id),
+					bonds.tokenreg.meta(id, 'IMG'),
+					bonds.tokenreg.meta(id, 'CAPTION')
+				]).map(([[addr, tla, base, name, owner], img, caption]) => ({
+					id,
+					tla,
+					base,
+					name,
+					img,
+					caption,
+					token: bonds.makeContract(addr, TokenABI)
+				}))
+			);
+		}
+		return ret;
+	}, [bonds.tokenreg.tokenCount()], [], 1);
+
+	bonds.tokensOf = address => new TransformBond(
+		(addr, bads) => bads.map(b => ({
+			balance: b.token.balanceOf(addr),
+			token: b.token,
+			id: b.id,
+			name: b.name,
+			tla: b.tla,
+			base: b.base,
+			img: b.img,
+			caption: b.caption,
+		})),
+		[address, bonds.tokens], [], 2
+	).map(all => all.filter(_=>_.balance.gt(0)));
+
 	bonds.namesOf = address => new TransformBond((reg, addr, accs) => ({
 		owned: accs[addr] ? accs[addr].name : null,
 		registry: reg || null
@@ -547,9 +583,12 @@ export const bonds = createBonds(options);
 export const asciiToHex = Parity.Api.util.asciiToHex;
 export const bytesToHex = Parity.Api.util.bytesToHex;
 export const hexToAscii = Parity.Api.util.hexToAscii;
-export const isAddressValid = Parity.Api.util.isAddressValid;
-export const sha3 = Parity.Api.util.sha3;
-export const toChecksumAddress = Parity.Api.util.toChecksumAddress;
+export const isAddressValid = h => h instanceof Bond ? h.map(Parity.Api.util.isAddressValid) : Parity.Api.util.sha3(h);
+export const toChecksumAddress = h => h instanceof Bond ? h.map(Parity.Api.util.toChecksumAddress) : Parity.Api.util.sha3(h);
+export const sha3 = h => h instanceof Bond ? h.map(Parity.Api.util.sha3) : Parity.Api.util.sha3(h);
+
+export const isOwned = addr => Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);
+export const isNotOwned = addr => Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) === -1);
 
 // Deprecated.
 export { abiPolyfill };
