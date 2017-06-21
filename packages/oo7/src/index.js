@@ -46,7 +46,7 @@ function symbolValues(o) {
  * of the original, using {@link Bond#ready} and conversely {@link Bond#notReady}. This
  * can also be queried normally with {@link Bond#isReady}.
  *
- * One or a number of {@link Bond}s can be converted into a single `Promise`s with the
+ * One or a number of {@link Bond}s can be converted into a single {Promise} with the
  * {@link Bond#promise} function.
  *
  * `Bonds` can be composed. {@link Bond#map} creates a new {@link Bond} whose value is a
@@ -60,7 +60,7 @@ function symbolValues(o) {
  * allows the {@link Bond} to be subscripted (square-bracket indexed) directly without
  * need of the {@link Bond#sub} function.
  *
- * {@link Bond} is built to be subscripted. When subscripting, three functions are
+ * {@link Bond} is built to be subclassed. When subclassing, three functions are
  * useful to implement. {@link Bond#isDone} may be implemented
  * in order to make {@link Bond#done} be useful. {@link Bond#initialise} is called exactly once
  * when there becomes at least one dependent; {@link Bond#finalise} is called when there
@@ -970,8 +970,10 @@ export class ReactiveBond extends Bond {
 	 * to resolve.
 	 * @defaultValue 1
 	 */
-	constructor(args, deps, execute = this.changed.bind(this), mayBeNull = true, resolveDepth = 1) {
+	constructor(args, deps, execute, mayBeNull = true, resolveDepth = 1) {
 		super(mayBeNull);
+
+		execute = execute || this.changed.bind(this);
 
 		this._poll = () => {
 //			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
