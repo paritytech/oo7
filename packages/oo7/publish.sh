@@ -1,9 +1,7 @@
 #!/bin/bash
 
-../oo7/prep.sh remote
+../oo7/prepublish.sh
 npm publish
-../oo7/prep.sh local
-
-../oo7/bump.sh
+../oo7/postpublish.sh
 
 
