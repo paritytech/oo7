@@ -1,6 +1,6 @@
 {
   "name": "oo7-parity",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "The Parity Bond API",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
