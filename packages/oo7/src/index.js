@@ -576,6 +576,10 @@ export class Bond {
         return new TransformBond(f, [this], [], outResolveDepth);
     }
 
+	mapEach(f) {
+		return this.map(x => x.map(f), 1);
+	}
+
 	/**
 	 * Create a new {@link Bond} which represents this object's value when
 	 * subscripted.
