@@ -9,7 +9,8 @@
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
     "compile": "babel --presets es2015,react -d lib/ src/",
-    "prepublish": "npm run compile"
+    "prepublish": "../oo7/prepublish.sh && npm run compile",
+    "postpublish": "../oo7/postpublish.sh"
   },
   "repository": {
     "type": "git",
