@@ -1,6 +1,6 @@
 #!/bin/bash
 
-deps=(`cat deps`)
+deps=(`cat .deps`)
 mode=$1
 
 for pkg in $deps; do
