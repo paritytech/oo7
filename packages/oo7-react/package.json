@@ -24,7 +24,7 @@
   ],
   "author": "Parity Technologies <admin@parity.io> (https://parity.io/)",
   "license": "Apache-2.0",
-  "bugs":{
+  "bugs": {
     "url": "https://github.com/ethcore/oo7-react/issues"
   },
   "homepage": "https://github.com/ethcore/oo7-react#readme",
