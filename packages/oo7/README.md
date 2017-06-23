@@ -47,6 +47,20 @@ work with basic values, `Promise`s and other `Bonds` abstractly.
 In lieu of a formal styleguide, take care to maintain the existing coding style.
 Add unit tests for any new or changed functionality. Lint and test your code.
 
+For development, a number of git hooks are provides that allow you to ensure tightly
+couple packages remain locally referenced at development time and switched to the
+proper version at commit/publish time. Simply copy all files from hooks into the git
+hook path:
+
+   cp hooks/* .git/hooks
+
+NPM's publishing functionality automatically ensures packages reference the latest
+of their dependencies in the tightly-coupled group, and bumps the patch version after
+publication.
+
+For all of this to work, ensure this, `oo7-parity`, `oo7-react` and `parity-reactive-ui`
+all exist in the same parent directory.
+
 ## Release History
 
 * 0.1.2
