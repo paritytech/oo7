@@ -583,8 +583,8 @@ export const bonds = createBonds(options);
 export const asciiToHex = Parity.Api.util.asciiToHex;
 export const bytesToHex = Parity.Api.util.bytesToHex;
 export const hexToAscii = Parity.Api.util.hexToAscii;
-export const isAddressValid = h => h instanceof Bond ? h.map(Parity.Api.util.isAddressValid) : Parity.Api.util.sha3(h);
-export const toChecksumAddress = h => h instanceof Bond ? h.map(Parity.Api.util.toChecksumAddress) : Parity.Api.util.sha3(h);
+export const isAddressValid = h => h instanceof Bond ? h.map(Parity.Api.util.isAddressValid) : Parity.Api.util.isAddressValid(h);
+export const toChecksumAddress = h => h instanceof Bond ? h.map(Parity.Api.util.toChecksumAddress) : Parity.Api.util.toChecksumAddress(h);
 export const sha3 = h => h instanceof Bond ? h.map(Parity.Api.util.sha3) : Parity.Api.util.sha3(h);
 
 export const isOwned = addr => Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);
