@@ -576,6 +576,21 @@ export class Bond {
         return new TransformBond(f, [this], [], outResolveDepth);
     }
 
+	/**
+	 * Create a new {@link Bond} which represents this object's array value with
+	 * its elements transformed by a function.
+	 *
+	 * @example
+	 * let b = new Bond;
+	 * let t = b.mapEach(_ => _ * 2);
+	 * t.tie(console.log);
+	 * b.changed([1, 2, 3]); // logs [2, 4, 6]
+	 * b.changed([21]); // logs [42]
+	 *
+	 * @param {function} f - The transformation to apply to each element.
+	 * @returns The new {@link Bond} object representing the element-wise
+	 * Transformation.
+	 */
 	mapEach(f) {
 		return this.map(x => x.map(f), 1);
 	}
