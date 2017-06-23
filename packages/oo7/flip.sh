@@ -9,7 +9,5 @@ if [[ $mode == "local" || $mode == "l" ]] ; then
 else
 	new="^$depversion"
 fi
-cp -f package.json package.json.old
 cmd="s/\"$pkg\": \".*\"/\"$pkg\": \"$new\"/"
-sed "$cmd" <package.json.old >package.json
-
+sed "$cmd" <package.json >package.json.new && mv package.json.new package.json
