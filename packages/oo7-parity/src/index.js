@@ -10,12 +10,9 @@ export function setupBonds(_api = parity.api) {
 	return createBonds({ api: _api });
 }
 
-function defaultTransport() {
-	var transport;
-
-	// Check to see if there's already a parity object injected in window.
+function injectedTransport() {
 	if (window && window.parity && window.parity.api.transport._url) {
-		transport = new Parity.Api.Transport.Http(
+		return new Parity.Api.Transport.Http(
 			window.parity.api.transport._url[0] === '/'
 				? window.location.protocol + '//' + window.location.host + window.parity.api.transport._url
 			: window.parity.api.transport._url.contains('://')
@@ -23,6 +20,14 @@ function defaultTransport() {
 				: window.location.href + window.parity.api.transport._url
 		);
 	}
+	return null;
+}
+
+function defaultTransport() {
+	var transport;
+
+	// Check to see if there's already a parity object injected in window.
+	transport = injectedTransport();
 
 	// Fallback to localhost:8545
 	if (!transport) {
@@ -577,8 +582,9 @@ function createBonds(options) {
 	return bonds;
 }
 
-export var options = { api: new Parity.Api(defaultTransport()) };
-export const bonds = createBonds(options);
+const t = injectedTransport();
+export var options = t ? { api: new Parity.Api(t) } : null;
+export const bonds = options ? createBonds(options) : null;
 
 export const asciiToHex = Parity.Api.util.asciiToHex;
 export const bytesToHex = Parity.Api.util.bytesToHex;
