@@ -727,10 +727,10 @@ export class Bond {
 	reduce (accum, init) {
 		var nextItem = function (acc, rest) {
 			let next = rest.pop();
-			return Bond.promise([accum(acc, next)]).then(([[v, i]]) => i ? v : rest.length > 0 ? nextItem(v, rest) : null);
+			return accum(acc, next).map(([v, i]) => i ? v : rest.length > 0 ? nextItem(v, rest) : null);
 		};
 		return this.map(a => a.length > 0 ? nextItem(init, a) : init);
-	};
+	}
 
 	/**
 	 * Create a Promise which represents one or more {@link Bond}s.
@@ -764,7 +764,7 @@ export class Bond {
 			};
 
 			list.forEach((v, i) => {
-				if (v instanceof Bond) {
+				if (Bond.instanceOf(v)) {
 					v.then(x => done(i, x));
 				} else if (v instanceof Promise) {
 					v.then(x => done(i, x), reject);
@@ -773,6 +773,14 @@ export class Bond {
 				}
 			});
 		});
+	}
+
+	/**
+	 * Duck-typed alternative to `instanceof Bond`, when multiple instantiations
+	 * of `Bond` may be available.
+	 */
+	static instanceOf(b) {
+		return typeof(b) === 'object' && b !== null && typeof(b.reset) === 'function' && typeof(b.changed) === 'function';
 	}
 }
 
@@ -812,7 +820,7 @@ class NotReadyBond extends Bond {
 
 function isReady(x, depthLeft) {
 	if (typeof(x) === 'object' && x !== null)
-		if (x instanceof Bond)
+		if (Bond.instanceOf(x))
 			return x._ready;
 		else if (x instanceof Promise)
 		  	return typeof(x._value) !== 'undefined';
@@ -828,7 +836,7 @@ function isReady(x, depthLeft) {
 
 function isPlain(x, depthLeft) {
 	if (typeof(x) === 'object' && x !== null)
-		if (x instanceof Bond)
+		if (Bond.instanceOf(x))
 			return false;
 		else if (x instanceof Promise)
 		  	return false;
@@ -846,9 +854,9 @@ function isArrayWithNonPlainItems(x, depthLeft) {
 	return depthLeft > 0 &&
 		x.constructor === Array &&
 		(
-			(depthLeft == 1 && x.findIndex(i => i instanceof Bond || i instanceof Promise) != -1)
+			(depthLeft == 1 && x.findIndex(i => Bond.instanceOf(i) || i instanceof Promise) != -1)
 		||
-			(depthLeft > 1 && x.findIndex(i => i instanceof Bond || i instanceof Promise || i instanceof Array || i instanceof Object) != -1)
+			(depthLeft > 1 && x.findIndex(i => Bond.instanceOf(i) || i instanceof Promise || i instanceof Array || i instanceof Object) != -1)
 		);
 }
 
@@ -856,9 +864,9 @@ function isObjectWithNonPlainItems(x, depthLeft) {
 	return depthLeft > 0 &&
 		x.constructor === Object &&
 		(
-			(depthLeft == 1 && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise) != -1)
+			(depthLeft == 1 && Object.keys(x).findIndex(i => Bond.instanceOf(x[i]) || x[i] instanceof Promise) != -1)
 		||
-			(depthLeft > 1 && Object.keys(x).findIndex(i => x[i] instanceof Bond || x[i] instanceof Promise || x[i] instanceof Array || x[i] instanceof Object) != -1)
+			(depthLeft > 1 && Object.keys(x).findIndex(i => Bond.instanceOf(x[i]) || x[i] instanceof Promise || x[i] instanceof Array || x[i] instanceof Object) != -1)
 		);
 }
 
@@ -868,7 +876,7 @@ function mapped(x, depthLeft) {
 	}
 //	console.log(`x info: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}; depthLeft: ${depthLeft}`);
 	if (typeof(x) === 'object' && x !== null) {
-		if (x instanceof Bond) {
+		if (Bond.instanceOf(x)) {
 			if (x._ready !== true) {
 				throw `Internal error: Unready Bond being mapped`;
 			}
@@ -907,7 +915,7 @@ function mapped(x, depthLeft) {
 function deepNotify(x, poll, ids, depthLeft) {
 //	console.log(`Setitng up deep notification on object: ${JSON.stringify(x)} - ${typeof(x)}/${x === null}/${x.constructor.name} (depthLeft: ${depthLeft})`);
 	if (typeof(x) === 'object' && x !== null) {
-		if (x instanceof Bond) {
+		if (Bond.instanceOf(x)) {
 			ids.push(x.notify(poll));
 			return true;
 		} else if (x instanceof Promise) {
@@ -931,7 +939,7 @@ function deepNotify(x, poll, ids, depthLeft) {
 
 function deepUnnotify(x, ids, depthLeft) {
 	if (typeof(x) === 'object' && x !== null) {
-		if (x instanceof Bond) {
+		if (Bond.instanceOf(x)) {
 			x.unnotify(ids.shift());
 			return true;
 		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
