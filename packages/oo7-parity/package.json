@@ -1,6 +1,6 @@
 {
   "name": "oo7-parity",
-  "version": "0.6.7",
+  "version": "0.6.10",
   "description": "The Parity Bond API",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
@@ -32,7 +32,7 @@
   "dependencies": {
     "@parity/parity.js": "^1.7.82",
     "bignumber.js": "^4.0.0",
-    "oo7": "^0.5.4"
+    "oo7": "^0.5.6"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
