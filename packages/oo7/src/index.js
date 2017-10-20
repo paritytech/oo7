@@ -104,7 +104,7 @@ export class Bond {
 		// Our currently resolved value, if any.
 		this._value = null;
 		// Is the value in the middle of having an update triggered?
-		this._triggering = false;
+		this._triggering = null;
 
 		// Is it valid to resolve to `null`? By default it is value.
 		this._mayBeNull = mayBeNull;
@@ -157,7 +157,7 @@ export class Bond {
 		if (depth === 0)
 			return this;
 
-		return new Proxy(this, {
+		let r = new Proxy(this, {
 			// We proxy the get object field:
 		    get (receiver, name) {
 				// Skip the magic proxy and just interpret directly if the field
@@ -190,6 +190,7 @@ export class Bond {
 				return receiver.sub(name).subscriptable(depth - 1);
 		    }
 		});
+		return r;
 	}
 
 	// Check to see if there's a symbolic reference for a Bond.
@@ -292,11 +293,11 @@ export class Bond {
 			return;
 		}
 		// Cannot trigger as a recourse to an existing trigger.
-		if (typeof(this._triggering) !== 'undefined') {
-			console.error(`Trigger cannot be called while already triggering.`, this._triggering, newValue);
+		if (this._triggering !== null) {
+			console.error(`Trigger cannot be called while already triggering.`, this._triggering.becoming, newValue);
 			return;
 		}
-		this._triggering = newValue;
+		this._triggering = { becoming: newValue };
 
 		if (!this._mayBeNull && newValue === null) {
 			this.reset();
@@ -312,7 +313,7 @@ export class Bond {
 			});
 			this._thens = [];
 		}
-		this._triggering = undefined;
+		this._triggering = null;
 	}
 
 	/**
@@ -1151,7 +1152,7 @@ export class ReactiveBond extends Bond {
 	 * @defaultValue 1
 	 */
 	constructor (
-		arguments,
+		args,
 		dependencies,
 		execute,
 		mayBeNull = true,
@@ -1163,9 +1164,9 @@ export class ReactiveBond extends Bond {
 
 		this._notified = () => {
 //			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
-			if (arguments.every(item => isReady(item, resolveDepth))) {
+			if (args.every(item => isReady(item, resolveDepth))) {
 //				console.log(`poll: All dependencies good...`, a, resolveDepth);
-				let resolvedArgs = arguments.map(argument =>
+				let resolvedArgs = args.map(argument =>
 					resolved(argument, resolveDepth)
 				);
 //				console.log(`poll: Mapped dependencies:`, am);
@@ -1177,7 +1178,7 @@ export class ReactiveBond extends Bond {
 		};
 		this._active = false;
 		this._dependencies = dependencies.slice();
-		this._arguments = arguments.slice();
+		this._args = args.slice();
 		this._resolveDepth = resolveDepth;
 	}
 
@@ -1189,9 +1190,9 @@ export class ReactiveBond extends Bond {
 			this._notifyKeys.push(dependency.notify(this._notified))
 		);
 
-		// true if any of our arguments are/contain Bonds/Promises.
+		// true if any of our args are/contain Bonds/Promises.
 		var active = false;
-		this._arguments.forEach(argument => {
+		this._args.forEach(argument => {
 			if (deepNotify(
 				argument,
 				this._notified,
@@ -1202,7 +1203,7 @@ export class ReactiveBond extends Bond {
 			}
 		});
 
-		// no active arguments, no dependencies - nothing will happen. make the
+		// no active args, no dependencies - nothing will happen. make the
 		// _notified call now.
 		if (!active && this._dependencies.length == 0) {
 			this._notified();
@@ -1214,24 +1215,24 @@ export class ReactiveBond extends Bond {
 		this._dependencies.forEach(dependency =>
 			dependency.unnotify(this._notifyKeys.shift())
 		);
-		this._arguments.forEach(argument =>
+		this._args.forEach(argument =>
 			deepUnnotify(argument, this._notifyKeys, this._resolveDepth)
 		);
 	}
 }
 
 // Exactly like ReactiveBond, except only calls `execute` once. Further changes
-// to members of `arguments` or `dependencies` have no effect.
+// to members of `args` or `dependencies` have no effect.
 export class ReactivePromise extends ReactiveBond {
 	constructor (
-		arguments,
+		args,
 		dependencies,
 		execute = args => this.changed(args),
 		mayBeNull = true,
 		resolveDepth = 1
 	) {
 		var done = false;
-		super(arguments, dependencies, resolvedArguments => {
+		super(args, dependencies, resolvedArguments => {
 			if (!done) {
 				done = true;
 				execute.bind(this)(resolvedArguments);
@@ -1253,7 +1254,7 @@ export class ReactivePromise extends ReactiveBond {
  * functions; you'll generally want to use those unless there is some particular
  * aspect of this class's configurability that you need.
  *
- * It is constructed with a transform function and a number of arguments; this
+ * It is constructed with a transform function and a number of args; this
  * {@link Bond} represents the result of the function when applied to those arguemnts'
  * representative values. `Bond`s and `Promises`, are resolved automatically at
  * a configurable depth within complex structures, both as input items and
@@ -1266,7 +1267,7 @@ export class TransformBond extends ReactiveBond {
 	 * @param {function} transform - The transformation function. It is called with
 	 * values corresponding (in order) to the items of `args`. It may return a
 	 * {@link Bond}, {Promise} or plain value resolving to representative values.
-	 * @param {array} arguments - A list of items whose representative values should be
+	 * @param {array} args - A list of items whose representative values should be
 	 * passed to `transform`.
 	 * @defaultValue [].
 	 * @param {array} dependencies - A list of {@link Bond}s on which `transform` indirectly
@@ -1292,7 +1293,7 @@ export class TransformBond extends ReactiveBond {
 	 */
 	constructor (
 		transform,
-		arguments = [],
+		args = [],
 		dependencies = [],
 		outResolveDepth = 0,
 		resolveDepth = 1,
@@ -1300,8 +1301,8 @@ export class TransformBond extends ReactiveBond {
 		mayBeNull = true,
 		context = defaultContext
 	) {
-		super(arguments, dependencies, function (resolvedArguments) {
-//			console.log(`Applying: ${JSON.stringify(arguments)}`);
+		super(args, dependencies, function (resolvedArguments) {
+//			console.log(`Applying: ${JSON.stringify(args)}`);
 			// Cancel any previous result-resolving.
 			this.dropOut();
 
