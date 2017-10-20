@@ -5,9 +5,17 @@ const Parity = require('@parity/parity.js');
 import { abiPolyfill, RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
 	BadgeRegABI, TokenRegABI, BadgeABI, TokenABI } from './abis.js';
 
-// DEPRECATED. TODO: REMOVE
+// DEPRECATED. TODO: REMOVE IN 1.7
 export function setupBonds(_api = parity.api) {
 	return createBonds({ api: _api });
+}
+
+export function asciiToHex(s) {
+	var r = '0x'
+	for (var i = 0; i < s.length; ++i) {
+		r += ('0' + s.charCodeAt(i).toString(16)).substr(-2);
+	}
+	return r;
 }
 
 function injectedTransport() {
@@ -51,6 +59,7 @@ function createBonds(options) {
 	const util = Parity.Api.util;
 
 	// Deprecated - remove once all code moved over to avoid parity.api.abi.
+	// TODO: Remove in 1.7
 	if (!api().abi) {
 		api().abi = abiPolyfill();
 	}
@@ -97,7 +106,7 @@ function createBonds(options) {
 	class Signature extends ReactivePromise {
 		constructor(message, from) {
 			super([message, from], [], ([message, from]) => {
-				api().parity.postSign(from, util.asciiToHex(message))
+				api().parity.postSign(from, asciiToHex(message))
 					.then(signerRequestId => {
 						this.trigger({requested: signerRequestId});
 				    	return api().pollMethod('parity_checkRequest', signerRequestId);
@@ -595,7 +604,6 @@ const t = injectedTransport();
 export var options = t ? { api: new Parity.Api(t) } : null;
 export const bonds = options ? createBonds(options) : null;
 
-export const asciiToHex = Parity.Api.util.asciiToHex;
 export const bytesToHex = Parity.Api.util.bytesToHex;
 export const hexToAscii = Parity.Api.util.hexToAscii;
 export const isAddressValid = h => Bond.instanceOf(h) ? h.map(Parity.Api.util.isAddressValid) : Parity.Api.util.isAddressValid(h);
