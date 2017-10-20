@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const ReadyBond = require('./readyBond');
-const NotReadyBond = require('./notReadyBond');
-
 var subscripted = {};
 // Any names which should never be subscripted.
 const reservedNames = { toJSON: true, toString: true };
@@ -644,6 +641,7 @@ export class Bond {
 	 * the function `f` applied to it.
 	 */
     map (transform, outResolveDepth = 0) {
+		const TransformBond = require('./transformBond');
         return new TransformBond(transform, [this], [], outResolveDepth);
     }
 
@@ -697,6 +695,7 @@ export class Bond {
 	 * `name`.
 	 */
 	sub (name, outResolveDepth = 0) {
+		const TransformBond = require('./transformBond');
 		return new TransformBond(
 			(object, field) => object[field],
 			[this, name],
@@ -739,6 +738,7 @@ export class Bond {
 	 * each object's representative value in `list`.
 	 */
 	static all(list, resolveDepth = 1) {
+		const TransformBond = require('./transformBond');
 		return new TransformBond((...args) => args, list, [], 0, resolveDepth);
 	}
 
@@ -766,6 +766,7 @@ export class Bond {
 	 * that a {@link Bond} may be for it to be resolved.
 	 */
 	static mapAll(list, transform, outResolveDepth = 0, resolveDepth = 1) {
+		const TransformBond = require('./transformBond');
 		return new TransformBond(transform, list, [], outResolveDepth, resolveDepth);
 	}
 
@@ -874,6 +875,5 @@ export class Bond {
 		);
 	}
 }
-
 
 module.exports = Bond;

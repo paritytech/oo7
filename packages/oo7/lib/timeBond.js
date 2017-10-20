@@ -14,7 +14,7 @@
 
 const Bond = require('./bond');
 
-var testIntervals = {};
+var privateTestIntervals = {};
 
 /**
  * @summary {@link Bond} object which represents the current time rounded down
@@ -37,21 +37,21 @@ class TimeBond extends Bond {
 		if (typeof(window) !== 'undefined')
 			this.interval = window.setInterval(this.poll.bind(this), 1000);
 		else {
-			this.interval = Object.keys(testIntervals).length + 1;
-			testIntervals[this.interval] = this.poll.bind(this);
+			this.interval = Object.keys(privateTestIntervals).length + 1;
+			privateTestIntervals[this.interval] = this.poll.bind(this);
 		}
 	}
 	finalise () {
 		if (typeof(window) !== 'undefined')
 			window.clearInterval(this.interval);
 		else {
-			if (!testIntervals[this.interval])
+			if (!privateTestIntervals[this.interval])
 				throw `finalise() called multiple time on same timer!`;
-			delete testIntervals[this.interval];
+			delete privateTestIntervals[this.interval];
 		}
 	}
-}
 
-TimeBond.testIntervals = testIntervals;
+	static testIntervals () { return privateTestIntervals; }
+}
 
 module.exports = TimeBond;

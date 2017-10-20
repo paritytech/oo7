@@ -37,28 +37,6 @@ function isReady(resolvable, depthLeft) {
 		return true;
 }
 
-/* Determines whether a `value` is not a {@link Bond} or
- * a {@link Promise}, nor a possibly recursive structure that contains such
- * a thing up to a depth `depthLeft` into it.
- */
-function isPlain(value, depthLeft) {
-	if (typeof(value) === 'object' && value !== null)
-		if (Bond.instanceOf(value))
-			return false;
-		else if (value instanceof Promise)
-		  	return false;
-		else if (depthLeft > 0 && value.constructor === Array)
-			return value.every(index => isPlain(index, depthLeft - 1));
-		else if (depthLeft > 0 && value.constructor === Object)
-			return Object.keys(value).every(key =>
-				isPlain(value[key], depthLeft - 1)
-			);
-		else
-			return true;
-	else
-		return true;
-}
-
 /* Determines whether a `value` is an array which has at least one item which is
  * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
  * than 1, another array or object. Returns `false` if `depthLeft` is zero.
