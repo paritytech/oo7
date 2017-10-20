@@ -17,6 +17,10 @@ function symbolValues(o) {
 	return Object.getOwnPropertySymbols(o).map(k => o[k]);
 }
 
+function equivalent(a, b) {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /**
  * An object which tracks a single, potentially variable, value.
  * {@link Bond}s may be updated to new values with {@link Bond#changed} and reset to an indeterminate
@@ -79,26 +83,51 @@ export class Bond {
 	 * is equivalent to reseting back to being _not ready_.
 	 */
 	constructor(mayBeNull = true) {
-		this.subscribers = {};
-		this.notifies = {};
-		this.thens = [];
+		// Functions that should execute whenever we resolve to a new, "ready"
+		// value. They are passed the new value as a single parameter.
+		// Each function is mapped to from a `Symbol`, which can be used to
+		// remove it.
+		this._subscribers = {};
+		// Equivalent to `_subscribers`, except that after executing, the
+		// function is removed from this array. No mapping is provided so they
+		// cannot be removed except by triggering.
+		this._thens = [];
+		// Functions that should execute whenever either the resolved value
+		// changes, or our readiness changes. No parameters are passed.
+		// Each function is mapped to from a `Symbol`, which can be used to
+		// remove it.
+		this._notifies = {};
+
+		// Are we resolved to a value at all. If `false`, we are not yet
+		// resolved to a value and `_value` is meaningless.
 		this._ready = false;
+		// Our currently resolved value, if any.
 		this._value = null;
-		this.mayBeNull = mayBeNull;
-		this._users = 0;
+		// Is the value in the middle of having an update triggered?
 		this._triggering = false;
-//		return this.subscriptable();
+
+		// Is it valid to resolve to `null`? By default it is value.
+		this._mayBeNull = mayBeNull;
+
+		// The reference count of the number of dependents. If zero, then there
+		// is no need to go to any effort to track changes. This is used for
+		// specialisations where tracking changes requires holding or managing
+		// resources.
+		// This is never smaller but can be larger than the total number of
+		// callbacks registered between `_subscribers`, `_thens` and
+		// `_notifies`.
+		this._users = 0;
 	}
 
 	toString () {
-//		console.log(`Converting Bond to string: ${JSON.stringify(this)}`)
-		let s = Symbol();
+		// Bonds make little sense as strings, and our subscripting trick (where
+		// we are able to use Bonds as keys) only works if we can coerce into a
+		// string. We store the reverse lookup (symbol -> Bond) in a global
+		// table `subscripted` so that it can be retrieved while interpreting
+		// the subscript in the code Proxy code found in `subscriptable`.
+		let s = Symbol("Bond");
 		subscripted[s] = this;
 		return s;
-	}
-
-	mapToString () {
-		return this.map(_ => _.toString());
 	}
 
 	/**
@@ -123,34 +152,52 @@ export class Bond {
 	 * for convenience.
 	 */
 	subscriptable (depth = 1) {
+		// No subscripting at all if depth is 0.
+		// We will recurse if > 1.
 		if (depth === 0)
 			return this;
-		var r = new Proxy(this, {
+
+		return new Proxy(this, {
+			// We proxy the get object field:
 		    get (receiver, name) {
-//				console.log(`subscriptable.get: ${JSON.stringify(receiver)}, ${JSON.stringify(name)}, ${JSON.stringify(receiver)}: ${typeof(name)}, ${typeof(receiver[name])}`);
-				if ((typeof(name) === 'string' || typeof(name) === 'number') && (reservedNames[name] || typeof(receiver[name]) !== 'undefined')) {
+				// Skip the magic proxy and just interpret directly if the field
+				// name is a string/number and it's either an extent key in the
+				// underlying `Bond` or it's a reserved field name (e.g. toString).
+				if (
+					(typeof(name) === 'string' || typeof(name) === 'number')
+				&&
+					(reservedNames[name] || typeof(receiver[name]) !== 'undefined')
+				) {
 					return receiver[name];
-				} else if (typeof(name) === 'symbol') {
-					if (Bond.knowSymbol(name)) {
-						return receiver.sub(Bond.fromSymbol(name)).subscriptable(depth - 1);
+				}
+
+				// If it's a symbolic key, then it's probably a `Bond` symbolified
+				// in our toString function. Look it up in the global Bond symbol
+				// table and recurse into one less depth.
+				if (typeof(name) === 'symbol') {
+					if (Bond._knowSymbol(name)) {
+						return receiver
+							.sub(Bond._fromSymbol(name))
+							.subscriptable(depth - 1);
 					} else {
 //						console.warn(`Unknown symbol given`);
 						return null;
 					}
-				} else {
-//					console.log(`Subscripting: ${JSON.stringify(name)}`)
-					return receiver.sub(name).subscriptable(depth - 1);
 				}
+//				console.log(`Subscripting: ${JSON.stringify(name)}`)
+				// Otherwise fall back with a simple subscript and recurse
+				// back with one less depth.
+				return receiver.sub(name).subscriptable(depth - 1);
 		    }
 		});
-//		r.toString = Bond.prototype.toString.bind(this);
-		return r;
 	}
 
-	static knowSymbol (name) {
+	// Check to see if there's a symbolic reference for a Bond.
+	static _knowSymbol (name) {
 		return !!subscripted[name];
 	}
-	static fromSymbol (name) {
+	// Lookup a symbolic Bond reference and remove it from the global table.
+	static _fromSymbol (name) {
 		let sub = subscripted[name];
 		delete subscripted[name];
 		return sub;
@@ -174,10 +221,10 @@ export class Bond {
 	 * be _not ready_.
 	 * @returns {@link Bond} - This (mutated) object.
 	 */
-	defaultTo (x) {
-		this._defaultTo = x;
+	defaultTo (_defaultValue) {
+		this._defaultTo = _defaultValue;
 		if (!this._ready) {
-			this.trigger(x);
+			this.trigger(_defaultValue);
 		}
 		return this;
 	}
@@ -196,7 +243,7 @@ export class Bond {
 		if (this._ready) {
 			this._ready = false;
 			this._value = null;
-			symbolValues(this.notifies).forEach(f => f());
+			symbolValues(this._notifies).forEach(callback => callback());
 		}
 	}
 	/**
@@ -212,15 +259,15 @@ export class Bond {
 	 * @param {} v - The new value that this object should represent. If `undefined`
 	 * then the function does nothing.
 	 */
-	changed (v) {
-		if (typeof(v) === 'undefined') {
+	changed (newValue) {
+		if (typeof(newValue) === 'undefined') {
 			return;
 		}
 //		console.log(`maybe changed (${this._value} -> ${v})`);
-		if (!this.mayBeNull && v === null) {
+		if (!this._mayBeNull && newValue === null) {
 			this.reset();
-		} else if (!this._ready || JSON.stringify(v) !== JSON.stringify(this._value)) {
-			this.trigger(v);
+		} else if (!this._ready || !equivalent(newValue, this._value)) {
+			this.trigger(newValue);
 		}
 	}
 
@@ -238,31 +285,34 @@ export class Bond {
 	 * it will reissue the current value. It is an error to call it without
 	 * an argument if it is not _ready_.
 	 */
-	trigger (v = this._value) {
-		if (typeof(v) === 'undefined') {
+	trigger (newValue = this._value) {
+		// Cannot trigger to an undefined value (just reset it or call with `null`).
+		if (typeof(newValue) === 'undefined') {
 			console.error(`Trigger called with undefined value`);
 			return;
 		}
-		if (this._triggering) {
-			console.error(`Trigger cannot be called while already triggering.`);
+		// Cannot trigger as a recourse to an existing trigger.
+		if (typeof(this._triggering) !== 'undefined') {
+			console.error(`Trigger cannot be called while already triggering.`, this._triggering, newValue);
 			return;
 		}
-		this._triggering = true;
-		if (!this.mayBeNull && v === null) {
+		this._triggering = newValue;
+
+		if (!this._mayBeNull && newValue === null) {
 			this.reset();
 		} else {
 //			console.log(`firing (${JSON.stringify(v)})`);
 			this._ready = true;
-			this._value = v;
-			symbolValues(this.notifies).forEach(f => f());
-			symbolValues(this.subscribers).forEach(f => f(this._value));
-			this.thens.forEach(f => {
-				f(this._value);
+			this._value = newValue;
+			symbolValues(this._notifies).forEach(callback => callback());
+			symbolValues(this._subscribers).forEach(callback => callback(this._value));
+			this._thens.forEach(callback => {
+				callback(this._value);
 				this.drop();
 			});
-			this.thens = [];
+			this._thens = [];
 		}
-		this._triggering = false;
+		this._triggering = undefined;
 	}
 
 	/**
@@ -355,12 +405,12 @@ export class Bond {
 	 * @returns {Symbol} An identifier for this registration. Must be provided
 	 * to {@link Bond#unnotify} when the function no longer needs to be called.
 	 */
-	notify (f) {
+	notify (callback) {
 		this.use();
 		let id = Symbol();
-		this.notifies[id] = f;
+		this._notifies[id] = callback;
 		if (this._ready) {
-			f();
+			callback();
 		}
 		return id;
 	}
@@ -375,7 +425,7 @@ export class Bond {
 	 * {@link Bond#notify} call.
 	 */
 	unnotify (id) {
-		delete this.notifies[id];
+		delete this._notifies[id];
 		this.drop();
 	}
 
@@ -399,12 +449,12 @@ export class Bond {
 	 * @returns {Symbol} - An identifier for this registration. Must be provided
 	 * to {@link Bond#untie} when the function no longer needs to be called.
 	 */
-	tie (f) {
+	tie (callback) {
 		this.use();
 		let id = Symbol();
-		this.subscribers[id] = f;
+		this._subscribers[id] = callback;
 		if (this._ready) {
-			f(this._value, id);
+			callback(this._value, id);
 		}
 		return id;
 	}
@@ -419,7 +469,7 @@ export class Bond {
 	 * {@link Bond#tie} call.
 	 */
 	untie (id) {
-		delete this.subscribers[id];
+		delete this._subscribers[id];
 		this.drop();
 	}
 
@@ -489,13 +539,13 @@ export class Bond {
 	 * x.then(console.log);
 	 * x.changed(42); // 42 is written to the console.
 	 */
-	then (f) {
+	then (callback) {
 		this.use();
 		if (this._ready) {
-			f(this._value);
+			callback(this._value);
 			this.drop();
 		} else {
-			this.thens.push(f);
+			this._thens.push(callback);
 		}
 		return this;
 	}
@@ -517,18 +567,18 @@ export class Bond {
 	 * x.then(console.log);
 	 * x.changed(42); // 42 is written to the console.
 	 */
-	done(f) {
+	done (callback) {
 		if (this.isDone === undefined) {
 			throw 'Cannot call done() on Bond that has no implementation of isDone.';
 		}
 		var id;
-		let h = s => {
-			if (this.isDone(s)) {
-				f(s);
+		let cleanupCallback = newValue => {
+			if (this.isDone(newValue)) {
+				callback(newValue);
 				this.untie(id);
 			}
 		};
-		id = this.tie(h);
+		id = this.tie(cleanupCallback);
 		return this;
 	}
 
@@ -538,6 +588,16 @@ export class Bond {
 	 * @returns {@link Bond} The current object.
 	 */
 	log () { this.then(console.log); return this; }
+
+	/**
+	 * Maps the represented value to a string.
+	 *
+	 * @returns {@link Bond} A new {link Bond} which represents the `toString`
+	 * function on whatever value this {@link Bond} represents.
+	 */
+	mapToString () {
+		return this.map(_ => _.toString());
+	}
 
 	/**
 	 * Make a new {@link Bond} which is the functional transformation of this object.
@@ -572,8 +632,8 @@ export class Bond {
 	 * @returns {@link Bond} - An object representing this object's value with
 	 * the function `f` applied to it.
 	 */
-    map (f, outResolveDepth = 0) {
-        return new TransformBond(f, [this], [], outResolveDepth);
+    map (transform, outResolveDepth = 0) {
+        return new TransformBond(transform, [this], [], outResolveDepth);
     }
 
 	/**
@@ -591,8 +651,8 @@ export class Bond {
 	 * @returns The new {@link Bond} object representing the element-wise
 	 * Transformation.
 	 */
-	mapEach(f) {
-		return this.map(x => x.map(f), 1);
+	mapEach(transform) {
+		return this.map(item => item.map(transform), 1);
 	}
 
 	/**
@@ -626,7 +686,13 @@ export class Bond {
 	 * `name`.
 	 */
 	sub (name, outResolveDepth = 0) {
-		return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, 1);
+		return new TransformBond(
+			(object, field) => object[field],
+			[this, name],
+			[],
+			outResolveDepth,
+			1
+		);
 	}
 
 	/**
@@ -727,9 +793,15 @@ export class Bond {
 	reduce (accum, init) {
 		var nextItem = function (acc, rest) {
 			let next = rest.pop();
-			return accum(acc, next).map(([v, i]) => i ? v : rest.length > 0 ? nextItem(v, rest) : null);
+			return accum(acc, next).map(([result, finished]) =>
+				finished
+				? result
+				: rest.length > 0
+				? nextItem(result, rest)
+				: null
+			);
 		};
-		return this.map(a => a.length > 0 ? nextItem(init, a) : init);
+		return this.map(array => array.length > 0 ? nextItem(init, a) : init);
 	}
 
 	/**
@@ -749,27 +821,30 @@ export class Bond {
 	static promise(list) {
 		return new Promise((resolve, reject) => {
 			var finished = 0;
-			var l = [];
-			l.length = list.length;
+			var resolved = [];
+			resolved.length = list.length;
 
-			let done = (i, v) => {
+			let done = (index, value) => {
 //				console.log(`done ${i} ${v}`);
-				l[i] = v;
+				resolved[index] = value;
 				finished++;
 //				console.log(`finished ${finished}; l.length ${l.length}`);
-				if (finished === l.length) {
+				if (finished === resolved.length) {
 //					console.log(`resolving with ${l}`);
-					resolve(l);
+					resolve(resolved);
 				}
 			};
 
-			list.forEach((v, i) => {
-				if (Bond.instanceOf(v)) {
-					v.then(x => done(i, x));
-				} else if (v instanceof Promise) {
-					v.then(x => done(i, x), reject);
+			list.forEach((unresolvedObject, index) => {
+				if (Bond.instanceOf(unresolvedObject)) {
+					// unresolvedObject is a Bond.
+					unresolvedObject.then(value => done(index, value));
+				} else if (unresolvedObject instanceof Promise) {
+					// unresolvedObject is a Promise.
+					unresolvedObject.then(value => done(index, value), reject);
 				} else {
-					done(i, v);
+					// unresolvedObject is actually just a normal value.
+					done(index, unresolvedObject);
 				}
 			});
 		});
@@ -780,155 +855,225 @@ export class Bond {
 	 * of `Bond` may be available.
 	 */
 	static instanceOf(b) {
-		return typeof(b) === 'object' && b !== null && typeof(b.reset) === 'function' && typeof(b.changed) === 'function';
+		return (
+			typeof(b) === 'object'
+			&& b !== null
+			&& typeof(b.reset) === 'function'
+			&& typeof(b.changed) === 'function'
+		);
 	}
 }
 
+/**
+ * Derivative {@link Bond} representing the readiness of another {@link Bond}.
+ */
 class ReadyBond extends Bond {
-	constructor(b) {
+	constructor(targetBond) {
 		super(false);
 
-		this._poll = () => this.changed(b._ready);
-		this._b = b;
+		this._poll = () => this.changed(targetBond._ready);
+		this._targetBond = targetBond;
 	}
 
 	initialise () {
-		this._id = this._b.notify(this._poll);
+		this._notifyId = this._targetBond.notify(this._poll);
 		this._poll();
 	}
+
 	finalise () {
-		this._b.unnotify(this._id);
+		this._targetBond.unnotify(this._notifyId);
 	}
 }
 
+/**
+ * Derivative {@link Bond} representing the non-readiness of another {@link Bond}.
+ */
 class NotReadyBond extends Bond {
-	constructor(b) {
+	constructor(targetBond) {
 		super(false);
 
-		this._poll = () => this.changed(!b._ready);
-		this._b = b;
+		this._poll = () => this.changed(!targetBond._ready);
+		this._targetBond = targetBond;
 	}
 
 	initialise () {
-		this._id = this._b.notify(this._poll);
+		this._notifyId = this._targetBond.notify(this._poll);
 		this._poll();
 	}
+
 	finalise () {
-		this._b.unnotify(this._id);
+		this._targetBond.unnotify(this._notifyId);
 	}
 }
 
-function isReady(x, depthLeft) {
-	if (typeof(x) === 'object' && x !== null)
-		if (Bond.instanceOf(x))
-			return x._ready;
-		else if (x instanceof Promise)
-		  	return typeof(x._value) !== 'undefined';
-		else if (depthLeft > 0 && x.constructor === Array)
-			return x.every(i => isReady(i, depthLeft - 1));
-		else if (depthLeft > 0 && x.constructor === Object)
-			return Object.keys(x).every(k => isReady(x[k], depthLeft - 1));
+/* Determines whether a `resolvable` value is actually resolved.
+ * If true, then `resolvable` is not an unready {@link Bond} or
+ * a {@link Promise}, nor is a possibly recursive structure that contains such
+ * a thing up to a depth `depthLeft` into it.
+ */
+function isReady(resolvable, depthLeft) {
+	if (typeof(resolvable) === 'object' && resolvable !== null)
+		if (Bond.instanceOf(resolvable))
+			return resolvable._ready;
+		else if (resolvable instanceof Promise)
+		  	return typeof(resolvable._value) !== 'undefined';
+		else if (depthLeft > 0 && resolvable.constructor === Array)
+			return resolvable.every(index => isReady(index, depthLeft - 1));
+		else if (depthLeft > 0 && resolvable.constructor === Object)
+			return Object.keys(resolvable).every(key =>
+				isReady(resolvable[key], depthLeft - 1)
+			);
 		else
 			return true;
 	else
 		return true;
 }
 
-function isPlain(x, depthLeft) {
-	if (typeof(x) === 'object' && x !== null)
-		if (Bond.instanceOf(x))
+/* Determines whether a `value` is not a {@link Bond} or
+ * a {@link Promise}, nor a possibly recursive structure that contains such
+ * a thing up to a depth `depthLeft` into it.
+ */
+function isPlain(value, depthLeft) {
+	if (typeof(value) === 'object' && value !== null)
+		if (Bond.instanceOf(value))
 			return false;
-		else if (x instanceof Promise)
+		else if (value instanceof Promise)
 		  	return false;
-		else if (depthLeft > 0 && x.constructor === Array)
-			return x.every(i => isPlain(i, depthLeft - 1));
-		else if (depthLeft > 0 && x.constructor === Object)
-			return Object.keys(x).every(k => isPlain(x[k], depthLeft - 1));
+		else if (depthLeft > 0 && value.constructor === Array)
+			return value.every(index => isPlain(index, depthLeft - 1));
+		else if (depthLeft > 0 && value.constructor === Object)
+			return Object.keys(value).every(key =>
+				isPlain(value[key], depthLeft - 1)
+			);
 		else
 			return true;
 	else
 		return true;
 }
 
-function isArrayWithNonPlainItems(x, depthLeft) {
+/* Determines whether a `value` is an array which has at least one item which is
+ * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
+ * than 1, another array or object. Returns `false` if `depthLeft` is zero.
+ */
+function isArrayWithNonPlainItems(array, depthLeft) {
 	return depthLeft > 0 &&
-		x.constructor === Array &&
+		array.constructor === Array &&
 		(
-			(depthLeft == 1 && x.findIndex(i => Bond.instanceOf(i) || i instanceof Promise) != -1)
+			(depthLeft == 1 && array.findIndex(item =>
+				Bond.instanceOf(item)
+				|| item instanceof Promise
+			) != -1)
 		||
-			(depthLeft > 1 && x.findIndex(i => Bond.instanceOf(i) || i instanceof Promise || i instanceof Array || i instanceof Object) != -1)
+			(depthLeft > 1 && array.findIndex(item =>
+				Bond.instanceOf(item)
+				|| item instanceof Promise
+				|| item instanceof Array
+				|| item instanceof Object
+			) != -1)
 		);
 }
 
-function isObjectWithNonPlainItems(x, depthLeft) {
+/* Determines whether a `value` is an object which has at least one item which is
+ * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
+ * than 1, another array or object. Returns `false` if `depthLeft` is zero.
+ */
+function isObjectWithNonPlainItems(object, depthLeft) {
 	return depthLeft > 0 &&
-		x.constructor === Object &&
+		object.constructor === Object &&
 		(
-			(depthLeft == 1 && Object.keys(x).findIndex(i => Bond.instanceOf(x[i]) || x[i] instanceof Promise) != -1)
+			(depthLeft == 1 && Object.keys(object).findIndex(item =>
+				Bond.instanceOf(object[item])
+				|| object[item] instanceof Promise
+			) != -1)
 		||
-			(depthLeft > 1 && Object.keys(x).findIndex(i => Bond.instanceOf(x[i]) || x[i] instanceof Promise || x[i] instanceof Array || x[i] instanceof Object) != -1)
+			(depthLeft > 1 && Object.keys(object).findIndex(item =>
+				Bond.instanceOf(object[item])
+				|| object[item] instanceof Promise
+				|| object[item] instanceof Array
+				|| object[item] instanceof Object
+			) != -1)
 		);
 }
 
-function mapped(x, depthLeft) {
-	if (!isReady(x, depthLeft)) {
-		throw `Internal error: Unready value being mapped`;
-	}
-//	console.log(`x info: ${x} ${typeof(x)} ${x.constructor.name} ${JSON.stringify(x)}; depthLeft: ${depthLeft}`);
-	if (typeof(x) === 'object' && x !== null) {
-		if (Bond.instanceOf(x)) {
-			if (x._ready !== true) {
-				throw `Internal error: Unready Bond being mapped`;
+/* Returns the value represented by `resolvable`, resolving Bonds and
+ * Promises as necessary up to a depth of `depthLeft`.
+ */
+function resolved(resolvable, depthLeft) {
+	/*if (!isReady(resolvable, depthLeft)) {
+		throw `Internal error: Unready value being resolved`;
+	}*/
+//	console.log(`resolvable info: ${resolvable} ${typeof(resolvable)} ${resolvable.constructor.name} ${JSON.stringify(resolvable)}; depthLeft: ${depthLeft}`);
+	if (typeof(resolvable) === 'object' && resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) {
+			if (resolvable._ready !== true) {
+				throw `Internal error: Unready Bond being resolved`;
 			}
-			if (typeof(x._value) === 'undefined') {
-				throw `Internal error: Ready Bond with undefined value in mapped`;
+			if (typeof(resolvable._value) === 'undefined') {
+				throw `Internal error: Ready Bond with undefined value in resolved`;
 			}
-//			console.log(`Bond: ${JSON.stringify(x._value)}}`);
-			return x._value;
-		} else if (x instanceof Promise) {
-			if (typeof(x._value) === 'undefined') {
+//			console.log(`Bond: ${JSON.stringify(resolvable._value)}}`);
+			return resolvable._value;
+		} else if (resolvable instanceof Promise) {
+			if (typeof(resolvable._value) === 'undefined') {
 				throw `Internal error: Ready Promise has undefined value`;
 			}
-//			console.log(`Promise: ${JSON.stringify(x._value)}}`);
-			return x._value;
-		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
+//			console.log(`Promise: ${JSON.stringify(resolvable._value)}}`);
+			return resolvable._value;
+		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
 //			console.log(`Deep array...`);
-			let o = x.slice().map(i => mapped(i, depthLeft - 1));
-//			console.log(`...Deep array: ${JSON.stringify(o)}`);
-			return o;
-		} else if (isObjectWithNonPlainItems(x, depthLeft)) {
-			var o = {};
+			return resolvable.slice().map(item =>
+				resolved(item, depthLeft - 1)
+			);
+		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
+			var result = {};
 //			console.log(`Deep object...`);
-			Object.keys(x).forEach(k => { o[k] = mapped(x[k], depthLeft - 1); });
+			Object.keys(resolvable).forEach(key => {
+				result[key] = resolved(resolvable[key], depthLeft - 1);
+			});
 //			console.log(`...Deep object: ${JSON.stringify(o)}`);
-			return o;
+			return result;
 		} else {
 //			console.log(`Shallow object.`);
-			return x;
+			return resolvable;
 		}
 	} else {
 //		console.log(`Basic value.`);
-		return x;
+		return resolvable;
 	}
 }
 
-function deepNotify(x, poll, ids, depthLeft) {
-//	console.log(`Setitng up deep notification on object: ${JSON.stringify(x)} - ${typeof(x)}/${x === null}/${x.constructor.name} (depthLeft: ${depthLeft})`);
-	if (typeof(x) === 'object' && x !== null) {
-		if (Bond.instanceOf(x)) {
-			ids.push(x.notify(poll));
+/* Recurses up to `depthLeft` levels into the possibly deep structure
+ * `resolvable`, placing a notify callback `callback` onto any `Bond`s found
+ * and a then callback `callback` onto any `Promise`s found.
+ * All resultant identifiers for the `notify` callbacks are added to `notifyKeys`s in
+ * depth-first order of traveral of the possible deep structure `resolvable`.
+ *
+ * Returns `true` if there were any `Bond`s or `Promise`s encountered.
+ */
+function deepNotify(resolvable, callback, notifyKeys, depthLeft) {
+//	console.log(`Setitng up deep notification on object: ${JSON.stringify(resolvable)} - ${typeof(resolvable)}/${resolvable === null}/${resolvable.constructor.name} (depthLeft: ${depthLeft})`);
+	if (typeof(resolvable) === 'object' && resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) {
+			notifyKeys.push(resolvable.notify(callback));
 			return true;
-		} else if (x instanceof Promise) {
-			x.then(v => { x._value = v; poll(); });
+		} else if (resolvable instanceof Promise) {
+			resolvable.then(resolved => {
+				resolvable._value = resolved;
+				callback();
+			});
 			return true;
-		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
-			var r = false;
-			x.forEach(i => { r = deepNotify(i, poll, ids, depthLeft - 1) || r; });
-			return r;
-		} else if (isObjectWithNonPlainItems(x, depthLeft)) {
-			var r = false;
-			Object.keys(x).forEach(k => { r = deepNotify(x[k], poll, ids, depthLeft - 1) || r; });
-			return r;
+		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
+			var result = false;
+			resolvable.forEach(item => {
+				result = deepNotify(item, callback, notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
+		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
+			var result = false;
+			Object.keys(resolvable).forEach(key => {
+				result = deepNotify(resolvable[key], callback, notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
 		} else {
 			return false;
 		}
@@ -937,19 +1082,27 @@ function deepNotify(x, poll, ids, depthLeft) {
 	}
 }
 
-function deepUnnotify(x, ids, depthLeft) {
-	if (typeof(x) === 'object' && x !== null) {
-		if (Bond.instanceOf(x)) {
-			x.unnotify(ids.shift());
+/* Recurses up to `depthLeft` levels into the possibly deep structure
+ * `resolvable`, placing an unnotify call onto any `Bond`s found, using
+ * `notifyKeys` as the depth-first sequence of notify key identifiers.
+ */
+ function deepUnnotify(resolvable, notifyKeys, depthLeft) {
+	if (typeof(resolvable) === 'object' && resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) {
+			resolvable.unnotify(notifyKeys.shift());
 			return true;
-		} else if (isArrayWithNonPlainItems(x, depthLeft)) {
-			var r = false;
-			x.forEach(i => { r = deepUnnotify(i, ids, depthLeft - 1) || r; });
-			return r;
-		} else if (isObjectWithNonPlainItems(x, depthLeft)) {
-			var r = false;
-			Object.keys(x).forEach(k => { r = deepUnnotify(x[k], ids, depthLeft - 1) || r; });
-			return r;
+		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
+			var result = false;
+			resolvable.forEach(item => {
+				result = deepUnnotify(item, notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
+		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
+			var result = false;
+			Object.keys(resolvable).forEach(key => {
+				result = deepUnnotify(resolvable[key], notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
 		} else {
 			return false;
 		}
@@ -975,7 +1128,7 @@ export class ReactiveBond extends Bond {
 	 * @param {array} args - Each item that this object's representative value
 	 * is dependent upon, and which needs to be used by the callback function
 	 * (presumably to determine that value to be passed into {@link Bond#changed}).
-	 * @param {array} deps - {@link Bond}s or {Promise}s that the representative
+	 * @param {array} dependencies - {@link Bond}s or {Promise}s that the representative
 	 * value is dependent on, but which are not needed for passing into the
 	 * callback.
 	 * @param {function} execute - The callback function which is called when
@@ -997,56 +1150,91 @@ export class ReactiveBond extends Bond {
 	 * to resolve.
 	 * @defaultValue 1
 	 */
-	constructor(args, deps, execute, mayBeNull = true, resolveDepth = 1) {
+	constructor (
+		arguments,
+		dependencies,
+		execute,
+		mayBeNull = true,
+		resolveDepth = 1
+	) {
 		super(mayBeNull);
 
 		execute = execute || this.changed.bind(this);
 
-		this._poll = () => {
+		this._notified = () => {
 //			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
-			if (args.every(i => isReady(i, resolveDepth))) {
+			if (arguments.every(item => isReady(item, resolveDepth))) {
 //				console.log(`poll: All dependencies good...`, a, resolveDepth);
-				let mappedArgs = args.map(i => mapped(i, resolveDepth));
+				let resolvedArgs = arguments.map(argument =>
+					resolved(argument, resolveDepth)
+				);
 //				console.log(`poll: Mapped dependencies:`, am);
-				execute.bind(this)(mappedArgs);
+				execute.bind(this)(resolvedArgs);
 			} else {
 //				console.log("poll: One or more dependencies undefined");
 				this.reset();
 			}
 		};
 		this._active = false;
-		this._deps = deps.slice();
-		this._args = args.slice();
+		this._dependencies = dependencies.slice();
+		this._arguments = arguments.slice();
 		this._resolveDepth = resolveDepth;
 	}
 
 	// TODO: implement isDone.
 	initialise () {
 //		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
-		this._ids = [];
-		this._deps.forEach(_=>this._ids.push(_.notify(this._poll)));
-		var nd = 0;
-		this._args.forEach(i => { if (deepNotify(i, this._poll, this._ids, this._resolveDepth)) nd++; });
-		if (nd == 0 && this._deps.length == 0) {
-			this._poll();
+		this._notifyKeys = [];
+		this._dependencies.forEach(dependency =>
+			this._notifyKeys.push(dependency.notify(this._notified))
+		);
+
+		// true if any of our arguments are/contain Bonds/Promises.
+		var active = false;
+		this._arguments.forEach(argument => {
+			if (deepNotify(
+				argument,
+				this._notified,
+				this._notifyKeys,
+				this._resolveDepth
+			)) {
+				active = true;
+			}
+		});
+
+		// no active arguments, no dependencies - nothing will happen. make the
+		// _notified call now.
+		if (!active && this._dependencies.length == 0) {
+			this._notified();
 		}
 	}
 
 	finalise () {
 //		console.log(`Finalising ReactiveBond with resolveDepth ${this.resolveDepth}`);
-		this._deps.forEach(_=>_.unnotify(this._ids.shift()));
-		this._args.forEach(_=>deepUnnotify(_, this._ids, this._resolveDepth));
+		this._dependencies.forEach(dependency =>
+			dependency.unnotify(this._notifyKeys.shift())
+		);
+		this._arguments.forEach(argument =>
+			deepUnnotify(argument, this._notifyKeys, this._resolveDepth)
+		);
 	}
 }
 
-// Just a one-off.
+// Exactly like ReactiveBond, except only calls `execute` once. Further changes
+// to members of `arguments` or `dependencies` have no effect.
 export class ReactivePromise extends ReactiveBond {
-	constructor(a, d, execute = args => this.changed(args), mayBeNull = true, resolveDepth = 1) {
+	constructor (
+		arguments,
+		dependencies,
+		execute = args => this.changed(args),
+		mayBeNull = true,
+		resolveDepth = 1
+	) {
 		var done = false;
-		super(a, d, args => {
+		super(arguments, dependencies, resolvedArguments => {
 			if (!done) {
 				done = true;
-				execute.bind(this)(args);
+				execute.bind(this)(resolvedArguments);
 			}
 		}, mayBeNull, resolveDepth)
 	}
@@ -1078,10 +1266,10 @@ export class TransformBond extends ReactiveBond {
 	 * @param {function} transform - The transformation function. It is called with
 	 * values corresponding (in order) to the items of `args`. It may return a
 	 * {@link Bond}, {Promise} or plain value resolving to representative values.
-	 * @param {array} args - A list of items whose representative values should be
+	 * @param {array} arguments - A list of items whose representative values should be
 	 * passed to `transform`.
 	 * @defaultValue [].
-	 * @param {array} deps - A list of {@link Bond}s on which `transform` indirectly
+	 * @param {array} dependencies - A list of {@link Bond}s on which `transform` indirectly
 	 * depends.
 	 * @defaultValue [].
 	 * @param {number} outResolveDepth - The depth in any returned structure
@@ -1101,46 +1289,79 @@ export class TransformBond extends ReactiveBond {
 	 * @param {object} context - The context (i.e. `this` object) that `transform`
 	 * is bound to. Optional; defaults to the value set by {@link setDefaultTransformBondContext}.
 	 * @defaultValue `null`
-	 *
-	 *
 	 */
-	constructor(transform, args = [], deps = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true, context = defaultContext) {
-		super(args, deps, function (values) {
-//			console.log(`Applying: ${JSON.stringify(args)}`);
+	constructor (
+		transform,
+		arguments = [],
+		dependencies = [],
+		outResolveDepth = 0,
+		resolveDepth = 1,
+		latched = true,
+		mayBeNull = true,
+		context = defaultContext
+	) {
+		super(arguments, dependencies, function (resolvedArguments) {
+//			console.log(`Applying: ${JSON.stringify(arguments)}`);
+			// Cancel any previous result-resolving.
 			this.dropOut();
-			let r = transform.apply(context, values);
-			if (typeof(r) === 'undefined') {
-				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(values)}.`);
+
+			// Apply transform to the resolved argument values.
+			let result = transform.apply(context, resolvedArguments);
+
+			// Assue an undefined result means "reset".
+			if (typeof(result) === 'undefined') {
+				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(resolvedArguments)}.`);
 				this.reset();
-			} else if (r instanceof Promise) {
+			} else if (result instanceof Promise) {
+				// If we're not latching, we reset while we resolve the
+				// resultant promise.
 				if (!latched) {
 					this.reset();
 				}
-				r.then(this.changed.bind(this));
-			} else if (!isPlain(r, outResolveDepth)) {
+				// Then resolve the Promise; by calling `changed`, we recurse
+				// as necessary.
+				result.then(this.changed.bind(this));
+			} else if (!isPlain(result, outResolveDepth)) {
 //				console.log(`Using ReactiveBond to resolve and trigger non-plain result (at depth ${outResolveDepth})`);
+				// If we're not latching, we reset while we resolve the
+				// resultant Bond(s)/Promise(s).
 				if (!latched) {
 					this.reset();
 				}
-				this.useOut(new ReactiveBond([r], [], ([v]) => {
+				// Then create a new `Bond` which we own to maintain the
+				// resultant complex resolvable structure.
+				this.useOut(new ReactiveBond([result], [], ([resolvedResult]) => {
 //					console.log(`Resolved results: ${JSON.stringify(v)}. Triggering...`);
-					this.changed.bind(this)(v);
+					// Call `changed` to recurse as neccessary.
+					this.changed.bind(this)(resolvedResult);
 				}, false, outResolveDepth));
 			} else {
-				this.changed(r);
+				// Nothing special here - just call changed with the result.
+				this.changed(result);
 			}
 		}, mayBeNull, resolveDepth);
+
+		// the current Bond used to resolve the result (output) value if the
+		// result of our transform is itself a Bond.
 		this._outBond = null;
 	}
-	useOut (b) {
-		this._outBond = b.use();
+
+	// Register `newOutBond` as our result-resolving bond. Ensures it knows
+	// we depend on it via `use`.
+	useOut (newOutBond) {
+		this._outBond = newOutBond.use();
 	}
+
+	// Unregister our current result-resolving bond. Ensures it knows
+	// we no longer depend on it via `drop`.
 	dropOut () {
 		if (this._outBond !== null) {
 			this._outBond.drop();
 		}
 		this._outBond = null;
 	}
+
+	// If nobody depends on us (anymore), then drop our result-resolving Bond.
 	finalise () {
 		this.dropOut();
 		ReactiveBond.prototype.finalise.call(this);
