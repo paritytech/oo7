@@ -1,0 +1,15 @@
+{
+	"extends": ["semistandard"],
+	"parser": "babel-eslint",
+	"env": {
+		"browser": true,
+		"mocha": true,
+		"node": true
+	},
+	"globals": {
+	},
+	"rules": {
+	  "indent": ["error", "tab"],
+	  "no-tabs": 0
+	}
+}

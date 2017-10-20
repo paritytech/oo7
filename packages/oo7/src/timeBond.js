@@ -1,0 +1,57 @@
+// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+const Bond = require('./bond');
+
+var testIntervals = {};
+
+/**
+ * @summary {@link Bond} object which represents the current time rounded down
+ * to the second.
+ *
+ * @example
+ * let b = new TimeBond;
+ * b.log(); // logs 1497080209000
+ * window.setTimeout(() => b.log(), 1000); // logs 1497080210000
+ */
+class TimeBond extends Bond {
+	constructor() {
+		super();
+		this.poll();
+	}
+	poll () {
+		this.trigger(Math.floor(Date.now() / 1000) * 1000);
+	}
+	initialise () {
+		if (typeof(window) !== 'undefined')
+			this.interval = window.setInterval(this.poll.bind(this), 1000);
+		else {
+			this.interval = Object.keys(testIntervals).length + 1;
+			testIntervals[this.interval] = this.poll.bind(this);
+		}
+	}
+	finalise () {
+		if (typeof(window) !== 'undefined')
+			window.clearInterval(this.interval);
+		else {
+			if (!testIntervals[this.interval])
+				throw `finalise() called multiple time on same timer!`;
+			delete testIntervals[this.interval];
+		}
+	}
+}
+
+TimeBond.testIntervals = testIntervals;
+
+module.exports = TimeBond;

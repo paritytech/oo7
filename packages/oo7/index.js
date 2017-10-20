@@ -12,17 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const Bond = require('./bond');
-const ReactiveBond = require('./reactiveBond');
-const ReactivePromise = require('./reactivePromise');
-const TimeBond = require('./timeBond');
-const TransformBond = require('./transformBond');
+const oo7 = require('./lib');
 
-module.exports = {
-	Bond,
-	ReactiveBond,
-	ReactivePromise,
-	TimeBond,
-	TransformBond,
-	setDefaultTransformBondContext: TransformBond.setDefaultContext
-};
+module.exports = oo7;

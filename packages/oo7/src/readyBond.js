@@ -13,16 +13,24 @@
 // limitations under the License.
 
 const Bond = require('./bond');
-const ReactiveBond = require('./reactiveBond');
-const ReactivePromise = require('./reactivePromise');
-const TimeBond = require('./timeBond');
-const TransformBond = require('./transformBond');
 
-module.exports = {
-	Bond,
-	ReactiveBond,
-	ReactivePromise,
-	TimeBond,
-	TransformBond,
-	setDefaultTransformBondContext: TransformBond.setDefaultContext
-};
+/**
+ * Derivative {@link Bond} representing the readiness of another {@link Bond}.
+ */
+class ReadyBond extends Bond {
+	constructor(targetBond) {
+		super(false);
+
+		this._poll = () => this.changed(targetBond._ready);
+		this._targetBond = targetBond;
+	}
+
+	initialise () {
+		this._notifyId = this._targetBond.notify(this._poll);
+		this._poll();
+	}
+
+	finalise () {
+		this._targetBond.unnotify(this._notifyId);
+	}
+}

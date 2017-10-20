@@ -12,17 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const Bond = require('./bond');
 const ReactiveBond = require('./reactiveBond');
-const ReactivePromise = require('./reactivePromise');
-const TimeBond = require('./timeBond');
-const TransformBond = require('./transformBond');
 
-module.exports = {
-	Bond,
-	ReactiveBond,
-	ReactivePromise,
-	TimeBond,
-	TransformBond,
-	setDefaultTransformBondContext: TransformBond.setDefaultContext
-};
+// Exactly like ReactiveBond, except only calls `execute` once. Further changes
+// to members of `args` or `dependencies` have no effect.
+class ReactivePromise extends ReactiveBond {
+	constructor (
+		args,
+		dependencies,
+		execute = args => this.changed(args),
+		mayBeNull = true,
+		resolveDepth = 1
+	) {
+		var done = false;
+		super(args, dependencies, resolvedArguments => {
+			if (!done) {
+				done = true;
+				execute.bind(this)(resolvedArguments);
+			}
+		}, mayBeNull, resolveDepth)
+	}
+}
+
+module.exports = ReactivePromise;
