@@ -32,7 +32,9 @@
   "dependencies": {
     "@parity/api": "^2",
     "bignumber.js": "^4.0.0",
-    "oo7": "^0.5.6"
+  },
+  "peerDependencies": {
+    "oo7": "file:../oo7"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
