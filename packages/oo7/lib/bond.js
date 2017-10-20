@@ -77,7 +77,7 @@ function equivalent(a, b) {
  * class. It cannot be meaningfully converted into a string, and to attempt it
  * will give an undefined result.
  */
-export class Bond {
+class Bond {
 	/**
 	 * Constructs a new {@link Bond} object whose value is _not ready_.
 	 *
