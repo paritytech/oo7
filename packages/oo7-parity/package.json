@@ -11,7 +11,7 @@
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
     "compile": "babel --presets es2015 -d lib/ src/",
-    "prepublish": "../oo7/prepublish.sh && npm run compile",
+    "prepublishOnly": "../oo7/prepublish.sh && npm run compile",
     "postpublish": "../oo7/postpublish.sh"
   },
   "repository": {
@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/ethcore/oo7-parity#readme",
   "dependencies": {
-    "@parity/parity.js": "^1.7.82",
+    "@parity/api": "^2",
     "bignumber.js": "^4.0.0",
     "oo7": "^0.5.6"
   },
