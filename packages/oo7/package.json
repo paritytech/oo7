@@ -8,8 +8,7 @@
     "lib/*"
   ],
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register --reporter spec",
-    "compile": "babel -d build/ lib/"
+    "test": "mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -27,9 +26,6 @@
   },
   "homepage": "https://github.com/paritytech/oo7#readme",
   "devDependencies": {
-    "babel-cli": "^6.22.2",
-    "babel-eslint": "^8.0.0",
-    "babel-preset-env": "^1.6.0",
     "chai": "^3.5.0",
     "eslint": "^4.7.2",
     "eslint-config-semistandard": "^11.0.0",
