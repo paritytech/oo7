@@ -24,13 +24,16 @@ const ParityApi = require('@parity/api');
 const { abiPolyfill, RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI, BadgeRegABI, TokenRegABI, BadgeABI, TokenABI } = require('./abis');
 
 function defaultProvider () {
-  	if (typeof window !== 'undefined' && window.ethereum) {
-  		return window.ethereum;
-  	}
+	if (typeof window !== 'undefined' && window.ethereum) {
+		return window.ethereum;
+	}
 
-  	if (typeof window !== 'undefined' && window.parent && window.parent.ethereum) {
-  		return window.parent.ethereum;
-  	}
+	try {
+		if (typeof window !== 'undefined' && window.parent && window.parent.ethereum) {
+			return window.parent.ethereum;
+		}
+	}
+	catch (e) {}
 
 	return new ParityApi.Provider.Http('http://localhost:8545');
 }
@@ -721,44 +724,29 @@ function createBonds(options) {
 }
 
 const t = defaultProvider();
-export var options = t ? { api: new ParityApi(t) } : null;
-export const bonds = options ? createBonds(options) : null;
+var options = t ? { api: new ParityApi(t) } : null;
+const bonds = options ? createBonds(options) : null;
 
-// TODO: remove once ParityApi.util.asciiToHex works.
-export function asciiToHex(s) {
-	var r = '0x'
-	for (var i = 0; i < s.length; ++i) {
-		r += ('0' + s.charCodeAt(i).toString(16)).substr(-2);
-	}
-	return r;
-}
+const asciiToHex = ParityApi.util.asciiToHex;
+const bytesToHex = ParityApi.util.bytesToHex;
+const hexToAscii = ParityApi.util.hexToAscii;
+const isAddressValid = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.isAddressValid) : ParityApi.util.isAddressValid(h);
+const toChecksumAddress = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.toChecksumAddress) : ParityApi.util.toChecksumAddress(h);
+const sha3 = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.sha3) : ParityApi.util.sha3(h);
 
-export const bytesToHex = ParityApi.util.bytesToHex;
-export const hexToAscii = ParityApi.util.hexToAscii;
-export const isAddressValid = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.isAddressValid) : ParityApi.util.isAddressValid(h);
-export const toChecksumAddress = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.toChecksumAddress) : ParityApi.util.toChecksumAddress(h);
-export const sha3 = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.sha3) : ParityApi.util.sha3(h);
-
-export const isOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);
-export const isNotOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) === -1);
-
-// Deprecated.
-export { abiPolyfill };
-
-export { RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
-	BadgeRegABI, TokenRegABI, BadgeABI, TokenABI };
-
+const isOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);
+const isNotOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) === -1);
 
 ////
 // Parity Utilities
 
 // TODO: move to parity.js, repackage or repot.
 
-export function capitalizeFirstLetter(s) {
+function capitalizeFirstLetter(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function singleton(f) {
+function singleton(f) {
     var instance = null;
     return function() {
         if (instance === null)
@@ -767,16 +755,16 @@ export function singleton(f) {
     }
 }
 
-export const denominations = [ 'wei', 'Kwei', 'Mwei', 'Gwei', 'szabo', 'finney', 'ether', 'grand', 'Mether', 'Gether', 'Tether', 'Pether', 'Eether', 'Zether', 'Yether', 'Nether', 'Dether', 'Vether', 'Uether' ];
+const denominations = [ 'wei', 'Kwei', 'Mwei', 'Gwei', 'szabo', 'finney', 'ether', 'grand', 'Mether', 'Gether', 'Tether', 'Pether', 'Eether', 'Zether', 'Yether', 'Nether', 'Dether', 'Vether', 'Uether' ];
 
-export function denominationMultiplier(s) {
+function denominationMultiplier(s) {
     let i = denominations.indexOf(s);
     if (i < 0)
         throw new Error('Invalid denomination');
     return (new BigNumber(1000)).pow(i);
 }
 
-export function interpretRender(s, defaultDenom = 6) {
+function interpretRender(s, defaultDenom = 6) {
     try {
         let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
 		let di = m[4] ? denominations.indexOf(m[4]) : defaultDenom;
@@ -792,7 +780,7 @@ export function interpretRender(s, defaultDenom = 6) {
     }
 }
 
-export function combineValue(v) {
+function combineValue(v) {
 	let d = (new BigNumber(1000)).pow(v.denom);
 	let n = v.units;
 	if (v.decimals) {
@@ -802,26 +790,26 @@ export function combineValue(v) {
 	return new BigNumber(n).mul(d);
 }
 
-export function defDenom(v, d) {
+function defDenom(v, d) {
 	if (v.denom === null) {
 		v.denom = d;
 	}
 	return v;
 }
 
-export function formatValue(n) {
+function formatValue(n) {
 	return `${formatValueNoDenom(n)} ${denominations[n.denom]}`;
 }
 
-export function formatValueNoDenom(n) {
+function formatValueNoDenom(n) {
 	return `${n.units.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}${n.decimals ? '.' + n.decimals : ''}`;
 }
 
-export function formatToExponential(v, n) {
+function formatToExponential(v, n) {
 	return new BigNumber(v).toExponential(4);
 }
 
-export function interpretQuantity(s) {
+function interpretQuantity(s) {
     try {
         let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
         let d = denominationMultiplier(m[4] || 'ether');
@@ -839,7 +827,7 @@ export function interpretQuantity(s) {
     }
 }
 
-export function splitValue(a) {
+function splitValue(a) {
 	var i = 0;
 	var a = new BigNumber('' + a);
 	if (a.gte(new BigNumber('10000000000000000')) && a.lt(new BigNumber('100000000000000000000000')) || a.eq(0))
@@ -854,21 +842,21 @@ export function splitValue(a) {
 	return {base: a, denom: i};
 }
 
-export function formatBalance(n) {
+function formatBalance(n) {
 	let a = splitValue(n);
 //	let b = Math.floor(a.base * 1000) / 1000;
 	return `${a.base} ${denominations[a.denom]}`;
 }
 
-export function formatBlockNumber(n) {
+function formatBlockNumber(n) {
     return '#' + ('' + n).replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
-export function isNullData(a) {
+function isNullData(a) {
 	return !a || typeof(a) !== 'string' || a.match(/^(0x)?0+$/) !== null;
 }
 
-export function splitSignature (sig) {
+function splitSignature (sig) {
 	if ((sig.substr(2, 2) === '1b' || sig.substr(2, 2) === '1c') && (sig.substr(66, 2) !== '1b' && sig.substr(66, 2) !== '1c')) {
 		// vrs
 		return [sig.substr(0, 4), `0x${sig.substr(4, 64)}`, `0x${sig.substr(68, 64)}`];
@@ -878,7 +866,7 @@ export function splitSignature (sig) {
 	}
 };
 
-export function removeSigningPrefix (message) {
+function removeSigningPrefix (message) {
 	if (!message.startsWith('\x19Ethereum Signed Message:\n')) {
 		throw new Error('Invalid message - doesn\'t contain security prefix');
 	}
@@ -890,7 +878,7 @@ export function removeSigningPrefix (message) {
 	throw new Error('Invalid message - invalid security prefix');
 };
 
-export function cleanup (value, type = 'bytes32', api = parity.api) {
+function cleanup (value, type = 'bytes32', api = parity.api) {
 	// TODO: make work with arbitrary depth arrays
 	if (value instanceof Array && type.match(/bytes[0-9]+/)) {
 		// figure out if it's an ASCII string hiding in there:
@@ -912,3 +900,20 @@ export function cleanup (value, type = 'bytes32', api = parity.api) {
 	}
 	return value;
 }
+
+module.exports = {
+	// Bonds stuff
+	abiPolyfill, options, bonds, Bonds, createBonds,
+
+	// Util functions
+	asciiToHex, bytesToHex, hexToAscii, isAddressValid, toChecksumAddress, sha3,
+	isOwned, isNotOwned, capitalizeFirstLetter, singleton, denominations,
+	denominationMultiplier, interpretRender, combineValue, defDenom,
+	formatValue, formatValueNoDenom, formatToExponential, interpretQuantity,
+	splitValue, formatBalance, formatBlockNumber, isNullData, splitSignature,
+	removeSigningPrefix, cleanup,
+
+	// ABIs
+	RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
+	BadgeRegABI, TokenRegABI, BadgeABI, TokenABI
+};

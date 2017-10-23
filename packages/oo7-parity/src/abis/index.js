@@ -44,5 +44,6 @@ function abiPolyfill () {
 	};
 }
 
-module.exports = { abiPolyfill, RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI, BadgeRegABI,
-	TokenRegABI, BadgeABI, TokenABI};
+module.exports = { abiPolyfill, RegistryABI, RegistryExtras, GitHubHintABI,
+	OperationsABI, BadgeRegABI, TokenRegABI, BadgeABI, TokenABI
+};
