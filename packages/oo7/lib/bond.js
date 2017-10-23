@@ -808,9 +808,9 @@ class Bond {
 	 * @returns {@link Bond} - An object representing this object's value with
 	 * the function `f` applied to it.
 	 */
-    map (transform, outResolveDepth = 0) {
+    map (transform, outResolveDepth = 0, cache = undefined) {
 		const TransformBond = require('./transformBond');
-        return new TransformBond(transform, [this], [], outResolveDepth);
+        return new TransformBond(transform, [this], [], outResolveDepth, cache);
     }
 
 	/**
@@ -828,8 +828,8 @@ class Bond {
 	 * @returns The new {@link Bond} object representing the element-wise
 	 * Transformation.
 	 */
-	mapEach(transform) {
-		return this.map(item => item.map(transform), 1);
+	mapEach(transform, cache = undefined) {
+		return this.map(item => item.map(transform), 1, cache);
 	}
 
 	/**
@@ -862,14 +862,15 @@ class Bond {
 	 * value represented by this object subscripted by the value represented by
 	 * `name`.
 	 */
-	sub (name, outResolveDepth = 0) {
+	sub (name, outResolveDepth = 0, cache = undefined) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond(
 			(object, field) => object[field],
 			[this, name],
 			[],
 			outResolveDepth,
-			1
+			1,
+			cache
 		);
 	}
 
@@ -905,9 +906,9 @@ class Bond {
 	 * @returns {@link Bond} - The object representing the value of the array of
 	 * each object's representative value in `list`.
 	 */
-	static all(list, resolveDepth = 1) {
+	static all(list, resolveDepth = 1, cache = undefined) {
 		const TransformBond = require('./transformBond');
-		return new TransformBond((...args) => args, list, [], 0, resolveDepth);
+		return new TransformBond((...args) => args, list, [], 0, resolveDepth, cache);
 	}
 
 	/**
@@ -933,9 +934,9 @@ class Bond {
 	 * @param {number} outResolveDepth - The depth in any returned structure
 	 * that a {@link Bond} may be for it to be resolved.
 	 */
-	static mapAll(list, transform, outResolveDepth = 0, resolveDepth = 1) {
+	static mapAll(list, transform, outResolveDepth = 0, resolveDepth = 1, cache = undefined) {
 		const TransformBond = require('./transformBond');
-		return new TransformBond(transform, list, [], outResolveDepth, resolveDepth);
+		return new TransformBond(transform, list, [], outResolveDepth, resolveDepth, cache);
 	}
 
 	// Takes a Bond which evaluates to a = [a[0], a[1], ...]
@@ -970,7 +971,7 @@ class Bond {
 	 * @returns {} - A {@link Bond} representing `init` when the input array is empty,
 	 * otherwise the reduction of that array.
 	 */
-	reduce (accum, init) {
+	reduce (accum, init, cache = undefined) {
 		var nextItem = function (acc, rest) {
 			let next = rest.pop();
 			return accum(acc, next).map(([result, finished]) =>
@@ -981,7 +982,7 @@ class Bond {
 				: null
 			);
 		};
-		return this.map(array => array.length > 0 ? nextItem(init, a) : init);
+		return this.map(array => array.length > 0 ? nextItem(init, a) : init, 0, cache);
 	}
 
 	/**
