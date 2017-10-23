@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
-    "compile": "babel --presets es2015,react -d lib/ src/",
+    "compile": "babel --presets react -d lib/ src/",
     "prepublishOnly": "../oo7/prepublish.sh",
     "prepublish": "npm run compile",
     "postpublish": "../oo7/postpublish.sh"
@@ -31,12 +31,11 @@
   },
   "homepage": "https://github.com/ethcore/oo7-react#readme",
   "dependencies": {
-    "oo7": "^0.5.7",
+    "oo7": "file:../oo7",
     "react": "^15.4.2"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
-    "babel-preset-es2015": "^6.22.0",
     "babel-preset-react": "^6.22.0",
     "chai": "^3.5.0",
     "mocha": "^3.2.0"

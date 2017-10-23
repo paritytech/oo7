@@ -1,5 +1,5 @@
-import React from 'react';
-import {Bond, TimeBond, ReactiveBond, TransformBond} from 'oo7';
+const React = require('react');
+const {Bond, TimeBond, ReactiveBond, TransformBond} = require('oo7');
 
 /**
  * @summary A derivable class for creating React components that can transparently
@@ -29,7 +29,7 @@ import {Bond, TimeBond, ReactiveBond, TransformBond} from 'oo7';
  * {ReactiveComponent.componentWillUnmount} or {ReactiveComponent.receiveProps}, ensure
  * you first call the superclass implementation.
  */
-export class ReactiveComponent extends React.Component {
+class ReactiveComponent extends React.Component {
 	/**
 	 * Construct an instance of this class.
 	 *
@@ -171,7 +171,7 @@ export class ReactiveComponent extends React.Component {
  *   render () { return <Rspan>{(new TimeBond).map(_=>_.toString())}</Rspan>; }
  * }
  */
-export class Rspan extends ReactiveComponent {
+class Rspan extends ReactiveComponent {
     constructor() { super(['className', 'style', 'children']); }
 	render() {
 		return (
@@ -195,7 +195,7 @@ export class Rspan extends ReactiveComponent {
  *   render () { return <Rdiv>{(new TimeBond).map(_=>_.toString())}</Rdiv>; }
  * }
  */
-export class Rdiv extends ReactiveComponent {
+class Rdiv extends ReactiveComponent {
     constructor() { super(['className', 'style', 'children']); }
 	render() {
 		return (
@@ -214,7 +214,7 @@ export class Rdiv extends ReactiveComponent {
  * `href`, `target`, `className` and `style` props, and the child, behave as
  * expected but are {@link Bond}-aware.
  */
-export class Ra extends ReactiveComponent {
+class Ra extends ReactiveComponent {
 	constructor() {
 		super(['href', 'target', 'className', 'style', 'children']);
 	}
@@ -237,7 +237,7 @@ export class Ra extends ReactiveComponent {
  * `src`, `className` and `style` props, and the child, behave as
  * expected but are {@link Bond}-aware.
  */
-export class Rimg extends ReactiveComponent {
+class Rimg extends ReactiveComponent {
 	constructor() {
 		super(['src', 'className', 'style']);
 	}
@@ -260,7 +260,7 @@ export class Rimg extends ReactiveComponent {
  *
  * `value`, `className` and `style` props behave as expected but are {@link Bond}-aware.
  */
-export class Hash extends ReactiveComponent {
+class Hash extends ReactiveComponent {
 	constructor() {
 		super(['value', 'className', 'style']);
 	}
@@ -282,3 +282,5 @@ export class Hash extends ReactiveComponent {
 Hash.defaultProps = {
 	className: '_hash'
 };
+
+module.exports = { ReactiveComponent, Rspan, Rdiv, Ra, Rimg, Hash };
