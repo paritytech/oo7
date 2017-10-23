@@ -106,7 +106,7 @@ describe('Bond', function () {
 
 		t.trigger(42);
 		x.should.equal(42);
-		
+
 		let u = new Bond(true, 'myNumber');
 		var y = 0;
 		let b = u.tie(_ => { y = _; });
@@ -119,6 +119,38 @@ describe('Bond', function () {
 
 		t.untie(a);
 		u.untie(b);
+	});
+
+	it('should switch cache master as necessary', () => {
+		let t = new Bond(true, 'myNumber');
+		var x = 0;
+		let a = t.tie(_ => { x = _; });
+
+		t.trigger(42);
+		x.should.equal(42);
+
+		let u = new Bond(true, 'myNumber');
+		var y = 0;
+		let b = u.tie(_ => { y = _; });
+
+		y.should.equal(42);
+
+		t.trigger(69);
+		x.should.equal(69);
+		y.should.equal(69);
+
+		let v = new Bond(true, 'myNumber');
+		var z = 0;
+		let c = v.tie(_ => { z = _; });
+
+		t.untie(a);	// should result in u becoming the master bond.
+
+		u.trigger(42);
+		y.should.equal(42);
+		z.should.equal(42);
+
+		u.untie(b);
+		v.untie(c);
 	});
 });
 	// Won't work as then gets called async.

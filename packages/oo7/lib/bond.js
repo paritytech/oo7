@@ -37,13 +37,13 @@ class BondCache {
 
 		// TODO: would be nice if this were better.
 		this.sessionId = Math.floor((1 + Math.random()) * 0x100000000).toString(16).substr(1);
-		console.log('Constructing Cache. ID: ', this.sessionId);
+//		console.log('Constructing Cache. ID: ', this.sessionId);
 
 		this.storage = typeof window !== 'undefined' ? window.localStorage : backupStorage;
 	}
 
 	initialise (uuid, bond, stringify, parse) {
-		console.log('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
+//		console.log('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
 		if (!this.regs[uuid]) {
 			this.regs[uuid] = { owner: null, users: [bond], stringify, parse };
 			this.ensureActive(uuid);
@@ -51,7 +51,7 @@ class BondCache {
 			if (this.storage[key] !== undefined) {
 				bond.changed(parse(this.storage[key]));
 			}
-			console.log('Created reg', this.regs);
+//			console.log('Created reg', this.regs);
 		} else {
 			this.regs[uuid].users.push(bond);
 			let equivBond = (this.regs[uuid].owner || this.regs[uuid].users[0]);
@@ -62,7 +62,7 @@ class BondCache {
 	}
 
 	changed (uuid, value) {
-		console.log('Bond changed', this.sessionId, uuid, value, this.regs);
+//		console.log('Bond changed', this.sessionId, uuid, value, this.regs);
 		let item = this.regs[uuid];
 		if (item && this.storage['$_Bonds^' + uuid] == this.sessionId) {
 			let key = '$_Bonds.' + uuid;
@@ -74,11 +74,11 @@ class BondCache {
 				item.users.forEach(bond => bond.changed(value));
 			}
 		}
-		console.log('Bond change complete', this.regs[uuid]);
+//		console.log('Bond change complete', this.regs[uuid]);
 	}
 
 	finalise (uuid, bond) {
-		console.log('BondCache.finalise', uuid, bond, this.regs);
+//		console.log('BondCache.finalise', uuid, bond, this.regs);
 		let item = this.regs[uuid];
 		if (item.owner === bond) {
 			item.owner.finalise();
@@ -117,7 +117,7 @@ class BondCache {
 	}
 
 	onStorageChanged (e) {
-		console.log('BondCache.onStorageChanged');
+//		console.log('BondCache.onStorageChanged');
 		if (!e.key.startsWith('$_Bonds')) {
 			return;
 		}
@@ -142,7 +142,7 @@ class BondCache {
 	}
 
 	onUnload () {
-		console.log('BondCache.onUnload');
+//		console.log('BondCache.onUnload');
 		// Like drop for all items, except that we don't care about usage; we
 		// drop anyway.
 		Object.keys(this.regs).forEach(uuid => {
