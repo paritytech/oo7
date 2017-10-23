@@ -22,7 +22,8 @@ class ReactivePromise extends ReactiveBond {
 		dependencies,
 		execute = args => this.changed(args),
 		mayBeNull = true,
-		resolveDepth = 1
+		resolveDepth = 1,
+		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse }
 	) {
 		var done = false;
 		super(args, dependencies, resolvedArguments => {
@@ -30,7 +31,7 @@ class ReactivePromise extends ReactiveBond {
 				done = true;
 				execute.bind(this)(resolvedArguments);
 			}
-		}, mayBeNull, resolveDepth)
+		}, mayBeNull, resolveDepth, cache);
 	}
 }
 

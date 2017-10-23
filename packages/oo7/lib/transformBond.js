@@ -89,6 +89,7 @@ class TransformBond extends ReactiveBond {
 		dependencies = [],
 		outResolveDepth = 0,
 		resolveDepth = 1,
+		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse },
 		latched = true,
 		mayBeNull = true,
 		context = defaultContext
@@ -132,7 +133,7 @@ class TransformBond extends ReactiveBond {
 				// Nothing special here - just call changed with the result.
 				this.changed(result);
 			}
-		}, mayBeNull, resolveDepth);
+		}, mayBeNull, resolveDepth, cache);
 
 		// the current Bond used to resolve the result (output) value if the
 		// result of our transform is itself a Bond.
