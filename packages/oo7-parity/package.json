@@ -10,14 +10,14 @@
   ],
   "scripts": {
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
-    "compile": "babel --presets es2015 -d lib/ src/",
+    "compile": "babel --presets env -d lib/ src/",
     "prepublishOnly": "../oo7/prepublish.sh",
     "prepublish": "npm run compile",
     "postpublish": "../oo7/postpublish.sh"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethcore/oo7-parity.git"
+    "url": "git+https://github.com/paritytech/oo7-parity.git"
   },
   "keywords": [
     "Promise",
@@ -27,18 +27,26 @@
   "author": "Parity Technologies <admin@parity.io> (https://parity.io/)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ethcore/oo7-parity/issues"
+    "url": "https://github.com/paritytech/oo7-parity/issues"
   },
-  "homepage": "https://github.com/ethcore/oo7-parity#readme",
+  "homepage": "https://github.com/paritytech/oo7-parity#readme",
   "dependencies": {
     "@parity/api": "^2",
     "bignumber.js": "^4.0.0",
-    "oo7": "file:../oo7"
+    "oo7": "^0.5.7"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
-    "babel-preset-es2015": "^6.22.0",
+    "babel-eslint": "^8.0.0",
+    "babel-preset-env": "^1.6.0",
     "chai": "^3.5.0",
+    "eslint": "^4.7.2",
+    "eslint-config-semistandard": "^11.0.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
     "mocha": "^3.2.0"
   }
 }
