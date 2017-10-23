@@ -98,6 +98,28 @@ describe('Bond', function () {
 		// then
 		x.should.equal(42);
 	});
+
+	it('should use cache', () => {
+		let t = new Bond(true, 'myNumber');
+		var x = 0;
+		let a = t.tie(_ => { x = _; });
+
+		t.trigger(42);
+		x.should.equal(42);
+		
+		let u = new Bond(true, 'myNumber');
+		var y = 0;
+		let b = u.tie(_ => { y = _; });
+
+		y.should.equal(42);
+
+		t.trigger(69);
+		x.should.equal(69);
+		y.should.equal(69);
+
+		t.untie(a);
+		u.untie(b);
+	});
 });
 	// Won't work as then gets called async.
 	// it('should work with trivial all', () => {

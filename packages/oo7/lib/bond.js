@@ -24,6 +24,153 @@ function equivalent(a, b) {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
 
+let backupStorage = {};
+
+class BondCache {
+	constructor () {
+		if (typeof window !== 'undefined') {
+			window.addEventListener('storage', this.onStorageChanged.bind(this));
+			window.addEventListener('unload', this.onUnload.bind(this));
+		}
+
+		this.regs = {};
+
+		// TODO: would be nice if this were better.
+		this.sessionId = Math.floor((1 + Math.random()) * 0x100000000).toString(16).substr(1);
+		console.log('Constructing Cache. ID: ', this.sessionId);
+
+		this.storage = typeof window !== 'undefined' ? window.localStorage : backupStorage;
+	}
+
+	initialise (uuid, bond, stringify, parse) {
+		console.log('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
+		if (!this.regs[uuid]) {
+			this.regs[uuid] = { owner: null, users: [bond], stringify, parse };
+			this.ensureActive(uuid);
+			let key = '$_Bonds.' + uuid;
+			if (this.storage[key] !== undefined) {
+				bond.changed(parse(this.storage[key]));
+			}
+			console.log('Created reg', this.regs);
+		} else {
+			this.regs[uuid].users.push(bond);
+			let equivBond = (this.regs[uuid].owner || this.regs[uuid].users[0]);
+			if (equivBond.isReady()) {
+				bond.changed(equivBond._value);
+			}
+		}
+	}
+
+	changed (uuid, value) {
+		console.log('Bond changed', this.sessionId, uuid, value, this.regs);
+		let item = this.regs[uuid];
+		if (item && this.storage['$_Bonds^' + uuid] == this.sessionId) {
+			let key = '$_Bonds.' + uuid;
+			if (value === undefined) {
+				delete this.storage[key];
+				item.users.forEach(bond => bond.reset());
+			} else {
+				this.storage[key] = item.stringify(value);
+				item.users.forEach(bond => bond.changed(value));
+			}
+		}
+		console.log('Bond change complete', this.regs[uuid]);
+	}
+
+	finalise (uuid, bond) {
+		console.log('BondCache.finalise', uuid, bond, this.regs);
+		let item = this.regs[uuid];
+		if (item.owner === bond) {
+			item.owner.finalise();
+			item.owner = null;
+			if (item.users.length === 0) {
+				// no owner and no users. we shold be the owner in
+				// storage. if we are, remove our key to signify to other
+				// tabs we're no longer maintaining this.
+				let storageKey = '$_Bonds^' + uuid;
+				let owner = this.storage[storageKey];
+				if (owner === this.sessionId) {
+					delete this.storage[storageKey];
+				}
+				delete this.regs[uuid];
+			} else {
+				// we removed the owner and there are users, must ensure that
+				// the bond is maintained.
+				this.ensureActive(uuid);
+			}
+		} else {
+			// otherwise, just remove the exiting bond from the users.
+			item.users = item.users.filter(b => b !== bond);
+		}
+	}
+
+	ensureActive (uuid, key = '$_Bonds^' + uuid) {
+		let item = this.regs[uuid];
+		if (item && item.users.length > 0 && item.owner === null) {
+			// One that we use - adopt it if necessary.
+			if (!this.storage[key]) {
+				this.storage[key] = this.sessionId;
+				item.owner = item.users.pop();
+				item.owner.initialise();
+			}
+		}
+	}
+
+	onStorageChanged (e) {
+		console.log('BondCache.onStorageChanged');
+		if (!e.key.startsWith('$_Bonds')) {
+			return;
+		}
+		let uuid = e.key.substr(8);
+		if (e.key.startsWith('$_Bonds^')) {
+			// Owner going offline...
+			let item = this.reg[uuid];
+			if (item) {
+				this.ensureActive(uuid, e.key);
+			}
+		}
+		else if (e.key.startsWith('$_Bonds.')) {
+			// Bond changed...
+			let item = this.reg[uuid];
+			if (item) {
+				let v = item.parse(this.storage[e.key]);
+				item.users.forEach(bond => bond.changed(v));
+			} else {
+				item.users.forEach(bond => bond.reset());
+			}
+		}
+	}
+
+	onUnload () {
+		console.log('BondCache.onUnload');
+		// Like drop for all items, except that we don't care about usage; we
+		// drop anyway.
+		Object.keys(this.regs).forEach(uuid => {
+			let storageKey = '$_Bonds^' + uuid;
+			let owner = this.storage[storageKey];
+			if (owner === this.sessionId) {
+				delete this.storage[storageKey];
+			}
+		});
+		this.regs = {};
+	}
+}
+
+class NullBondCache {
+	constructor () {
+	}
+
+	initialise (uuid, bond) {
+		initialise();
+	}
+
+	finalise (uuid, bond) {
+		finalise();
+	}
+}
+
+let bondCache = typeof window === 'undefined' ? new BondCache : new BondCache;
+
 /**
  * An object which tracks a single, potentially variable, value.
  * {@link Bond}s may be updated to new values with {@link Bond#changed} and reset to an indeterminate
@@ -85,7 +232,7 @@ class Bond {
 	 * validly be `null`. If `false`, then setting this object's value to `null`
 	 * is equivalent to reseting back to being _not ready_.
 	 */
-	constructor(mayBeNull = true) {
+	constructor(mayBeNull = true, uuid = null, stringify = JSON.stringify, parse = JSON.parse) {
 		// Functions that should execute whenever we resolve to a new, "ready"
 		// value. They are passed the new value as a single parameter.
 		// Each function is mapped to from a `Symbol`, which can be used to
@@ -120,6 +267,14 @@ class Bond {
 		// callbacks registered between `_subscribers`, `_thens` and
 		// `_notifies`.
 		this._users = 0;
+
+		// The Universally Unique ID, a string used to manage caching and
+		// inter-tab result sharing.
+		this._uuid = uuid;
+		// A method for stringifying this Bond's result when using with the cache.
+		this._stringify = stringify;
+		// A method for unstringifying this Bond's result when using with the cache.
+		this._parse = parse;
 	}
 
 	toString () {
@@ -316,7 +471,12 @@ class Bond {
 			});
 			this._thens = [];
 		}
+
 		this._triggering = null;
+
+		if (this._uuid) {
+			bondCache.changed(this._uuid, newValue);
+		}
 	}
 
 	/**
@@ -330,7 +490,11 @@ class Bond {
 	 */
 	use () {
 		if (this._users === 0) {
-			this.initialise();
+			if (!this._uuid) {
+				this.initialise();
+			} else {
+				bondCache.initialise(this._uuid, this, this._stringify, this._parse);
+			}
 		}
 		this._users++;
 		return this;
@@ -348,7 +512,11 @@ class Bond {
 		}
 		this._users--;
 		if (this._users === 0) {
-			this.finalise();
+			if (!this._uuid) {
+				this.finalise();
+			} else {
+				bondCache.finalise(this._uuid, this);
+			}
 		}
 	}
 
@@ -875,5 +1043,8 @@ class Bond {
 		);
 	}
 }
+
+Bond.backupStorage = backupStorage;
+Bond.cache = bondCache;
 
 module.exports = Bond;
