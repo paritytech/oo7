@@ -46,11 +46,11 @@ class BondCache {
 //		console.log('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
 		if (!this.regs[uuid]) {
 			this.regs[uuid] = { owner: null, users: [bond], stringify, parse };
-			this.ensureActive(uuid);
 			let key = '$_Bonds.' + uuid;
 			if (this.storage[key] !== undefined) {
 				bond.changed(parse(this.storage[key]));
 			}
+			this.ensureActive(uuid);
 //			console.log('Created reg', this.regs);
 		} else {
 			this.regs[uuid].users.push(bond);
@@ -122,22 +122,22 @@ class BondCache {
 			return;
 		}
 		let uuid = e.key.substr(8);
-		if (e.key.startsWith('$_Bonds^')) {
-			// Owner going offline...
-			let item = this.reg[uuid];
-			if (item) {
-				this.ensureActive(uuid, e.key);
-			}
+		let item = this.regs[uuid];
+		if (!item) {
+			return;
 		}
-		else if (e.key.startsWith('$_Bonds.')) {
+		if (e.key[7] === '.') {
 			// Bond changed...
-			let item = this.reg[uuid];
-			if (item) {
+			if (typeof(this.storage[e.key]) === 'undefined') {
+				item.users.forEach(bond => bond.reset());
+			} else {
 				let v = item.parse(this.storage[e.key]);
 				item.users.forEach(bond => bond.changed(v));
-			} else {
-				item.users.forEach(bond => bond.reset());
 			}
+		}
+		else if (e.key[7] === '^') {
+			// Owner going offline...
+			this.ensureActive(uuid, e.key);
 		}
 	}
 
@@ -810,7 +810,7 @@ class Bond {
 	 */
     map (transform, outResolveDepth = 0, cache = undefined) {
 		const TransformBond = require('./transformBond');
-        return new TransformBond(transform, [this], [], outResolveDepth, cache);
+        return new TransformBond(transform, [this], [], outResolveDepth, 1, cache);
     }
 
 	/**
