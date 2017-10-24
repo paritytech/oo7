@@ -470,8 +470,8 @@ class Bond {
 
 		this._triggering = null;
 
-		if (this._uuid) {
-			bondCache.changed(this._uuid, newValue);
+		if (this._uuid && Bond.cache) {
+			Bond.cache.changed(this._uuid, newValue);
 		}
 	}
 
@@ -489,7 +489,7 @@ class Bond {
 			if (!this._uuid || !Bond.cache) {
 				this.initialise();
 			} else {
-				bondCache.initialise(this._uuid, this, this._stringify, this._parse);
+				Bond.cache.initialise(this._uuid, this, this._stringify, this._parse);
 			}
 		}
 		this._users++;
@@ -511,7 +511,7 @@ class Bond {
 			if (!this._uuid || !Bond.cache) {
 				this.finalise();
 			} else {
-				bondCache.finalise(this._uuid, this);
+				Bond.cache.finalise(this._uuid, this);
 			}
 		}
 	}
@@ -1042,6 +1042,6 @@ class Bond {
 }
 
 Bond.backupStorage = {};
-Bond.cache = typeof window === 'undefined' ? new BondCache(Bond.backupStorage) : new BondCache(Bond.backupStorage);
+Bond.cache = new BondCache(Bond.backupStorage);
 
 module.exports = Bond;
