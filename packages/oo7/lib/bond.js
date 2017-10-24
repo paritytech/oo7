@@ -24,10 +24,8 @@ function equivalent(a, b) {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
 
-let backupStorage = {};
-
 class BondCache {
-	constructor () {
+	constructor (backupStorage) {
 		if (typeof window !== 'undefined') {
 			window.addEventListener('storage', this.onStorageChanged.bind(this));
 			window.addEventListener('unload', this.onUnload.bind(this));
@@ -168,8 +166,6 @@ class NullBondCache {
 		finalise();
 	}
 }
-
-let bondCache = typeof window === 'undefined' ? new BondCache : new BondCache;
 
 /**
  * An object which tracks a single, potentially variable, value.
@@ -490,7 +486,7 @@ class Bond {
 	 */
 	use () {
 		if (this._users === 0) {
-			if (!this._uuid) {
+			if (!this._uuid || !Bond.cache) {
 				this.initialise();
 			} else {
 				bondCache.initialise(this._uuid, this, this._stringify, this._parse);
@@ -512,7 +508,7 @@ class Bond {
 		}
 		this._users--;
 		if (this._users === 0) {
-			if (!this._uuid) {
+			if (!this._uuid || !Bond.cache) {
 				this.finalise();
 			} else {
 				bondCache.finalise(this._uuid, this);
@@ -1045,7 +1041,7 @@ class Bond {
 	}
 }
 
-Bond.backupStorage = backupStorage;
-Bond.cache = bondCache;
+Bond.backupStorage = {};
+Bond.cache = typeof window === 'undefined' ? new BondCache(Bond.backupStorage) : new BondCache(Bond.backupStorage);
 
 module.exports = Bond;
