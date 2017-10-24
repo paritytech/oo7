@@ -2,6 +2,44 @@ const React = require('react');
 const {Bond, TimeBond, ReactiveBond, TransformBond} = require('oo7');
 
 /**
+ * React element in which app should be placed if it needs to wait for the parent
+ * frame to inject the BondCache.
+ */
+class InjectedCacheWaiter extends React.Component {
+	constructor () {
+		super();
+
+		this.state = { haveCache: window ? window.injectedBondCache ? true : null : false };
+
+		if (this.state.haveCache === null) {
+			this._timers = [
+				window.setInterval(this.checkInject.bind(this), 100),
+				window.setInterval(this.checksTimeout.bind(this), 2000)
+			];
+		}
+	}
+
+	checkInject () {
+		if (window.injectedBondCache) {
+			Bond.cache = window.injectedBondCache;
+			this._timers.forEach(window.clearInterval);
+			this.setState({haveCache: true});
+		}
+	}
+
+	checksTimeout () {
+		this._timers.forEach(window.clearInterval);
+		this.setState({haveCache: false});
+	}
+
+	render () {
+		return this.state.haveCache === null
+			? <div>Waiting for cache...</div>
+			: this.props.children;
+	}
+}
+
+/**
  * @summary A derivable class for creating React components that can transparently
  * accept deal with prop values that are {@link Bond}s.
  *
@@ -283,4 +321,6 @@ Hash.defaultProps = {
 	className: '_hash'
 };
 
-module.exports = { ReactiveComponent, Rspan, Rdiv, Ra, Rimg, Hash };
+module.exports = {
+	ReactiveComponent, Rspan, Rdiv, Ra, Rimg, Hash, InjectedCacheWaiter
+};
