@@ -13,6 +13,7 @@
 // limitations under the License.
 
 const Bond = require('./bond');
+const BondCache = require('./bondCache');
 const ReactiveBond = require('./reactiveBond');
 const ReactivePromise = require('./reactivePromise');
 const TimeBond = require('./timeBond');
@@ -20,6 +21,7 @@ const TransformBond = require('./transformBond');
 
 module.exports = {
 	Bond,
+	BondCache,
 	ReactiveBond,
 	ReactivePromise,
 	TimeBond,

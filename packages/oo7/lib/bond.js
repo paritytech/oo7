@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const BondCache = require('./bondCache');
+
 var subscripted = {};
 // Any names which should never be subscripted.
 const reservedNames = { toJSON: true, toString: true };
@@ -22,149 +24,6 @@ function symbolValues(o) {
 
 function equivalent(a, b) {
 	return JSON.stringify(a) === JSON.stringify(b);
-}
-
-class BondCache {
-	constructor (backupStorage) {
-		if (typeof window !== 'undefined') {
-			window.addEventListener('storage', this.onStorageChanged.bind(this));
-			window.addEventListener('unload', this.onUnload.bind(this));
-		}
-
-		this.regs = {};
-
-		// TODO: would be nice if this were better.
-		this.sessionId = Math.floor((1 + Math.random()) * 0x100000000).toString(16).substr(1);
-//		console.log('Constructing Cache. ID: ', this.sessionId);
-
-		this.storage = typeof window !== 'undefined' ? window.localStorage : backupStorage;
-	}
-
-	initialise (uuid, bond, stringify, parse) {
-//		console.log('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
-		if (!this.regs[uuid]) {
-			this.regs[uuid] = { owner: null, users: [bond], stringify, parse };
-			let key = '$_Bonds.' + uuid;
-			if (this.storage[key] !== undefined) {
-				bond.changed(parse(this.storage[key]));
-			}
-			this.ensureActive(uuid);
-//			console.log('Created reg', this.regs);
-		} else {
-			this.regs[uuid].users.push(bond);
-			let equivBond = (this.regs[uuid].owner || this.regs[uuid].users[0]);
-			if (equivBond.isReady()) {
-				bond.changed(equivBond._value);
-			}
-		}
-	}
-
-	changed (uuid, value) {
-//		console.log('Bond changed', this.sessionId, uuid, value, this.regs);
-		let item = this.regs[uuid];
-		if (item && this.storage['$_Bonds^' + uuid] == this.sessionId) {
-			let key = '$_Bonds.' + uuid;
-			if (value === undefined) {
-				delete this.storage[key];
-				item.users.forEach(bond => bond.reset());
-			} else {
-				this.storage[key] = item.stringify(value);
-				item.users.forEach(bond => bond.changed(value));
-			}
-		}
-//		console.log('Bond change complete', this.regs[uuid]);
-	}
-
-	finalise (uuid, bond) {
-//		console.log('BondCache.finalise', uuid, bond, this.regs);
-		let item = this.regs[uuid];
-		if (item.owner === bond) {
-			item.owner.finalise();
-			item.owner = null;
-			if (item.users.length === 0) {
-				// no owner and no users. we shold be the owner in
-				// storage. if we are, remove our key to signify to other
-				// tabs we're no longer maintaining this.
-				let storageKey = '$_Bonds^' + uuid;
-				let owner = this.storage[storageKey];
-				if (owner === this.sessionId) {
-					delete this.storage[storageKey];
-				}
-				delete this.regs[uuid];
-			} else {
-				// we removed the owner and there are users, must ensure that
-				// the bond is maintained.
-				this.ensureActive(uuid);
-			}
-		} else {
-			// otherwise, just remove the exiting bond from the users.
-			item.users = item.users.filter(b => b !== bond);
-		}
-	}
-
-	ensureActive (uuid, key = '$_Bonds^' + uuid) {
-		let item = this.regs[uuid];
-		if (item && item.users.length > 0 && item.owner === null) {
-			// One that we use - adopt it if necessary.
-			if (!this.storage[key]) {
-				this.storage[key] = this.sessionId;
-				item.owner = item.users.pop();
-				item.owner.initialise();
-			}
-		}
-	}
-
-	onStorageChanged (e) {
-//		console.log('BondCache.onStorageChanged');
-		if (!e.key.startsWith('$_Bonds')) {
-			return;
-		}
-		let uuid = e.key.substr(8);
-		let item = this.regs[uuid];
-		if (!item) {
-			return;
-		}
-		if (e.key[7] === '.') {
-			// Bond changed...
-			if (typeof(this.storage[e.key]) === 'undefined') {
-				item.users.forEach(bond => bond.reset());
-			} else {
-				let v = item.parse(this.storage[e.key]);
-				item.users.forEach(bond => bond.changed(v));
-			}
-		}
-		else if (e.key[7] === '^') {
-			// Owner going offline...
-			this.ensureActive(uuid, e.key);
-		}
-	}
-
-	onUnload () {
-//		console.log('BondCache.onUnload');
-		// Like drop for all items, except that we don't care about usage; we
-		// drop anyway.
-		Object.keys(this.regs).forEach(uuid => {
-			let storageKey = '$_Bonds^' + uuid;
-			let owner = this.storage[storageKey];
-			if (owner === this.sessionId) {
-				delete this.storage[storageKey];
-			}
-		});
-		this.regs = {};
-	}
-}
-
-class NullBondCache {
-	constructor () {
-	}
-
-	initialise (uuid, bond) {
-		initialise();
-	}
-
-	finalise (uuid, bond) {
-		finalise();
-	}
 }
 
 /**
@@ -1044,4 +903,4 @@ class Bond {
 Bond.backupStorage = {};
 Bond.cache = new BondCache(Bond.backupStorage);
 
-module.exports = Bond;
+module.exports = { Bond, BondCache };

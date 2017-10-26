@@ -35,6 +35,5 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "mocha": "^3.2.0"
-  },
-  "dependencies": {}
+  }
 }
