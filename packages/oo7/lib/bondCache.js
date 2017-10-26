@@ -23,13 +23,14 @@
 // you to ensure that the parent actually has a BondCacheProxy constructed. If
 // it doesn't, things will go screwy.
 
-class BondProxy {
-	constructor (deferParentPrefix = 'io.parity/oo7-parity/') {
+class BondCacheProxy {
+	constructor (deferParentPrefix, fromUuid) {
 		// set up listener so that we get notified by our child.
 		window.addEventListener('message', this.onMessage.bind(this));
 
 		this.bonds = {};
 		this.deferParentPrefix = deferParentPrefix;
+		this.fromUuid = fromUuid;
 	}
 
 	onMessage (e) {
@@ -55,7 +56,7 @@ class BondProxy {
 					entry.users.push(e.source);
 				} else {
 					// create it.
-					let newBond = fromUuid(uuid);
+					let newBond = this.fromUuid(uuid);
 					if (newBond) {
 						console.log('Creating new bond');
 						entry = this.bonds[uuid] = { bond: newBond, users: [e.source] };
