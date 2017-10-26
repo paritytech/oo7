@@ -25,13 +25,13 @@
 
 class BondCache {
 	constructor (backupStorage, deferParentPrefix) {
-		if (typeof window !== 'undefined') {
+		if (typeof window === 'object') {
 			window.addEventListener('storage', this.onStorageChanged.bind(this));
 			window.addEventListener('unload', this.onUnload.bind(this));
 			window.addEventListener('message', this.onMessage.bind(this));
 		}
 
-		this.deferParentPrefix = window && window.parent ? deferParentPrefix : null;
+		this.deferParentPrefix = typeof window === 'object' && window.parent ? deferParentPrefix : null;
 
 		this.regs = {};
 
@@ -130,7 +130,7 @@ class BondCache {
 
 	onMessage (e) {
 		console.log('Received message', e);
-		if (window && e.source === window.parent) {
+		if (typeof window === 'object' && e.source === window.parent) {
 			// Comes from parent.
 			console.log('Message is from parent');
 			if (typeof e.data === 'object' && e.data !== null) {
