@@ -27,6 +27,5 @@ module.exports = {
 	ReactiveBond,
 	ReactivePromise,
 	TimeBond,
-	TransformBond,
-	setDefaultTransformBondContext: TransformBond.setDefaultContext
+	TransformBond
 };

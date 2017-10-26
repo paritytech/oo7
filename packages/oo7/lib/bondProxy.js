@@ -23,7 +23,7 @@
 // you to ensure that the parent actually has a BondCacheProxy constructed. If
 // it doesn't, things will go screwy.
 
-class BondCacheProxy {
+class BondProxy {
 	constructor (deferParentPrefix, fromUuid) {
 		// set up listener so that we get notified by our child.
 		window.addEventListener('message', this.onMessage.bind(this));
@@ -97,3 +97,5 @@ class BondCacheProxy {
 		}
 	}
 }
+
+module.exports = BondProxy;

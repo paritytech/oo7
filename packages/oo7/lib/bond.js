@@ -903,4 +903,4 @@ class Bond {
 Bond.backupStorage = {};
 Bond.cache = new BondCache(Bond.backupStorage);
 
-module.exports = { Bond, BondCache };
+module.exports = Bond;
