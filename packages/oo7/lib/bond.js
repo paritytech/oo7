@@ -329,7 +329,7 @@ class Bond {
 
 		this._triggering = null;
 
-		if (this._uuid && Bond.cache) {
+		if (this._uuid && !this._noCache && Bond.cache) {
 			Bond.cache.changed(this._uuid, newValue);
 		}
 	}
@@ -345,7 +345,7 @@ class Bond {
 	 */
 	use () {
 		if (this._users === 0) {
-			if (!this._uuid || !Bond.cache) {
+			if (!this._uuid || !!this._noCache || !Bond.cache) {
 				this.initialise();
 			} else {
 				Bond.cache.initialise(this._uuid, this, this._stringify, this._parse);
@@ -367,7 +367,7 @@ class Bond {
 		}
 		this._users--;
 		if (this._users === 0) {
-			if (!this._uuid || !Bond.cache) {
+			if (!this._uuid || !!this._noCache || !Bond.cache) {
 				this.finalise();
 			} else {
 				Bond.cache.finalise(this._uuid, this);

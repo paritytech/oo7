@@ -24,17 +24,18 @@
 // it doesn't, things will go screwy.
 
 class BondProxy {
-	constructor (deferParentPrefix, fromUuid) {
-		// set up listener so that we get notified by our child.
-		window.addEventListener('message', this.onMessage.bind(this));
-
+	constructor (deferParentPrefix, fromUuid, surrogateWindow = null) {
 		this.bonds = {};
 		this.deferParentPrefix = deferParentPrefix;
 		this.fromUuid = fromUuid;
+		this.window = surrogateWindow || (typeof window === 'undefined' ? null : window);
+
+		// set up listener so that we get notified by our child.
+		this.window.addEventListener('message', this.onMessage.bind(this));
 	}
 
 	onMessage (e) {
-		if (e.source.parent !== window) {
+		if (e.source.parent !== this.window) {
 			console.warn(`Unknown client at ${e.origin} attempting to message proxy with ${e.data}. Ignoring.`);
 			return;
 		}
@@ -60,9 +61,9 @@ class BondProxy {
 					if (newBond) {
 						console.log('Creating new bond');
 						entry = this.bonds[uuid] = { bond: newBond, users: [e.source] };
-						entry.notifyKey = newBond.notify(value =>
+						entry.notifyKey = newBond.notify(() =>
 							entry.users.forEach(u =>
-								u.postMessage({ bondCacheUpdate: { uuid, value } })
+								u.postMessage({ bondCacheUpdate: { uuid, value: newBond.isReady() ? newBond._value : undefined } })
 							)
 						);
 					} else {
@@ -76,7 +77,7 @@ class BondProxy {
 			else if (typeof e.data.dropBond === 'string') {
 				let uuid = e.data.dropBond;
 				let entry = this.bonds[uuid];
-				console.log('>>> dropBond ', uuid, entry);
+				console.log('<<< dropBond ', uuid, entry);
 				if (entry) {
 					let i = entry.users.indexOf(e.source);
 					if (i !== -1) {

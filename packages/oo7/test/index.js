@@ -2,13 +2,8 @@
 
 require('chai').should();
 
-const oo7 = require('../index');
+const { Bond, TimeBond, ReactiveBond, TransformBond } = require('../index');
 
-const Bond = oo7.Bond;
-const TimeBond = oo7.TimeBond;
-const ReactiveBond = oo7.ReactiveBond;
-// const ReactivePromise = oo7.ReactivePromise;
-const TransformBond = oo7.TransformBond;
 const testIntervals = TimeBond.testIntervals;
 
 describe('Bond', function () {
