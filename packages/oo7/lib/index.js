@@ -14,6 +14,7 @@
 
 const Bond = require('./bond');
 const BondCache = require('./bondCache');
+const BondProxy = require('./bondProxy');
 const ReactiveBond = require('./reactiveBond');
 const ReactivePromise = require('./reactivePromise');
 const TimeBond = require('./timeBond');
@@ -22,6 +23,7 @@ const TransformBond = require('./transformBond');
 module.exports = {
 	Bond,
 	BondCache,
+	BondProxy,
 	ReactiveBond,
 	ReactivePromise,
 	TimeBond,
