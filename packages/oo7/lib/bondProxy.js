@@ -61,17 +61,21 @@ class BondProxy {
 					if (newBond) {
 						console.log('Creating new bond');
 						entry = this.bonds[uuid] = { bond: newBond, users: [e.source] };
-						entry.notifyKey = newBond.notify(() =>
+						entry.notifyKey = newBond.notify(() => {
+							let value = newBond.isReady() ? newBond._value : undefined;
+							console.log('Bond changed. Updating child:', uuid, value);
 							entry.users.forEach(u =>
-								u.postMessage({ bondCacheUpdate: { uuid, value: newBond.isReady() ? newBond._value : undefined } }, '*')
+								u.postMessage({ bondCacheUpdate: { uuid, value } }, '*')
 							)
-						);
+						});
 					} else {
 						console.warn(`UUID ${uuid} is unknown - cannot create a Bond for it.`);
+						e.source.postMessage({ bondUnknown: { uuid } }, '*');
+						return;
 					}
 				}
-				console.log('Posting update back to child');
 				let value = entry.bond.isReady() ? entry._value : undefined;
+				console.log('Posting update back to child', uuid, value);
 				e.source.postMessage({ bondCacheUpdate: { uuid, value } }, '*');
 			}
 			else if (typeof e.data.dropBond === 'string') {
