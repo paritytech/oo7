@@ -111,24 +111,24 @@ class BondCache {
 			// If we're the last user from a parent-deferred Bond, then notify
 			// parent we're no longer bothered about further updates.
 			if (item.users.length === 0 && this.regs[uuid].deferred) {
-				console.log('finalise: dropping deferral from parent frame', uuid);
+				console.debug('finalise: dropping deferral from parent frame', uuid);
 				this.window.parent.postMessage({ dropBond: uuid }, '*');
 			}
 		}
 	}
 
 	ensureActive (uuid, key = '$_Bonds^' + uuid) {
-		console.log('ensureActive', uuid);
+		console.debug('ensureActive', uuid);
 		let item = this.regs[uuid];
 		if (item && item.users.length > 0 && item.owner === null && !item.deferred) {
 			if (this.deferParentPrefix && uuid.startsWith(this.deferParentPrefix)) {
-				console.log('ensureActive: deferring to parent frame', uuid);
+				console.debug('ensureActive: deferring to parent frame', uuid);
 				item.deferred = true;
 				this.window.parent.postMessage({ useBond: uuid }, '*');
 			}
 			// One that we use - adopt it if necessary.
 			else if (!this.storage[key]) {
-				console.log('ensureActive: Adopting');
+				console.debug('ensureActive: Adopting');
 				this.storage[key] = this.sessionId;
 				item.owner = item.users.pop();
 				item.owner.initialise();
@@ -144,13 +144,13 @@ class BondCache {
 			if (typeof e.data === 'object' && e.data !== null) {
 				let up = e.data.bondCacheUpdate;
 				if (up && this.regs[up.uuid]) {
-					console.log('onMessage: Bond cache update that we care about:', up.uuid);
+					console.debug('onMessage: Bond cache update that we care about:', up.uuid);
 					let item = this.regs[up.uuid];
 					if (typeof up.value !== 'undefined') {
-						console.log('onMessage: Updating bond:', up.uuid, up.value, item.users);
+						console.debug('onMessage: Updating bond:', up.uuid, up.value, item.users);
 						item.users.forEach(bond => bond.changed(up.value));
 					} else {
-						console.log('onMessage: Resetting bond:', up.uuid, item.users);
+						console.debug('onMessage: Resetting bond:', up.uuid, item.users);
 						item.users.forEach(bond => bond.reset());
 					}
 				}
