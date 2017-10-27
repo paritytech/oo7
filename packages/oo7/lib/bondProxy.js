@@ -42,7 +42,7 @@ class BondProxy {
 		if (typeof e.data === 'object' && e.data !== null) {
 			console.log('Received message from child: ', e.data);
 			if (e.data.helloBondProxy) {
-				e.source.postMessage({ bondProxyInfo: { deferParentPrefix: this.deferParentPrefix } });
+				e.source.postMessage({ bondProxyInfo: { deferParentPrefix: this.deferParentPrefix } }, '*');
 			}
 			else if (typeof e.data.useBond === 'string') {
 				let uuid = e.data.useBond;
@@ -63,7 +63,7 @@ class BondProxy {
 						entry = this.bonds[uuid] = { bond: newBond, users: [e.source] };
 						entry.notifyKey = newBond.notify(() =>
 							entry.users.forEach(u =>
-								u.postMessage({ bondCacheUpdate: { uuid, value: newBond.isReady() ? newBond._value : undefined } })
+								u.postMessage({ bondCacheUpdate: { uuid, value: newBond.isReady() ? newBond._value : undefined } }, '*')
 							)
 						);
 					} else {
@@ -72,7 +72,7 @@ class BondProxy {
 				}
 				console.log('Posting update back to child');
 				let value = entry.bond.isReady() ? entry._value : undefined;
-				e.source.postMessage({ bondCacheUpdate: { uuid, value } });
+				e.source.postMessage({ bondCacheUpdate: { uuid, value } }, '*');
 			}
 			else if (typeof e.data.dropBond === 'string') {
 				let uuid = e.data.dropBond;

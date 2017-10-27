@@ -40,7 +40,12 @@ class BondCache {
 		this.sessionId = Math.floor((1 + Math.random()) * 0x100000000).toString(16).substr(1);
 //		console.log('Constructing Cache. ID: ', this.sessionId);
 
-		this.storage = this.window ? this.window.localStorage : backupStorage;
+		try {
+			this.storage = this.window ? this.window.localStorage : backupStorage;
+		}
+		catch (e) {
+			this.storage = backupStorage;
+		}
 	}
 
 	initialise (uuid, bond, stringify, parse) {
@@ -107,7 +112,7 @@ class BondCache {
 			// parent we're no longer bothered about further updates.
 			if (item.users.length === 0 && this.regs[uuid].deferred) {
 				console.log('finalise: dropping deferral from parent frame', uuid);
-				this.window.parent.postMessage({ dropBond: uuid });
+				this.window.parent.postMessage({ dropBond: uuid }, '*');
 			}
 		}
 	}
@@ -118,7 +123,7 @@ class BondCache {
 			if (this.deferParentPrefix && uuid.startsWith(this.deferParentPrefix)) {
 				console.log('ensureActive: deferring to parent frame', uuid);
 				item.deferred = true;
-				this.window.parent.postMessage({ useBond: uuid });
+				this.window.parent.postMessage({ useBond: uuid }, '*');
 			}
 			// One that we use - adopt it if necessary.
 			else if (!this.storage[key]) {
@@ -181,7 +186,7 @@ class BondCache {
 		Object.keys(this.regs).forEach(uuid => {
 			if (this.regs[uuid].deferred) {
 				console.log('onUnload: dropping deferral from parent frame', uuid);
-				this.window.parent.postMessage({ dropBond: uuid });
+				this.window.parent.postMessage({ dropBond: uuid }, '*');
 			} else {
 				let storageKey = '$_Bonds^' + uuid;
 				let owner = this.storage[storageKey];
