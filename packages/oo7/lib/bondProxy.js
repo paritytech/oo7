@@ -36,67 +36,67 @@ class BondProxy {
 
 	onMessage (e) {
 		if (e.source.parent !== this.window) {
-			console.warn(`Unknown client at ${e.origin} attempting to message proxy with ${e.data}. Ignoring.`);
+			console.warn(`onMessage: Unknown client at ${e.origin} attempting to message proxy with ${e.data}. Ignoring.`);
 			return;
 		}
 		if (typeof e.data === 'object' && e.data !== null) {
-			console.log('Received message from child: ', e.data);
+			console.debug('onMessage: Received message from child: ', e.data);
 			if (e.data.helloBondProxy) {
 				e.source.postMessage({ bondProxyInfo: { deferParentPrefix: this.deferParentPrefix } }, '*');
 			}
 			else if (typeof e.data.useBond === 'string') {
 				let uuid = e.data.useBond;
 				let entry = this.bonds[uuid];
-				console.log('>>> useBond ', uuid, entry);
+				console.debug('onMessage: useBond ', uuid, entry);
 				if (entry) {
 					// already here - increase refs.
 					if (entry.users.indexOf(e.source) !== -1) {
-						console.warn(`Source using UUID ${uuid} more than once.`);
+						console.warn(`onMessage: Source using UUID ${uuid} more than once.`);
 					}
-					console.log('Another user');
+					console.debug('onMessage: Another user');
 					entry.users.push(e.source);
 				} else {
 					// create it.
 					let newBond = this.fromUuid(uuid);
 					if (newBond) {
-						console.log('Creating new bond');
+						console.debug('onMessage: Creating new bond');
 						entry = this.bonds[uuid] = { bond: newBond, users: [e.source] };
 						entry.notifyKey = newBond.notify(() => {
 							let value = newBond.isReady() ? newBond._value : undefined;
-							console.log('Bond changed. Updating child:', uuid, value);
+							console.debug('onMessage: Bond changed. Updating child:', uuid, value);
 							entry.users.forEach(u =>
 								u.postMessage({ bondCacheUpdate: { uuid, value } }, '*')
 							)
 						});
 					} else {
-						console.warn(`UUID ${uuid} is unknown - cannot create a Bond for it.`);
+						console.warn(`onMessage: UUID ${uuid} is unknown - cannot create a Bond for it.`);
 						e.source.postMessage({ bondUnknown: { uuid } }, '*');
 						return;
 					}
 				}
 				let value = entry.bond.isReady() ? entry.bond._value : undefined;
-				console.log('Posting update back to child', uuid, value);
+				console.debug('onMessage: Posting update back to child', uuid, value);
 				e.source.postMessage({ bondCacheUpdate: { uuid, value } }, '*');
 			}
 			else if (typeof e.data.dropBond === 'string') {
 				let uuid = e.data.dropBond;
 				let entry = this.bonds[uuid];
-				console.log('<<< dropBond ', uuid, entry);
+				console.debug('onMessage: dropBond ', uuid, entry);
 				if (entry) {
 					let i = entry.users.indexOf(e.source);
 					if (i !== -1) {
-						console.log('Removing child from updates list');
+						console.debug('onMessage: Removing child from updates list');
 						entry.users.splice(i, 1);
 					} else {
-						console.warn(`Source asking to drop UUID ${uuid} that they do not track. They probably weren't getting updates.`);
+						console.warn(`onMessage: Source asking to drop UUID ${uuid} that they do not track. They probably weren't getting updates.`);
 					}
 					if (entry.users.length === 0) {
-						console.log('No users - retiring bond');
+						console.debug('onMessage: No users - retiring bond');
 						entry.bond.unnotify(entry.notifyKey);
 						delete this.bonds[uuid];
 					}
 				} else {
-					console.warn(`Cannot drop a Bond (${uuid}) that we do not track.`);
+					console.warn(`onMessage: Cannot drop a Bond (${uuid}) that we do not track.`);
 				}
 			}
 		}
