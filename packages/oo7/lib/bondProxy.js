@@ -74,7 +74,7 @@ class BondProxy {
 						return;
 					}
 				}
-				let value = entry.bond.isReady() ? entry._value : undefined;
+				let value = entry.bond.isReady() ? entry.bond._value : undefined;
 				console.log('Posting update back to child', uuid, value);
 				e.source.postMessage({ bondCacheUpdate: { uuid, value } }, '*');
 			}
