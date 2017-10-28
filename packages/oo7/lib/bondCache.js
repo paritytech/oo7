@@ -114,7 +114,6 @@ class BondCache {
 				if (owner === this.sessionId) {
 					delete this.storage[storageKey];
 				}
-				delete this.regs[uuid];
 			} else {
 				console.debug('BondCache.finalise: Still users; ensuring active.');
 				// we removed the owner and there are users, must ensure that
@@ -133,6 +132,9 @@ class BondCache {
 				this.window.parent.postMessage({ dropBond: uuid }, '*');
 				this.regs[uuid].deferred = false;
 			}
+		}
+		if (item.owner === null && !item.deferred && item.users.length === 0) {
+			delete this.regs[uuid];
 		}
 //		this.checkConsistency();
 	}
