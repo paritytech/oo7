@@ -87,7 +87,7 @@ class Bond {
 	 * validly be `null`. If `false`, then setting this object's value to `null`
 	 * is equivalent to reseting back to being _not ready_.
 	 */
-	constructor(mayBeNull = true, uuid = null, stringify = JSON.stringify, parse = JSON.parse) {
+	constructor(mayBeNull = true, cache = null) {
 		// Functions that should execute whenever we resolve to a new, "ready"
 		// value. They are passed the new value as a single parameter.
 		// Each function is mapped to from a `Symbol`, which can be used to
@@ -125,11 +125,11 @@ class Bond {
 
 		// The Universally Unique ID, a string used to manage caching and
 		// inter-tab result sharing.
-		this._uuid = uuid;
+		this._uuid = cache ? cache.id : null;
 		// A method for stringifying this Bond's result when using with the cache.
-		this._stringify = stringify;
+		this._stringify = cache ? cache.stringify : null;
 		// A method for unstringifying this Bond's result when using with the cache.
-		this._parse = parse;
+		this._parse = cache ? cache.parse : null;
 	}
 
 	toString () {

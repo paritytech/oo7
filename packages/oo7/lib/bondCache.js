@@ -49,7 +49,7 @@ class BondCache {
 	}
 
 	initialise (uuid, bond, stringify, parse) {
-//		console.log('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
+		console.debug('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
 		if (!this.regs[uuid]) {
 			this.regs[uuid] = { owner: null, deferred: false, users: [bond], stringify, parse };
 			let key = '$_Bonds.' + uuid;
@@ -65,6 +65,16 @@ class BondCache {
 				bond.changed(equivBond._value);
 			}
 		}
+//		this.checkConsistency();
+	}
+
+	checkConsistency () {
+		Object.keys(this.regs).forEach(uuid => {
+			let item = this.regs[uuid];
+			if (item.owner === null && !item.deferred && item.users.length > 0) {
+				throw new Error('BondCache consistency failed!', this.regs);
+			}
+		});
 	}
 
 	changed (uuid, value) {
@@ -84,12 +94,18 @@ class BondCache {
 	}
 
 	finalise (uuid, bond) {
-//		console.log('BondCache.finalise', uuid, bond, this.regs);
+		console.debug('BondCache.finalise', uuid, bond, this.regs);
 		let item = this.regs[uuid];
+		if (typeof item === 'undefined') {
+			console.error(`finalise called for unregistered UUID ${uuid}`, bond);
+			return;
+		}
 		if (item.owner === bond) {
+			console.debug('BondCache.finalise: We own; finalising Bond');
 			item.owner.finalise();
 			item.owner = null;
 			if (item.users.length === 0) {
+				console.debug('BondCache.finalise: No users; deleting entry and unreging from storage.');
 				// no owner and no users. we shold be the owner in
 				// storage. if we are, remove our key to signify to other
 				// tabs we're no longer maintaining this.
@@ -100,11 +116,13 @@ class BondCache {
 				}
 				delete this.regs[uuid];
 			} else {
+				console.debug('BondCache.finalise: Still users; ensuring active.');
 				// we removed the owner and there are users, must ensure that
 				// the bond is maintained.
 				this.ensureActive(uuid);
 			}
 		} else {
+			console.debug('BondCache.finalise: Not owner. Removing self from users.');
 			// otherwise, just remove the exiting bond from the users.
 			item.users = item.users.filter(b => b !== bond);
 
@@ -113,8 +131,10 @@ class BondCache {
 			if (item.users.length === 0 && this.regs[uuid].deferred) {
 				console.debug('finalise: dropping deferral from parent frame', uuid);
 				this.window.parent.postMessage({ dropBond: uuid }, '*');
+				this.regs[uuid].deferred = false;
 			}
 		}
+//		this.checkConsistency();
 	}
 
 	ensureActive (uuid, key = '$_Bonds^' + uuid) {
@@ -127,11 +147,16 @@ class BondCache {
 				this.window.parent.postMessage({ useBond: uuid }, '*');
 			}
 			// One that we use - adopt it if necessary.
-			else if (!this.storage[key]) {
-				console.debug('ensureActive: Adopting');
-				this.storage[key] = this.sessionId;
-				item.owner = item.users.pop();
-				item.owner.initialise();
+			else {
+				if (!this.storage[key]) {
+					console.debug('ensureActive: No registered owner yet. Adopting');
+					this.storage[key] = this.sessionId;
+				}
+				if (this.storage[key] == this.sessionId) {
+					console.debug('ensureActive: We are responsible for this UUID - initialise');
+					item.owner = item.users.pop();
+					item.owner.initialise();
+				}
 			}
 		}
 	}

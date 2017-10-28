@@ -244,28 +244,29 @@ class ReactiveBond extends Bond {
 		resolveDepth = 1,
 		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse }
 	) {
-		super(mayBeNull, cache ? cache.id : undefined, cache ? cache.stringify : undefined, cache ? cache.parse : undefined);
+		super(mayBeNull, cache);
 
-		execute = execute || this.changed.bind(this);
-
-		this._notified = () => {
-//			console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
-			if (args.every(item => isReady(item, resolveDepth))) {
-//				console.log(`poll: All dependencies good...`, a, resolveDepth);
-				let resolvedArgs = args.map(argument =>
-					resolved(argument, resolveDepth)
-				);
-//				console.log(`poll: Mapped dependencies:`, am);
-				execute.bind(this)(resolvedArgs);
-			} else {
-//				console.log("poll: One or more dependencies undefined");
-				this.reset();
-			}
-		};
+		this._execute = (execute ? typeof execute === 'object' ? execute.ready : execute : this.changed).bind(this);
+		this._executeReset = (execute && typeof execute === 'object' ? execute.reset : this.reset).bind(this);
 		this._active = false;
 		this._dependencies = dependencies.slice();
 		this._args = args.slice();
 		this._resolveDepth = resolveDepth;
+	}
+
+	_notified () {
+//		console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
+		if (this._args.every(item => isReady(item, this._resolveDepth))) {
+//			console.log(`poll: All dependencies good...`, a, resolveDepth);
+			let resolvedArgs = this._args.map(argument =>
+				resolved(argument, this._resolveDepth)
+			);
+//			console.log(`poll: Mapped dependencies:`, am);
+			this._execute(resolvedArgs);
+		} else {
+//			console.log("poll: One or more dependencies undefined");
+			this._executeReset();
+		}
 	}
 
 	// TODO: implement isDone.
@@ -273,7 +274,7 @@ class ReactiveBond extends Bond {
 //		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
 		this._notifyKeys = [];
 		this._dependencies.forEach(dependency =>
-			this._notifyKeys.push(dependency.notify(this._notified))
+			this._notifyKeys.push(dependency.notify(this._notified.bind(this)))
 		);
 
 		// true if any of our args are/contain Bonds/Promises.
@@ -281,7 +282,7 @@ class ReactiveBond extends Bond {
 		this._args.forEach(argument => {
 			if (deepNotify(
 				argument,
-				this._notified,
+				this._notified.bind(this),
 				this._notifyKeys,
 				this._resolveDepth
 			)) {
