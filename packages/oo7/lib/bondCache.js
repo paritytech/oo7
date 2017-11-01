@@ -23,6 +23,8 @@
 // you to ensure that the parent actually has a BondCacheProxy constructed. If
 // it doesn't, things will go screwy.
 
+let consoleDebug = typeof window !== 'undefined' && typeof window.debugging !== 'undefined' ? console.debug : () => {};
+
 class BondCache {
 	constructor (backupStorage, deferParentPrefix, surrogateWindow = null) {
 		this.window = surrogateWindow || (typeof window === 'undefined' ? null : window);
@@ -38,7 +40,7 @@ class BondCache {
 
 		// TODO: would be nice if this were better.
 		this.sessionId = Math.floor((1 + Math.random()) * 0x100000000).toString(16).substr(1);
-//		console.log('Constructing Cache. ID: ', this.sessionId);
+		console.log('BondCache: Constructing', this.sessionId);
 
 		try {
 			this.storage = this.window ? this.window.localStorage : backupStorage;
@@ -49,36 +51,43 @@ class BondCache {
 	}
 
 	initialise (uuid, bond, stringify, parse) {
-		console.debug('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
+		consoleDebug('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
 		if (!this.regs[uuid]) {
-			this.regs[uuid] = { owner: null, deferred: false, users: [bond], stringify, parse };
+			this.regs[uuid] = { owned: false, deferred: false, users: [bond], primary: null, stringify, parse };
 			let key = '$_Bonds.' + uuid;
 			if (this.storage[key] !== undefined) {
 				bond.changed(parse(this.storage[key]));
 			}
 			this.ensureActive(uuid);
-//			console.log('Created reg', this.regs);
+			consoleDebug('BondCache.initialise: Created reg', this.regs);
+		} else if (this.regs[uuid].primary === bond) {
+			if (this.regs[uuid].owned) {
+				console.error('BondCache:.initialise: initialise called on owned Bond.');
+			}
+			this.regs[uuid].owned = true;
 		} else {
 			this.regs[uuid].users.push(bond);
-			let equivBond = (this.regs[uuid].owner || this.regs[uuid].users[0]);
+			let equivBond = (this.regs[uuid].primary || this.regs[uuid].users[0]);
 			if (equivBond.isReady()) {
 				bond.changed(equivBond._value);
 			}
 		}
-//		this.checkConsistency();
+		if (typeof debugging !== 'undefined') {
+			this.checkConsistency();
+		}
 	}
 
 	checkConsistency () {
 		Object.keys(this.regs).forEach(uuid => {
 			let item = this.regs[uuid];
-			if (item.owner === null && !item.deferred && item.users.length > 0) {
-				throw new Error('BondCache consistency failed!', this.regs);
+			if (item.primary === null && !item.deferred && item.users.length > 0 || item.primary === null && item.owned) {
+				console.error('BondCache consistency failed!', this.regs);
 			}
 		});
 	}
 
 	changed (uuid, value) {
-//		console.log('Bond changed', this.sessionId, uuid, value, this.regs);
+		consoleDebug('BondCache.changed', this.sessionId, uuid, value, this.regs);
 		let item = this.regs[uuid];
 		if (item && this.storage['$_Bonds^' + uuid] === this.sessionId) {
 			let key = '$_Bonds.' + uuid;
@@ -90,74 +99,95 @@ class BondCache {
 				item.users.forEach(bond => bond.changed(value));
 			}
 		}
-//		console.log('Bond change complete', this.regs[uuid]);
+		consoleDebug('BondCache.changed: complete', this.regs[uuid]);
 	}
 
 	finalise (uuid, bond) {
-		console.debug('BondCache.finalise', uuid, bond, this.regs);
+		consoleDebug('BondCache.finalise', uuid, bond, this.regs);
 		let item = this.regs[uuid];
 		if (typeof item === 'undefined') {
-			console.error(`finalise called for unregistered UUID ${uuid}`, bond);
+			console.error(`BondCache.finalise: called for unregistered UUID ${uuid}`, bond);
 			return;
 		}
-		if (item.owner === bond) {
-			console.debug('BondCache.finalise: We own; finalising Bond');
-			item.owner.finalise();
-			item.owner = null;
-			if (item.users.length === 0) {
-				console.debug('BondCache.finalise: No users; deleting entry and unreging from storage.');
-				// no owner and no users. we shold be the owner in
-				// storage. if we are, remove our key to signify to other
-				// tabs we're no longer maintaining this.
-				let storageKey = '$_Bonds^' + uuid;
-				let owner = this.storage[storageKey];
-				if (owner === this.sessionId) {
-					delete this.storage[storageKey];
-				}
+		if (item.primary === bond) {
+			consoleDebug('BondCache.finalise: We own; finalising Bond');
+
+			// TODO: decide whether to delete directly, or keep around.
+			let keepAround = true;
+
+			if (keepAround) {
+				item.owned = false;
+				// TODO: record the current time as an LRU and place the bond in a map for eventual deletion.
 			} else {
-				console.debug('BondCache.finalise: Still users; ensuring active.');
-				// we removed the owner and there are users, must ensure that
-				// the bond is maintained.
-				this.ensureActive(uuid);
+				item.primary.finalise();
+				item.primary = null;
+				if (item.users.length === 0) {
+					consoleDebug('BondCache.finalise: No users; deleting entry and unreging from storage.');
+					// no owner and no users. we shold be the owner in
+					// storage. if we are, remove our key to signify to other
+					// tabs we're no longer maintaining this.
+					let storageKey = '$_Bonds^' + uuid;
+					let owner = this.storage[storageKey];
+					if (owner === this.sessionId) {
+						delete this.storage[storageKey];
+					}
+				} else {
+					consoleDebug('BondCache.finalise: Still users; ensuring active.');
+					// we removed the owner and there are users, must ensure that
+					// the bond is maintained.
+					this.ensureActive(uuid);
+				}
 			}
 		} else {
-			console.debug('BondCache.finalise: Not owner. Removing self from users.');
+			consoleDebug('BondCache.finalise: Not owner. Removing self from users.');
 			// otherwise, just remove the exiting bond from the users.
 			item.users = item.users.filter(b => b !== bond);
 
 			// If we're the last user from a parent-deferred Bond, then notify
 			// parent we're no longer bothered about further updates.
 			if (item.users.length === 0 && this.regs[uuid].deferred) {
-				console.debug('finalise: dropping deferral from parent frame', uuid);
+				consoleDebug('BondCache.finalise: dropping deferral from parent frame', uuid);
 				this.window.parent.postMessage({ dropBond: uuid }, '*');
 				this.regs[uuid].deferred = false;
 			}
 		}
-		if (item.owner === null && !item.deferred && item.users.length === 0) {
+		if (item.primary === null && !item.deferred && item.users.length === 0) {
 			delete this.regs[uuid];
 		}
-//		this.checkConsistency();
+		if (typeof debugging !== 'undefined') {
+			this.checkConsistency();
+		}
 	}
 
 	ensureActive (uuid, key = '$_Bonds^' + uuid) {
-		console.debug('ensureActive', uuid);
+		consoleDebug('BondCache.ensureActive', uuid);
 		let item = this.regs[uuid];
-		if (item && item.users.length > 0 && item.owner === null && !item.deferred) {
+		if (item && item.users.length > 0 && item.primary && !item.owned) {
+			// would-be owners (users). no need for the primary any more.
+			item.primary.finalise();
+			item.primary = null;
+			item.owned = false;
+		}
+		if (item && item.users.length > 0 && item.primary === null && !item.deferred) {
+			if (item.owned) {
+				console.error('BondCache.ensureActive: INCONSISTENT. Cannot have no primary but be owned.');
+			}
 			if (this.deferParentPrefix && uuid.startsWith(this.deferParentPrefix)) {
-				console.debug('ensureActive: deferring to parent frame', uuid);
+				consoleDebug('BondCache.ensureActive: deferring to parent frame', uuid);
 				item.deferred = true;
 				this.window.parent.postMessage({ useBond: uuid }, '*');
 			}
 			// One that we use - adopt it if necessary.
 			else {
 				if (!this.storage[key]) {
-					console.debug('ensureActive: No registered owner yet. Adopting');
+					consoleDebug('BondCache.ensureActive: No registered owner yet. Adopting');
 					this.storage[key] = this.sessionId;
 				}
-				if (this.storage[key] == this.sessionId) {
-					console.debug('ensureActive: We are responsible for this UUID - initialise');
-					item.owner = item.users.pop();
-					item.owner.initialise();
+				if (this.storage[key] === this.sessionId) {
+					consoleDebug('BondCache.ensureActive: We are responsible for this UUID - initialise');
+					item.primary = item.users.pop();
+					item.owned = true;
+					item.primary.initialise();
 				}
 			}
 		}
@@ -171,13 +201,13 @@ class BondCache {
 			if (typeof e.data === 'object' && e.data !== null) {
 				let up = e.data.bondCacheUpdate;
 				if (up && this.regs[up.uuid]) {
-					console.debug('onMessage: Bond cache update that we care about:', up.uuid);
+					consoleDebug('BondCache.onMessage: Bond cache update that we care about:', up.uuid);
 					let item = this.regs[up.uuid];
 					if (typeof up.value !== 'undefined') {
-						console.debug('onMessage: Updating bond:', up.uuid, up.value, item.users);
+						consoleDebug('BondCache.onMessage: Updating bond:', up.uuid, up.value, item.users);
 						item.users.forEach(bond => bond.changed(up.value));
 					} else {
-						console.debug('onMessage: Resetting bond:', up.uuid, item.users);
+						consoleDebug('BondCache.onMessage: Resetting bond:', up.uuid, item.users);
 						item.users.forEach(bond => bond.reset());
 					}
 				}
@@ -186,12 +216,12 @@ class BondCache {
 	}
 
 	onStorageChanged (e) {
-//		console.log('BondCache.onStorageChanged');
 		if (!e.key.startsWith('$_Bonds')) {
 			return;
 		}
 		let uuid = e.key.substr(8);
 		let item = this.regs[uuid];
+		consoleDebug('BondCache.onStorageChanged', uuid, item);
 		if (!item) {
 			return;
 		}
@@ -211,14 +241,15 @@ class BondCache {
 	}
 
 	onUnload () {
-//		console.log('BondCache.onUnload');
+		consoleDebug('BondCache.onUnload');
 		// Like drop for all items, except that we don't care about usage; we
 		// drop anyway.
 		Object.keys(this.regs).forEach(uuid => {
 			if (this.regs[uuid].deferred) {
-				console.log('onUnload: dropping deferral from parent frame', uuid);
+				console.log('BondCache.onUnload: dropping deferral from parent frame', uuid);
 				this.window.parent.postMessage({ dropBond: uuid }, '*');
 			} else {
+				console.log('BondCache.onUnload: dropping ownership key from storage', uuid);
 				let storageKey = '$_Bonds^' + uuid;
 				let owner = this.storage[storageKey];
 				if (owner === this.sessionId) {

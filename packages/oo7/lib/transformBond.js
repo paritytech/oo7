@@ -104,7 +104,7 @@ class TransformBond extends ReactiveBond {
 
 			// Assue an undefined result means "reset".
 			if (typeof(result) === 'undefined') {
-				console.warn(`Transformation returned undefined: Applied ${f} to ${JSON.stringify(resolvedArguments)}.`);
+				console.warn(`Transformation returned undefined: Applied ${transform} to ${JSON.stringify(resolvedArguments)}.`);
 				this.reset();
 			} else if (result instanceof Promise) {
 				// If we're not latching, we reset while we resolve the
