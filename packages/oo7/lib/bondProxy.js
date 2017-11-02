@@ -29,7 +29,7 @@ let consoleDebug = typeof debugging === 'undefined' ? ()=>{} : console.debug;
 function prepUpdate (uuid, bond) {
 	let value = bond.isReady() ? bond._value : undefined;
 
-	if (typeof v === 'object' && v !== null) {
+	if (typeof value === 'object' && value !== null) {
 		return { uuid, valueString: bond.stringify(value) };
 	}
 
