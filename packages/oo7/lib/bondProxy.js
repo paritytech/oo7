@@ -25,6 +25,17 @@
 
 let consoleDebug = typeof debugging === 'undefined' ? ()=>{} : console.debug;
 
+// Prepare value `v` for being sent over `window.postMessage`.
+function prepValue (uuid, bond) {
+	let value = bond.isReady() ? bond._value : undefined;
+
+	if (typeof v === 'object' && v !== null) {
+		return { uuid, valueString: bond.stringify(value) };
+	}
+
+	return { uuid, value };
+}
+
 class BondProxy {
 	constructor (deferParentPrefix, fromUuid, surrogateWindow = null) {
 		this.bonds = {};
@@ -34,17 +45,6 @@ class BondProxy {
 
 		// set up listener so that we get notified by our child.
 		this.window.addEventListener('message', this.onMessage.bind(this));
-	}
-
-	// Prepare value `v` for being sent over `window.postMessage`.
-	prepValue (uuid, bond) {
-		let value = bond.isReady() ? bond._value : undefined;
-
-		if (typeof v === 'object' && v !== null) {
-			return { uuid, valueString: bond.stringify(value) };
-		}
-
-		return { uuid, value };
 	}
 
 	onMessage (e) {
