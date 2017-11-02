@@ -193,9 +193,9 @@ class BondCache {
 		}
 	}
 
-	reconstruct (updateMessage) {
+	reconstruct (updateMessage, bond) {
 		if (updateMessage.valueString) {
-			return this._parse(updateMessage.valueString);
+			return bond._parse(updateMessage.valueString);
 		}
 		return updateMessage.value;
 	}
@@ -207,16 +207,18 @@ class BondCache {
 //			console.log('Message is from parent');
 			if (typeof e.data === 'object' && e.data !== null) {
 				let up = e.data.bondCacheUpdate;
-				let value = this.reconstruct(up);
 				if (up && this.regs[up.uuid]) {
 					consoleDebug('BondCache.onMessage: Bond cache update that we care about:', up.uuid);
 					let item = this.regs[up.uuid];
-					if (typeof value !== 'undefined') {
-						consoleDebug('BondCache.onMessage: Updating bond:', up.uuid, value, item.users);
-						item.users.forEach(bond => bond.changed(value));
-					} else {
-						consoleDebug('BondCache.onMessage: Resetting bond:', up.uuid, item.users);
-						item.users.forEach(bond => bond.reset());
+					if (item.users.length > 0) {
+						let value = this.reconstruct(up, item.users[0]);
+						if (typeof value !== 'undefined') {
+							consoleDebug('BondCache.onMessage: Updating bond:', up.uuid, value, item.users);
+							item.users.forEach(bond => bond.changed(value));
+						} else {
+							consoleDebug('BondCache.onMessage: Resetting bond:', up.uuid, item.users);
+							item.users.forEach(bond => bond.reset());
+						}
 					}
 				}
 			}
