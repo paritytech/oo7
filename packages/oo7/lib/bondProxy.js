@@ -26,7 +26,7 @@
 let consoleDebug = typeof debugging === 'undefined' ? ()=>{} : console.debug;
 
 // Prepare value `v` for being sent over `window.postMessage`.
-function prepValue (uuid, bond) {
+function prepUpdate (uuid, bond) {
 	let value = bond.isReady() ? bond._value : undefined;
 
 	if (typeof v === 'object' && v !== null) {
