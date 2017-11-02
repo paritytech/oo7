@@ -23,7 +23,7 @@
 // you to ensure that the parent actually has a BondCacheProxy constructed. If
 // it doesn't, things will go screwy.
 
-let consoleDebug = typeof window !== 'undefined' && typeof window.debugging !== 'undefined' ? console.debug : () => {};
+let consoleDebug = typeof window !== 'undefined' && window.debugging ? console.debug : () => {};
 
 class BondCache {
 	constructor (backupStorage, deferParentPrefix, surrogateWindow = null) {
@@ -40,7 +40,7 @@ class BondCache {
 
 		// TODO: would be nice if this were better.
 		this.sessionId = Math.floor((1 + Math.random()) * 0x100000000).toString(16).substr(1);
-		console.log('BondCache: Constructing', this.sessionId);
+		consoleDebug('BondCache: Constructing', this.sessionId);
 
 		try {
 			this.storage = this.window ? this.window.localStorage : backupStorage;
@@ -256,10 +256,10 @@ class BondCache {
 		// drop anyway.
 		Object.keys(this.regs).forEach(uuid => {
 			if (this.regs[uuid].deferred) {
-				console.log('BondCache.onUnload: dropping deferral from parent frame', uuid);
+				consoleDebug('BondCache.onUnload: dropping deferral from parent frame', uuid);
 				this.window.parent.postMessage({ dropBond: uuid }, '*');
 			} else {
-				console.log('BondCache.onUnload: dropping ownership key from storage', uuid);
+				consoleDebug('BondCache.onUnload: dropping ownership key from storage', uuid);
 				let storageKey = '$_Bonds^' + uuid;
 				let owner = this.storage[storageKey];
 				if (owner === this.sessionId) {

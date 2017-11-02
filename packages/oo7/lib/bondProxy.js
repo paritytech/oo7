@@ -23,7 +23,7 @@
 // you to ensure that the parent actually has a BondCacheProxy constructed. If
 // it doesn't, things will go screwy.
 
-let consoleDebug = typeof debugging === 'undefined' ? ()=>{} : console.debug;
+let consoleDebug = typeof window !== 'undefined' && window.debugging ? console.debug : () => {};
 
 // Prepare value `v` for being sent over `window.postMessage`.
 function prepUpdate (uuid, bond) {
