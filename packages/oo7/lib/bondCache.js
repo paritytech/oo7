@@ -195,7 +195,7 @@ class BondCache {
 
 	reconstruct (updateMessage) {
 		if (updateMessage.valueString) {
-			return this.parse(updateMessage.valueString());
+			return this.parse(updateMessage.valueString);
 		}
 		return updateMessage.value;
 	}
