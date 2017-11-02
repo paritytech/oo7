@@ -36,6 +36,17 @@ class BondProxy {
 		this.window.addEventListener('message', this.onMessage.bind(this));
 	}
 
+	// Prepare value `v` for being sent over `window.postMessage`.
+	prepValue (uuid, bond) {
+		let value = bond.isReady() ? bond._value : undefined;
+
+		if (typeof v === 'object' && v !== null) {
+			return { uuid, valueString: bond.stringify(value) };
+		}
+
+		return { uuid, value };
+	}
+
 	onMessage (e) {
 		if (e.source.parent !== this.window) {
 			console.warn(`BondProxy.onMessage: Unknown client at ${e.origin} attempting to message proxy with ${e.data}. Ignoring.`);
@@ -64,10 +75,10 @@ class BondProxy {
 						consoleDebug('BondProxy.onMessage: Creating new bond');
 						entry = this.bonds[uuid] = { bond: newBond, users: [e.source] };
 						entry.notifyKey = newBond.notify(() => {
-							let value = newBond.isReady() ? newBond._value : undefined;
-							consoleDebug('BondProxy.onMessage: Bond changed. Updating child:', uuid, value);
+							let bondCacheUpdate = prepUpdate(uuid, newBond);
+							consoleDebug('BondProxy.onMessage: Bond changed. Updating child:', bondCacheUpdate);
 							entry.users.forEach(u =>
-								u.postMessage({ bondCacheUpdate: { uuid, value } }, '*')
+								u.postMessage({ bondCacheUpdate }, '*')
 							)
 						});
 					} else {
@@ -76,9 +87,9 @@ class BondProxy {
 						return;
 					}
 				}
-				let value = entry.bond.isReady() ? entry.bond._value : undefined;
-				consoleDebug('BondProxy.onMessage: Posting update back to child', uuid, value);
-				e.source.postMessage({ bondCacheUpdate: { uuid, value } }, '*');
+				let bondCacheUpdate = prepUpdate(uuid, entry.bond);
+				consoleDebug('BondProxy.onMessage: Posting update back to child', bondCacheUpdate);
+				e.source.postMessage({ bondCacheUpdate }, '*');
 			}
 			else if (typeof e.data.dropBond === 'string') {
 				let uuid = e.data.dropBond;

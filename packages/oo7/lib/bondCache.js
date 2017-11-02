@@ -193,6 +193,13 @@ class BondCache {
 		}
 	}
 
+	reconstruct (updateMessage) {
+		if (updateMessage.valueString) {
+			return this.parse(updateMessage.valueString());
+		}
+		return updateMessage.value;
+	}
+
 	onMessage (e) {
 //		console.log('Received message', e);
 		if (this.window && e.source === this.window.parent) {
@@ -200,12 +207,13 @@ class BondCache {
 //			console.log('Message is from parent');
 			if (typeof e.data === 'object' && e.data !== null) {
 				let up = e.data.bondCacheUpdate;
+				let value = this.reconstruct(up);
 				if (up && this.regs[up.uuid]) {
 					consoleDebug('BondCache.onMessage: Bond cache update that we care about:', up.uuid);
 					let item = this.regs[up.uuid];
-					if (typeof up.value !== 'undefined') {
-						consoleDebug('BondCache.onMessage: Updating bond:', up.uuid, up.value, item.users);
-						item.users.forEach(bond => bond.changed(up.value));
+					if (typeof value !== 'undefined') {
+						consoleDebug('BondCache.onMessage: Updating bond:', up.uuid, value, item.users);
+						item.users.forEach(bond => bond.changed(value));
 					} else {
 						consoleDebug('BondCache.onMessage: Resetting bond:', up.uuid, item.users);
 						item.users.forEach(bond => bond.reset());
