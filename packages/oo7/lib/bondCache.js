@@ -88,7 +88,14 @@ class BondCache {
 	checkConsistency () {
 		Object.keys(this.regs).forEach(uuid => {
 			let item = this.regs[uuid];
-			if (item.primary === null && !item.deferred && item.users.length > 0 || item.primary === null && item.owned) {
+			if (
+				(item.primary === null
+					&& !item.deferred
+					&& item.users.length > 0
+					&& (this.storage['$_Bonds^' + uuid] === this.sessionId
+						|| !this.storage['$_Bonds^' + uuid])
+				) || item.primary === null && item.owned
+			) {
 				console.error('BondCache consistency failed!', this.regs);
 			}
 		});
