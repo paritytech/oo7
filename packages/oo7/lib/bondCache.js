@@ -189,7 +189,7 @@ class BondCache {
 			}
 			// One that we use - adopt it if necessary.
 			else {
-				consoleDebug('BondCache.ensureActive: One that we use - adopt it if necessary.');
+				consoleDebug('BondCache.ensureActive: One that we use - adopt it if necessary.', this.storage[key], this.sessionId);
 				if (!this.storage[key]) {
 					consoleDebug('BondCache.ensureActive: No registered owner yet. Adopting');
 					this.storage[key] = this.sessionId;
