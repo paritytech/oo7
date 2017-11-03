@@ -58,7 +58,7 @@ class BondCache {
 			let key = '$_Bonds.' + uuid;
 			if (this.storage[key] !== undefined) {
 				consoleDebug('BondCache.initialise: restoring from persistent cache');
-				bond.changed(bond.parse(this.storage[key]));
+				bond.changed(parse(this.storage[key]));
 			}
 			this.ensureActive(uuid);
 			consoleDebug('BondCache.initialise: Created reg', this.regs);
