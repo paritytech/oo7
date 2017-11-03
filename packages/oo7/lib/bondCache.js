@@ -53,26 +53,34 @@ class BondCache {
 	initialise (uuid, bond, stringify, parse) {
 		consoleDebug('BondCache.initialise', this.sessionId, uuid, bond, this.regs);
 		if (!this.regs[uuid]) {
+			consoleDebug('BondCache.initialise: creating...');
 			this.regs[uuid] = { owned: false, deferred: false, users: [bond], primary: null, stringify, parse };
 			let key = '$_Bonds.' + uuid;
 			if (this.storage[key] !== undefined) {
-				bond.changed(parse(this.storage[key]));
+				consoleDebug('BondCache.initialise: restoring from persistent cache');
+				bond.changed(bond.parse(this.storage[key]));
 			}
 			this.ensureActive(uuid);
 			consoleDebug('BondCache.initialise: Created reg', this.regs);
 		} else if (this.regs[uuid].primary === bond) {
+			consoleDebug('BondCache.initialise: Reactivating an inactive primary.');
 			if (this.regs[uuid].owned) {
-				console.error('BondCache:.initialise: initialise called on owned Bond.');
+				console.error('BondCache.initialise: initialise called on already-active Bond.');
 			}
 			this.regs[uuid].owned = true;
 		} else {
+			consoleDebug('BondCache.initialise: appending to pre-existing entry', JSON.parse(JSON.stringify(this.regs[uuid])));
+			if (!this.regs[uuid].primary && !this.regs[uuid].deferred) {
+				console.error('BondCache.initialise: Registered Bond that has neither primary nor deferred.');
+			}
 			this.regs[uuid].users.push(bond);
 			let equivBond = (this.regs[uuid].primary || this.regs[uuid].users[0]);
 			if (equivBond.isReady()) {
+				consoleDebug('BondCache.initialise: restoring from equivalent active');
 				bond.changed(equivBond._value);
 			}
 		}
-		if (typeof debugging !== 'undefined') {
+		if (typeof window !== 'undefined' && window.debugging) {
 			this.checkConsistency();
 		}
 	}
@@ -154,7 +162,7 @@ class BondCache {
 		if (item.primary === null && !item.deferred && item.users.length === 0) {
 			delete this.regs[uuid];
 		}
-		if (typeof debugging !== 'undefined') {
+		if (typeof window !== 'undefined' && window.debugging) {
 			this.checkConsistency();
 		}
 	}
@@ -164,11 +172,13 @@ class BondCache {
 		let item = this.regs[uuid];
 		if (item && item.users.length > 0 && item.primary && !item.owned) {
 			// would-be owners (users). no need for the primary any more.
+			consoleDebug('BondCache.ensureActive: Cleaning up orphan primary.');
 			item.primary.finalise();
 			item.primary = null;
 			item.owned = false;
 		}
 		if (item && item.users.length > 0 && item.primary === null && !item.deferred) {
+			consoleDebug('BondCache.ensureActive: Activating...');
 			if (item.owned) {
 				console.error('BondCache.ensureActive: INCONSISTENT. Cannot have no primary but be owned.');
 			}
@@ -179,6 +189,7 @@ class BondCache {
 			}
 			// One that we use - adopt it if necessary.
 			else {
+				consoleDebug('BondCache.ensureActive: One that we use - adopt it if necessary.');
 				if (!this.storage[key]) {
 					consoleDebug('BondCache.ensureActive: No registered owner yet. Adopting');
 					this.storage[key] = this.sessionId;
