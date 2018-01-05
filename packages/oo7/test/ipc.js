@@ -105,10 +105,8 @@ describe('BondCache', function () {
 			let x = 0;
 			let xt = childBond.tie(n => x = n);
 
-			console.log('Scene mQ', scene.messageQueue);
 			scene.play();
 
-			console.log('fireBonds', fireBonds);
 			fireBonds['test/fireInstance'].length.should.equal(1);
 			fireBonds['test/fireInstance'][0].should.equal(fireInstance);
 
@@ -116,7 +114,6 @@ describe('BondCache', function () {
 			FireBond.fire('test/fireInstance', 69);
 			fireInstance._value.should.equal(69);
 
-			console.log('Scene mQ', scene.messageQueue);
 			x.should.equal(0);
 
 			scene.play();
