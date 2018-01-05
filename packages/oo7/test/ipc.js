@@ -63,7 +63,12 @@ describe('BondCache', function () {
 		let fireBonds = {};
 		class FireBond extends Bond {
 			constructor (uuid) {
-				super(true, uuid);
+				const cacheConfig = {
+					id: uuid,
+					stringify: JSON.stringify,
+					parse: JSON.parse
+				};
+				super(true, cacheConfig);
 			}
 			initialise () {
 				if (typeof fireBonds[this._uuid] === 'undefined') {

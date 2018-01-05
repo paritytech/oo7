@@ -95,14 +95,20 @@ describe('Bond', function () {
 	});
 
 	it('should use cache', () => {
-		let t = new Bond(true, 'myNumber');
+		const cacheConfig = {
+			id: 'myNumber',
+			stringify: JSON.stringify,
+			parse: JSON.parse
+		};
+
+		let t = new Bond(true, cacheConfig);
 		var x = 0;
 		let a = t.tie(_ => { x = _; });
 
 		t.trigger(42);
 		x.should.equal(42);
 
-		let u = new Bond(true, 'myNumber');
+		let u = new Bond(true, cacheConfig);
 		var y = 0;
 		let b = u.tie(_ => { y = _; });
 
@@ -117,14 +123,20 @@ describe('Bond', function () {
 	});
 
 	it('should switch cache master as necessary', () => {
-		let t = new Bond(true, 'myNumber');
+		const cacheConfig = {
+			id: 'myNumberTwo',
+			stringify: JSON.stringify,
+			parse: JSON.parse
+		};
+
+		let t = new Bond(true, cacheConfig);
 		var x = 0;
 		let a = t.tie(_ => { x = _; });
 
 		t.trigger(42);
 		x.should.equal(42);
 
-		let u = new Bond(true, 'myNumber');
+		let u = new Bond(true, cacheConfig);
 		var y = 0;
 		let b = u.tie(_ => { y = _; });
 
@@ -134,7 +146,7 @@ describe('Bond', function () {
 		x.should.equal(69);
 		y.should.equal(69);
 
-		let v = new Bond(true, 'myNumber');
+		let v = new Bond(true, cacheConfig);
 		var z = 0;
 		let c = v.tie(_ => { z = _; });
 
