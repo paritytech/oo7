@@ -37,8 +37,15 @@ function defaultProvider () {
 	return new ParityApi.Provider.Http('http://localhost:8545');
 }
 
-function Bonds (provider = defaultProvider()) {
-	return createBonds({ api: new ParityApi(provider) });
+class Bonds {
+
+	/** @type {TimeBond} */
+	time = null;
+
+	/** @returns {Bonds} */
+	constructor(provider = defaultProvider()) {
+		return createBonds({ api: new ParityApi(provider) });
+	}
 }
 
 function createBonds (options) {

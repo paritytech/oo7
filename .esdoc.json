@@ -1,0 +1,21 @@
+{
+  "source": "./packages",
+  "destination": "./docs",
+	"excludes": ["/node_modules/", "/test/", "oo7-react/lib/index.js"],
+  "plugins": [
+		{ "name": "esdoc-node" },
+    {"name": "esdoc-ecmascript-proposal-plugin", "option": {
+			"classProperties": true
+		}},
+		{
+			"name": "esdoc-standard-plugin",
+			"option": {
+				"undocumentIdentifier": {"enable": true},
+				"unexportedIdentifier": {"enable": false}
+			},
+			"test": {
+				"source": "./test"
+			}
+		}
+	]
+}

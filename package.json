@@ -4,9 +4,14 @@
 		"publish": "lerna publish",
 		"lint": "lerna run lint",
 		"test": "lerna run test",
-		"lerna": "lerna"
+		"lerna": "lerna",
+		"esdoc": "esdoc"
 	},
 	"devDependencies": {
-		"lerna": "^2.9.1"
+		"lerna": "^2.9.1",
+		"esdoc": "^1.0.4",
+		"esdoc-node": "^1.0.3",
+		"esdoc-standard-plugin": "^1.0.0",
+		"esdoc-ecmascript-proposal-plugin": "^1.0.0"
 	}
 }

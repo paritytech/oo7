@@ -229,7 +229,7 @@ class Bond {
 	 * x.reset();
 	 * x.log() // 42
 	 *
-	 * @param {} x - The value that this object represents if it would otherwise
+	 * @param {*} x - The value that this object represents if it would otherwise
 	 * be _not ready_.
 	 * @returns {@link Bond} - This (mutated) object.
 	 */
@@ -268,7 +268,7 @@ class Bond {
 	 * This function is a no-op if the JSON representations of `v` and of the
 	 * current value, if any, are equal.
 	 *
-	 * @param {} v - The new value that this object should represent. If `undefined`
+	 * @param {*} v - The new value that this object should represent. If `undefined`
 	 * then the function does nothing.
 	 */
 	changed (newValue) {
@@ -293,7 +293,7 @@ class Bond {
 	 * Unlike {@link Bond#changed}, this function doesn't check equivalence
 	 * between the new value and the current value.
 	 *
-	 * @param {} v - The new value that this object should represent. By default,
+	 * @param {*} v - The new value that this object should represent. By default,
 	 * it will reissue the current value. It is an error to call it without
 	 * an argument if it is not _ready_.
 	 */
@@ -457,7 +457,7 @@ class Bond {
 	/**
 	 * Tie callback.
 	 * @callback Bond~tieCallback
-	 * @param {} value - The current value to which the object just changed.
+	 * @param {&} value - The current value to which the object just changed.
 	 * @param {Symbol} id - The identifier of the registration for this callback.
 	 */
 
@@ -548,7 +548,7 @@ class Bond {
 	/**
 	 * Then callback.
 	 * @callback Bond~thenCallback
-	 * @param {} value - The current value to which the object just changed.
+	 * @param {*} value - The current value to which the object just changed.
 	 */
 
 	/**
@@ -706,7 +706,7 @@ class Bond {
 	 * c.changed(1); // logs 4
 	 * b.changed([68, 69, 70]); // logs 69
 	 *
-	 * @param {} name - The field or index by which to subscript this object's
+	 * @param {string|number} name - The field or index by which to subscript this object's
 	 * represented value. May itself be a {@link Bond}, in which case, the
 	 * resolved value is used.
 	 * @param {number} outResolveDepth - The depth in any returned structure
@@ -820,8 +820,8 @@ class Bond {
 	 * happens first.
 	 *
 	 * @param {function} accum - The reduce's accumulator function.
-	 * @param {} init - The initialisation value for the reduce algorithm.
-	 * @returns {} - A {@link Bond} representing `init` when the input array is empty,
+	 * @param {*} init - The initialisation value for the reduce algorithm.
+	 * @returns {Bond} - A {@link Bond} representing `init` when the input array is empty,
 	 * otherwise the reduction of that array.
 	 */
 	reduce (accum, init, cache = undefined) {
