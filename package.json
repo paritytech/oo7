@@ -1,4 +1,11 @@
 {
+	"scripts": {
+		"bootstrap": "lerna bootstrap",
+		"publish": "lerna publish",
+		"lint": "lerna run lint",
+		"test": "lerna run test",
+		"lerna": "lerna"
+	},
 	"devDependencies": {
 		"lerna": "^2.9.1"
 	}

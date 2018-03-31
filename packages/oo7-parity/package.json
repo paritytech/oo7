@@ -9,8 +9,7 @@
   ],
   "scripts": {
     "test": "mocha --reporter spec",
-    "prepublishOnly": "../oo7/prepublish.sh",
-    "postpublish": "../oo7/postpublish.sh"
+		"lint": "eslint ./src"
   },
   "repository": {
     "type": "git",
@@ -30,7 +29,7 @@
   "dependencies": {
     "@parity/api": "^2",
     "bignumber.js": "^4.0.0",
-    "oo7": "file:../oo7"
+    "oo7": "^0.5.8"
   },
   "devDependencies": {
     "chai": "^3.5.0",

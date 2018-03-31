@@ -7,15 +7,14 @@
     "lib/*"
   ],
   "scripts": {
+    "lint": "echo todo",
     "test": "npm run compile && mocha --compilers js:babel-core/register  --reporter spec",
     "compile": "babel --presets react -d lib/ src/",
-    "prepublishOnly": "../oo7/prepublish.sh",
-    "prepare": "npm run compile",
-    "postpublish": "../oo7/postpublish.sh"
+    "prepare": "npm run compile"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethcore/oo7-react.git"
+    "url": "git+https://github.com/paritytech/oo7-react.git"
   },
   "keywords": [
     "Promise",
@@ -27,15 +26,16 @@
   "author": "Parity Technologies <admin@parity.io> (https://parity.io/)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ethcore/oo7-react/issues"
+    "url": "https://github.com/paritytech/oo7-react/issues"
   },
-  "homepage": "https://github.com/ethcore/oo7-react#readme",
+  "homepage": "https://github.com/paritytech/oo7-react#readme",
   "dependencies": {
-    "oo7": "file:../oo7",
+    "oo7": "^0.5.8",
     "react": "^15.4.2"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
+    "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.22.0",
     "chai": "^3.5.0",
     "mocha": "^3.2.0"

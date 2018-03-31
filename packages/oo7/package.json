@@ -8,7 +8,8 @@
     "lib/*"
   ],
   "scripts": {
-    "test": "mocha --reporter spec"
+    "test": "mocha --reporter spec",
+		"lint": "eslint ./lib"
   },
   "repository": {
     "type": "git",
