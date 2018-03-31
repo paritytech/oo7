@@ -18,7 +18,7 @@ const Bond = require('./bond');
  * Derivative {@link Bond} representing the readiness of another {@link Bond}.
  */
 class ReadyBond extends Bond {
-	constructor(targetBond) {
+	constructor (targetBond) {
 		super(false);
 
 		this._poll = () => this.changed(targetBond._ready);
@@ -34,3 +34,5 @@ class ReadyBond extends Bond {
 		this._targetBond.unnotify(this._notifyId);
 	}
 }
+
+module.exports = ReadyBond;

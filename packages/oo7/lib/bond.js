@@ -18,11 +18,11 @@ var subscripted = {};
 // Any names which should never be subscripted.
 const reservedNames = { toJSON: true, toString: true };
 
-function symbolValues(o) {
+function symbolValues (o) {
 	return Object.getOwnPropertySymbols(o).map(k => o[k]);
 }
 
-function equivalent(a, b) {
+function equivalent (a, b) {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
 
@@ -87,7 +87,7 @@ class Bond {
 	 * validly be `null`. If `false`, then setting this object's value to `null`
 	 * is equivalent to reseting back to being _not ready_.
 	 */
-	constructor(mayBeNull = true, cache = null) {
+	constructor (mayBeNull = true, cache = null) {
 		// Functions that should execute whenever we resolve to a new, "ready"
 		// value. They are passed the new value as a single parameter.
 		// Each function is mapped to from a `Symbol`, which can be used to
@@ -138,7 +138,7 @@ class Bond {
 		// string. We store the reverse lookup (symbol -> Bond) in a global
 		// table `subscripted` so that it can be retrieved while interpreting
 		// the subscript in the code Proxy code found in `subscriptable`.
-		let s = Symbol("Bond");
+		let s = Symbol('Bond');
 		subscripted[s] = this;
 		return s;
 	}
@@ -167,19 +167,17 @@ class Bond {
 	subscriptable (depth = 1) {
 		// No subscripting at all if depth is 0.
 		// We will recurse if > 1.
-		if (depth === 0)
-			return this;
+		if (depth === 0) { return this; }
 
 		let r = new Proxy(this, {
 			// We proxy the get object field:
-		    get (receiver, name) {
+			get (receiver, name) {
 				// Skip the magic proxy and just interpret directly if the field
 				// name is a string/number and it's either an extent key in the
 				// underlying `Bond` or it's a reserved field name (e.g. toString).
 				if (
-					(typeof(name) === 'string' || typeof(name) === 'number')
-				&&
-					(reservedNames[name] || typeof(receiver[name]) !== 'undefined')
+					(typeof (name) === 'string' || typeof (name) === 'number')				&&
+					(reservedNames[name] || typeof (receiver[name]) !== 'undefined')
 				) {
 					return receiver[name];
 				}
@@ -187,21 +185,21 @@ class Bond {
 				// If it's a symbolic key, then it's probably a `Bond` symbolified
 				// in our toString function. Look it up in the global Bond symbol
 				// table and recurse into one less depth.
-				if (typeof(name) === 'symbol') {
+				if (typeof (name) === 'symbol') {
 					if (Bond._knowSymbol(name)) {
 						return receiver
 							.sub(Bond._fromSymbol(name))
 							.subscriptable(depth - 1);
 					} else {
-//						console.warn(`Unknown symbol given`);
+						//						console.warn(`Unknown symbol given`);
 						return null;
 					}
 				}
-//				console.log(`Subscripting: ${JSON.stringify(name)}`)
+				// console.log(`Subscripting: ${JSON.stringify(name)}`)
 				// Otherwise fall back with a simple subscript and recurse
 				// back with one less depth.
 				return receiver.sub(name).subscriptable(depth - 1);
-		    }
+			}
 		});
 		return r;
 	}
@@ -274,10 +272,10 @@ class Bond {
 	 * then the function does nothing.
 	 */
 	changed (newValue) {
-		if (typeof(newValue) === 'undefined') {
+		if (typeof (newValue) === 'undefined') {
 			return;
 		}
-//		console.log(`maybe changed (${this._value} -> ${v})`);
+		//		console.log(`maybe changed (${this._value} -> ${v})`);
 		if (!this._mayBeNull && newValue === null) {
 			this.reset();
 		} else if (!this._ready || !equivalent(newValue, this._value)) {
@@ -301,7 +299,7 @@ class Bond {
 	 */
 	trigger (newValue = this._value) {
 		// Cannot trigger to an undefined value (just reset it or call with `null`).
-		if (typeof(newValue) === 'undefined') {
+		if (typeof (newValue) === 'undefined') {
 			console.error(`Trigger called with undefined value`);
 			return;
 		}
@@ -315,7 +313,7 @@ class Bond {
 		if (!this._mayBeNull && newValue === null) {
 			this.reset();
 		} else {
-//			console.log(`firing (${JSON.stringify(v)})`);
+			//			console.log(`firing (${JSON.stringify(v)})`);
 			this._ready = true;
 			this._value = newValue;
 			symbolValues(this._notifies).forEach(callback => callback());
@@ -434,7 +432,7 @@ class Bond {
 	 */
 	notify (callback) {
 		this.use();
-		let id = Symbol();
+		let id = Symbol('notify::id');
 		this._notifies[id] = callback;
 		if (this._ready) {
 			callback();
@@ -478,7 +476,7 @@ class Bond {
 	 */
 	tie (callback) {
 		this.use();
-		let id = Symbol();
+		let id = Symbol('tie::id');
 		this._subscribers[id] = callback;
 		if (this._ready) {
 			callback(this._value, id);
@@ -600,7 +598,7 @@ class Bond {
 	 */
 	done (callback) {
 		if (this.isDone === undefined) {
-			throw 'Cannot call done() on Bond that has no implementation of isDone.';
+			throw new Error('Cannot call done() on Bond that has no implementation of isDone.');
 		}
 		var id;
 		let cleanupCallback = newValue => {
@@ -663,10 +661,10 @@ class Bond {
 	 * @returns {@link Bond} - An object representing this object's value with
 	 * the function `f` applied to it.
 	 */
-    map (transform, outResolveDepth = 0, cache = undefined) {
+	map (transform, outResolveDepth = 0, cache = undefined) {
 		const TransformBond = require('./transformBond');
-        return new TransformBond(transform, [this], [], outResolveDepth, 1, cache);
-    }
+		return new TransformBond(transform, [this], [], outResolveDepth, 1, cache);
+	}
 
 	/**
 	 * Create a new {@link Bond} which represents this object's array value with
@@ -683,7 +681,7 @@ class Bond {
 	 * @returns The new {@link Bond} object representing the element-wise
 	 * Transformation.
 	 */
-	mapEach(transform, cache = undefined) {
+	mapEach (transform, cache = undefined) {
 		return this.map(item => item.map(transform), 1, cache);
 	}
 
@@ -761,7 +759,7 @@ class Bond {
 	 * @returns {@link Bond} - The object representing the value of the array of
 	 * each object's representative value in `list`.
 	 */
-	static all(list, resolveDepth = 1, cache = undefined) {
+	static all (list, resolveDepth = 1, cache = undefined) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond((...args) => args, list, [], 0, resolveDepth, cache);
 	}
@@ -789,7 +787,7 @@ class Bond {
 	 * @param {number} outResolveDepth - The depth in any returned structure
 	 * that a {@link Bond} may be for it to be resolved.
 	 */
-	static mapAll(list, transform, outResolveDepth = 0, resolveDepth = 1, cache = undefined) {
+	static mapAll (list, transform, outResolveDepth = 0, resolveDepth = 1, cache = undefined) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond(transform, list, [], outResolveDepth, resolveDepth, cache);
 	}
@@ -831,13 +829,13 @@ class Bond {
 			let next = rest.pop();
 			return accum(acc, next).map(([result, finished]) =>
 				finished
-				? result
-				: rest.length > 0
-				? nextItem(result, rest)
-				: null
+					? result
+					: rest.length > 0
+						? nextItem(result, rest)
+						: null
 			);
 		};
-		return this.map(array => array.length > 0 ? nextItem(init, a) : init, 0, cache);
+		return this.map(array => array.length > 0 ? nextItem(init, array) : init, 0, cache);
 	}
 
 	/**
@@ -854,19 +852,19 @@ class Bond {
 	 * @returns {Promise} - A object which resolves to an array of values
 	 * corresponding to those passed in `list`.
 	 */
-	static promise(list) {
+	static promise (list) {
 		return new Promise((resolve, reject) => {
 			var finished = 0;
 			var resolved = [];
 			resolved.length = list.length;
 
 			let done = (index, value) => {
-//				console.log(`done ${i} ${v}`);
+				//				console.log(`done ${i} ${v}`);
 				resolved[index] = value;
 				finished++;
-//				console.log(`finished ${finished}; l.length ${l.length}`);
+				//				console.log(`finished ${finished}; l.length ${l.length}`);
 				if (finished === resolved.length) {
-//					console.log(`resolving with ${l}`);
+					//					console.log(`resolving with ${l}`);
 					resolve(resolved);
 				}
 			};
@@ -890,12 +888,12 @@ class Bond {
 	 * Duck-typed alternative to `instanceof Bond`, when multiple instantiations
 	 * of `Bond` may be available.
 	 */
-	static instanceOf(b) {
+	static instanceOf (b) {
 		return (
-			typeof(b) === 'object'
-			&& b !== null
-			&& typeof(b.reset) === 'function'
-			&& typeof(b.changed) === 'function'
+			typeof (b) === 'object' &&
+			b !== null &&
+			typeof (b.reset) === 'function' &&
+			typeof (b.changed) === 'function'
 		);
 	}
 }

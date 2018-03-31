@@ -56,8 +56,7 @@ class BondProxy {
 			consoleDebug('BondProxy.onMessage: Received message from child: ', e.data);
 			if (e.data.helloBondProxy) {
 				e.source.postMessage({ bondProxyInfo: { deferParentPrefix: this.deferParentPrefix } }, '*');
-			}
-			else if (typeof e.data.useBond === 'string') {
+			} else if (typeof e.data.useBond === 'string') {
 				let uuid = e.data.useBond;
 				let entry = this.bonds[uuid];
 				consoleDebug('BondProxy.onMessage: useBond ', uuid, entry);
@@ -79,7 +78,7 @@ class BondProxy {
 							consoleDebug('BondProxy.onMessage: Bond changed. Updating child:', bondCacheUpdate);
 							entry.users.forEach(u =>
 								u.postMessage({ bondCacheUpdate }, '*')
-							)
+							);
 						});
 					} else {
 						console.warn(`BondProxy.onMessage: UUID ${uuid} is unknown - cannot create a Bond for it.`);
@@ -90,8 +89,7 @@ class BondProxy {
 				let bondCacheUpdate = prepUpdate(uuid, entry.bond);
 				consoleDebug('BondProxy.onMessage: Posting update back to child', bondCacheUpdate);
 				e.source.postMessage({ bondCacheUpdate }, '*');
-			}
-			else if (typeof e.data.dropBond === 'string') {
+			} else if (typeof e.data.dropBond === 'string') {
 				let uuid = e.data.dropBond;
 				let entry = this.bonds[uuid];
 				consoleDebug('BondProxy.onMessage: dropBond ', uuid, entry);

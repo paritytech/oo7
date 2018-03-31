@@ -15,28 +15,36 @@
 const Bond = require('./bond');
 const ReactiveBond = require('./reactiveBond');
 
-var defaultContext = typeof(parity) === 'undefined' ? null : parity.api;
+let defaultContext = typeof (global.parity) === 'undefined' ? null : global.parity.api;
 
 /* Determines whether a `value` is not a {@link Bond} or
  * a {@link Promise}, nor a possibly recursive structure that contains such
  * a thing up to a depth `depthLeft` into it.
  */
-function isPlain(value, depthLeft) {
-	if (typeof(value) === 'object' && value !== null)
-		if (Bond.instanceOf(value))
-			return false;
-		else if (value instanceof Promise)
-		  	return false;
-		else if (depthLeft > 0 && value.constructor === Array)
-			return value.every(index => isPlain(index, depthLeft - 1));
-		else if (depthLeft > 0 && value.constructor === Object)
-			return Object.keys(value).every(key =>
-				isPlain(value[key], depthLeft - 1)
-			);
-		else
-			return true;
-	else
+function isPlain (value, depthLeft) {
+	if (typeof (value) !== 'object' || value === null) {
 		return true;
+	}
+
+	if (Bond.instanceOf(value)) {
+		return false;
+	}
+
+	if (value instanceof Promise) {
+		return false;
+	}
+
+	if (depthLeft > 0 && value.constructor === Array) {
+		return value.every(index => isPlain(index, depthLeft - 1));
+	}
+
+	if (depthLeft > 0 && value.constructor === Object) {
+		return Object.keys(value).every(key =>
+			isPlain(value[key], depthLeft - 1)
+		);
+	}
+
+	return true;
 }
 
 /**
@@ -95,7 +103,7 @@ class TransformBond extends ReactiveBond {
 		context = defaultContext
 	) {
 		super(args, dependencies, function (resolvedArguments) {
-//			console.log(`Applying: ${JSON.stringify(args)}`);
+			//			console.log(`Applying: ${JSON.stringify(args)}`);
 			// Cancel any previous result-resolving.
 			this.dropOut();
 
@@ -103,7 +111,7 @@ class TransformBond extends ReactiveBond {
 			let result = transform.apply(context, resolvedArguments);
 
 			// Assue an undefined result means "reset".
-			if (typeof(result) === 'undefined') {
+			if (typeof (result) === 'undefined') {
 				console.warn(`Transformation returned undefined: Applied ${transform} to ${JSON.stringify(resolvedArguments)}.`);
 				this.reset();
 			} else if (result instanceof Promise) {
@@ -116,7 +124,7 @@ class TransformBond extends ReactiveBond {
 				// as necessary.
 				result.then(this.changed.bind(this));
 			} else if (!isPlain(result, outResolveDepth)) {
-//				console.log(`Using ReactiveBond to resolve and trigger non-plain result (at depth ${outResolveDepth})`);
+				//				console.log(`Using ReactiveBond to resolve and trigger non-plain result (at depth ${outResolveDepth})`);
 				// If we're not latching, we reset while we resolve the
 				// resultant Bond(s)/Promise(s).
 				if (!latched) {
@@ -125,7 +133,7 @@ class TransformBond extends ReactiveBond {
 				// Then create a new `Bond` which we own to maintain the
 				// resultant complex resolvable structure.
 				this.useOut(new ReactiveBond([result], [], ([resolvedResult]) => {
-//					console.log(`Resolved results: ${JSON.stringify(v)}. Triggering...`);
+					//					console.log(`Resolved results: ${JSON.stringify(v)}. Triggering...`);
 					// Call `changed` to recurse as neccessary.
 					this.changed.bind(this)(resolvedResult);
 				}, false, outResolveDepth));
@@ -168,7 +176,7 @@ class TransformBond extends ReactiveBond {
 	 */
 	static setDefaultContext (c) {
 		defaultContext = c;
-	};
+	}
 }
 
 module.exports = TransformBond;

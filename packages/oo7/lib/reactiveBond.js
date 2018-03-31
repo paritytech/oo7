@@ -19,43 +19,34 @@ const Bond = require('./bond');
  * a {@link Promise}, nor is a possibly recursive structure that contains such
  * a thing up to a depth `depthLeft` into it.
  */
-function isReady(resolvable, depthLeft) {
-	if (typeof(resolvable) === 'object' && resolvable !== null)
-		if (Bond.instanceOf(resolvable))
-			return resolvable._ready;
-		else if (resolvable instanceof Promise)
-		  	return typeof(resolvable._value) !== 'undefined';
-		else if (depthLeft > 0 && resolvable.constructor === Array)
-			return resolvable.every(index => isReady(index, depthLeft - 1));
-		else if (depthLeft > 0 && resolvable.constructor === Object)
+function isReady (resolvable, depthLeft) {
+	if (typeof (resolvable) === 'object' && resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) { return resolvable._ready; } else if (resolvable instanceof Promise) { return typeof (resolvable._value) !== 'undefined'; } else if (depthLeft > 0 && resolvable.constructor === Array) { return resolvable.every(index => isReady(index, depthLeft - 1)); } else if (depthLeft > 0 && resolvable.constructor === Object) {
 			return Object.keys(resolvable).every(key =>
 				isReady(resolvable[key], depthLeft - 1)
 			);
-		else
-			return true;
-	else
-		return true;
+		} else { return true; }
+	} else { return true; }
 }
 
 /* Determines whether a `value` is an array which has at least one item which is
  * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
  * than 1, another array or object. Returns `false` if `depthLeft` is zero.
  */
-function isArrayWithNonPlainItems(array, depthLeft) {
+function isArrayWithNonPlainItems (array, depthLeft) {
 	return depthLeft > 0 &&
 		array.constructor === Array &&
 		(
 			(depthLeft === 1 && array.findIndex(item =>
-				Bond.instanceOf(item)
-				|| item instanceof Promise
-			) != -1)
-		||
+				Bond.instanceOf(item) ||
+				item instanceof Promise
+			) !== -1)		||
 			(depthLeft > 1 && array.findIndex(item =>
-				Bond.instanceOf(item)
-				|| item instanceof Promise
-				|| item instanceof Array
-				|| item instanceof Object
-			) != -1)
+				Bond.instanceOf(item) ||
+				item instanceof Promise ||
+				item instanceof Array ||
+				item instanceof Object
+			) !== -1)
 		);
 }
 
@@ -63,67 +54,66 @@ function isArrayWithNonPlainItems(array, depthLeft) {
  * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
  * than 1, another array or object. Returns `false` if `depthLeft` is zero.
  */
-function isObjectWithNonPlainItems(object, depthLeft) {
+function isObjectWithNonPlainItems (object, depthLeft) {
 	return depthLeft > 0 &&
 		object.constructor === Object &&
 		(
 			(depthLeft === 1 && Object.keys(object).findIndex(item =>
-				Bond.instanceOf(object[item])
-				|| object[item] instanceof Promise
-			) != -1)
-		||
+				Bond.instanceOf(object[item]) ||
+				object[item] instanceof Promise
+			) !== -1)		||
 			(depthLeft > 1 && Object.keys(object).findIndex(item =>
-				Bond.instanceOf(object[item])
-				|| object[item] instanceof Promise
-				|| object[item] instanceof Array
-				|| object[item] instanceof Object
-			) != -1)
+				Bond.instanceOf(object[item]) ||
+				object[item] instanceof Promise ||
+				object[item] instanceof Array ||
+				object[item] instanceof Object
+			) !== -1)
 		);
 }
 
 /* Returns the value represented by `resolvable`, resolving Bonds and
  * Promises as necessary up to a depth of `depthLeft`.
  */
-function resolved(resolvable, depthLeft) {
-	/*if (!isReady(resolvable, depthLeft)) {
+function resolved (resolvable, depthLeft) {
+	/* if (!isReady(resolvable, depthLeft)) {
 		throw `Internal error: Unready value being resolved`;
-	}*/
+	} */
 //	console.log(`resolvable info: ${resolvable} ${typeof(resolvable)} ${resolvable.constructor.name} ${JSON.stringify(resolvable)}; depthLeft: ${depthLeft}`);
-	if (typeof(resolvable) === 'object' && resolvable !== null) {
+	if (typeof (resolvable) === 'object' && resolvable !== null) {
 		if (Bond.instanceOf(resolvable)) {
 			if (resolvable._ready !== true) {
 				throw new Error(`Internal error: Unready Bond being resolved`);
 			}
-			if (typeof(resolvable._value) === 'undefined') {
+			if (typeof (resolvable._value) === 'undefined') {
 				throw new Error(`Internal error: Ready Bond with undefined value in resolved`);
 			}
-//			console.log(`Bond: ${JSON.stringify(resolvable._value)}}`);
+			//			console.log(`Bond: ${JSON.stringify(resolvable._value)}}`);
 			return resolvable._value;
 		} else if (resolvable instanceof Promise) {
-			if (typeof(resolvable._value) === 'undefined') {
+			if (typeof (resolvable._value) === 'undefined') {
 				throw new Error(`Internal error: Ready Promise has undefined value`);
 			}
-//			console.log(`Promise: ${JSON.stringify(resolvable._value)}}`);
+			//			console.log(`Promise: ${JSON.stringify(resolvable._value)}}`);
 			return resolvable._value;
 		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
-//			console.log(`Deep array...`);
+			//			console.log(`Deep array...`);
 			return resolvable.slice().map(item =>
 				resolved(item, depthLeft - 1)
 			);
 		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
 			var result = {};
-//			console.log(`Deep object...`);
+			//			console.log(`Deep object...`);
 			Object.keys(resolvable).forEach(key => {
 				result[key] = resolved(resolvable[key], depthLeft - 1);
 			});
-//			console.log(`...Deep object: ${JSON.stringify(o)}`);
+			//			console.log(`...Deep object: ${JSON.stringify(o)}`);
 			return result;
 		} else {
-//			console.log(`Shallow object.`);
+			//			console.log(`Shallow object.`);
 			return resolvable;
 		}
 	} else {
-//		console.log(`Basic value.`);
+		//		console.log(`Basic value.`);
 		return resolvable;
 	}
 }
@@ -136,9 +126,9 @@ function resolved(resolvable, depthLeft) {
  *
  * Returns `true` if there were any `Bond`s or `Promise`s encountered.
  */
-function deepNotify(resolvable, callback, notifyKeys, depthLeft) {
+function deepNotify (resolvable, callback, notifyKeys, depthLeft) {
 //	console.log(`Setitng up deep notification on object: ${JSON.stringify(resolvable)} - ${typeof(resolvable)}/${resolvable === null}/${resolvable.constructor.name} (depthLeft: ${depthLeft})`);
-	if (typeof(resolvable) === 'object' && resolvable !== null) {
+	if (typeof (resolvable) === 'object' && resolvable !== null) {
 		if (Bond.instanceOf(resolvable)) {
 			notifyKeys.push(resolvable.notify(callback));
 			return true;
@@ -149,13 +139,13 @@ function deepNotify(resolvable, callback, notifyKeys, depthLeft) {
 			});
 			return true;
 		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
-			var result = false;
+			let result = false;
 			resolvable.forEach(item => {
 				result = deepNotify(item, callback, notifyKeys, depthLeft - 1) || result;
 			});
 			return result;
 		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
-			var result = false;
+			let result = false;
 			Object.keys(resolvable).forEach(key => {
 				result = deepNotify(resolvable[key], callback, notifyKeys, depthLeft - 1) || result;
 			});
@@ -172,19 +162,19 @@ function deepNotify(resolvable, callback, notifyKeys, depthLeft) {
  * `resolvable`, placing an unnotify call onto any `Bond`s found, using
  * `notifyKeys` as the depth-first sequence of notify key identifiers.
  */
- function deepUnnotify(resolvable, notifyKeys, depthLeft) {
-	if (typeof(resolvable) === 'object' && resolvable !== null) {
+function deepUnnotify (resolvable, notifyKeys, depthLeft) {
+	if (typeof (resolvable) === 'object' && resolvable !== null) {
 		if (Bond.instanceOf(resolvable)) {
 			resolvable.unnotify(notifyKeys.shift());
 			return true;
 		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
-			var result = false;
+			let result = false;
 			resolvable.forEach(item => {
 				result = deepUnnotify(item, notifyKeys, depthLeft - 1) || result;
 			});
 			return result;
 		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
-			var result = false;
+			let result = false;
 			Object.keys(resolvable).forEach(key => {
 				result = deepUnnotify(resolvable[key], notifyKeys, depthLeft - 1) || result;
 			});
@@ -255,23 +245,23 @@ class ReactiveBond extends Bond {
 	}
 
 	_notified () {
-//		console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
+		//		console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
 		if (this._args.every(item => isReady(item, this._resolveDepth))) {
-//			console.log(`poll: All dependencies good...`, a, resolveDepth);
+			//			console.log(`poll: All dependencies good...`, a, resolveDepth);
 			let resolvedArgs = this._args.map(argument =>
 				resolved(argument, this._resolveDepth)
 			);
-//			console.log(`poll: Mapped dependencies:`, am);
+			//			console.log(`poll: Mapped dependencies:`, am);
 			this._execute(resolvedArgs);
 		} else {
-//			console.log("poll: One or more dependencies undefined");
+			//			console.log("poll: One or more dependencies undefined");
 			this._executeReset();
 		}
 	}
 
 	// TODO: implement isDone.
 	initialise () {
-//		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
+		//		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
 		this._notifyKeys = [];
 		this._dependencies.forEach(dependency =>
 			this._notifyKeys.push(dependency.notify(this._notified.bind(this)))
@@ -298,7 +288,7 @@ class ReactiveBond extends Bond {
 	}
 
 	finalise () {
-//		console.log(`Finalising ReactiveBond with resolveDepth ${this.resolveDepth}`);
+		//		console.log(`Finalising ReactiveBond with resolveDepth ${this.resolveDepth}`);
 		this._dependencies.forEach(dependency =>
 			dependency.unnotify(this._notifyKeys.shift())
 		);

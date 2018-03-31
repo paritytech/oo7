@@ -44,8 +44,7 @@ class BondCache {
 
 		try {
 			this.storage = this.window ? this.window.localStorage : backupStorage;
-		}
-		catch (e) {
+		} catch (e) {
 			this.storage = backupStorage;
 		}
 	}
@@ -89,12 +88,12 @@ class BondCache {
 		Object.keys(this.regs).forEach(uuid => {
 			let item = this.regs[uuid];
 			if (
-				(item.primary === null
-					&& !item.deferred
-					&& item.users.length > 0
-					&& (this.storage['$_Bonds^' + uuid] === this.sessionId
-						|| !this.storage['$_Bonds^' + uuid])
-				) || item.primary === null && item.owned
+				(item.primary === null &&
+					!item.deferred &&
+					item.users.length > 0 &&
+					(this.storage['$_Bonds^' + uuid] === this.sessionId ||
+						!this.storage['$_Bonds^' + uuid])
+				) || (item.primary === null && item.owned)
 			) {
 				console.error('BondCache consistency failed!', this.regs);
 			}
@@ -193,9 +192,8 @@ class BondCache {
 				consoleDebug('BondCache.ensureActive: deferring to parent frame', uuid);
 				item.deferred = true;
 				this.window.parent.postMessage({ useBond: uuid }, '*');
-			}
 			// One that we use - adopt it if necessary.
-			else {
+			} else {
 				consoleDebug('BondCache.ensureActive: One that we use - adopt it if necessary.', this.storage[key], this.sessionId);
 				if (!this.storage[key]) {
 					consoleDebug('BondCache.ensureActive: No registered owner yet. Adopting');
@@ -219,10 +217,10 @@ class BondCache {
 	}
 
 	onMessage (e) {
-//		console.log('Received message', e);
+		//		console.log('Received message', e);
 		if (this.window && e.source === this.window.parent) {
 			// Comes from parent.
-//			console.log('Message is from parent');
+			//			console.log('Message is from parent');
 			if (typeof e.data === 'object' && e.data !== null) {
 				let up = e.data.bondCacheUpdate;
 				if (up && this.regs[up.uuid]) {
@@ -255,14 +253,13 @@ class BondCache {
 		}
 		if (e.key[7] === '.') {
 			// Bond changed...
-			if (typeof(this.storage[e.key]) === 'undefined') {
+			if (typeof (this.storage[e.key]) === 'undefined') {
 				item.users.forEach(bond => bond.reset());
 			} else {
 				let v = item.parse(this.storage[e.key]);
 				item.users.forEach(bond => bond.changed(v));
 			}
-		}
-		else if (e.key[7] === '^') {
+		} else if (e.key[7] === '^') {
 			// Owner going offline...
 			this.ensureActive(uuid, e.key);
 		}

@@ -26,7 +26,7 @@ var privateTestIntervals = {};
  * window.setTimeout(() => b.log(), 1000); // logs 1497080210000
  */
 class TimeBond extends Bond {
-	constructor() {
+	constructor () {
 		super();
 		this.poll();
 	}
@@ -34,19 +34,14 @@ class TimeBond extends Bond {
 		this.trigger(Math.floor(Date.now() / 1000) * 1000);
 	}
 	initialise () {
-		if (typeof(window) !== 'undefined')
-			this.interval = window.setInterval(this.poll.bind(this), 1000);
-		else {
+		if (typeof (window) !== 'undefined') { this.interval = window.setInterval(this.poll.bind(this), 1000); } else {
 			this.interval = Object.keys(privateTestIntervals).length + 1;
 			privateTestIntervals[this.interval] = this.poll.bind(this);
 		}
 	}
 	finalise () {
-		if (typeof(window) !== 'undefined')
-			window.clearInterval(this.interval);
-		else {
-			if (!privateTestIntervals[this.interval])
-				throw `finalise() called multiple time on same timer!`;
+		if (typeof (window) !== 'undefined') { window.clearInterval(this.interval); } else {
+			if (!privateTestIntervals[this.interval]) { throw new Error(`finalise() called multiple time on same timer!`); }
 			delete privateTestIntervals[this.interval];
 		}
 	}

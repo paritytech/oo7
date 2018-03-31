@@ -32,8 +32,7 @@ function defaultProvider () {
 		if (typeof window !== 'undefined' && window.parent && window.parent.ethereum) {
 			return window.parent.ethereum;
 		}
-	}
-	catch (e) {}
+	} catch (e) {}
 
 	return new ParityApi.Provider.Http('http://localhost:8545');
 }
@@ -42,7 +41,7 @@ function Bonds (provider = defaultProvider()) {
 	return createBonds({ api: new ParityApi(provider) });
 }
 
-function createBonds(options) {
+function createBonds (options) {
 	var bonds = {};
 
 	// We only ever use api() at call-time of this function; this allows the
@@ -56,22 +55,22 @@ function createBonds(options) {
 			super(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api());
 		}
 		map (f, outResolveDepth = 0, resolveDepth = 1) {
-	        return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
-	    }
+			return new TransformBond(f, [this], [], outResolveDepth, resolveDepth);
+		}
 		sub (name, outResolveDepth = 0, resolveDepth = 1) {
 			return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);
 		}
-		static all(list) {
+		static all (list) {
 			return new TransformBond((...args) => args, list);
 		}
 	}
 
 	class SubscriptionBond extends oo7.Bond {
-		constructor(module, rpcName, options = []) {
+		constructor (module, rpcName, options = []) {
 			super();
 			this.module = module;
 			this.rpcName = rpcName;
-			this.options = [(_,n) => this.trigger(n), ...options];
+			this.options = [(_, n) => this.trigger(n), ...options];
 		}
 		initialise () {
 			// promise instead of id because if a dependency triggers finalise() before id's promise is resolved the unsubscribing would call with undefined
@@ -86,20 +85,20 @@ function createBonds(options) {
 		sub (name, outResolveDepth = 0, resolveDepth = 1) {
 			return new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);
 		}
-		static all(list) {
+		static all (list) {
 			return new TransformBond((...args) => args, list);
 		}
 	}
 
 	class Signature extends oo7.ReactivePromise {
-		constructor(message, from) {
+		constructor (message, from) {
 			super([message, from], [], ([message, from]) => {
 				api().parity.postSign(from, asciiToHex(message))
 					.then(signerRequestId => {
 						this.trigger({requested: signerRequestId});
-				    	return api().pollMethod('parity_checkRequest', signerRequestId);
-				    })
-				    .then(signature => {
+						return api().pollMethod('parity_checkRequest', signerRequestId);
+					})
+					.then(signature => {
 						this.trigger({
 							signed: splitSignature(signature)
 						});
@@ -111,12 +110,12 @@ function createBonds(options) {
 			}, false);
 			this.then(_ => null);
 		}
-		isDone(s) {
+		isDone (s) {
 			return !!s.failed || !!s.signed;
 		}
 	}
 
-	function transactionPromise(tx, progress, f) {
+	function transactionPromise (tx, progress, f) {
 		progress({initialising: null});
 		let condition = tx.condition || null;
 		Promise.all([api().eth.accounts(), api().eth.gasPrice()])
@@ -155,68 +154,67 @@ function createBonds(options) {
 	}
 
 	class Transaction extends oo7.ReactivePromise {
-		constructor(tx) {
+		constructor (tx) {
 			super([tx], [], ([tx]) => {
 				let progress = this.trigger.bind(this);
 				transactionPromise(tx, progress, _ => _);
 			}, false);
 			this.then(_ => null);
 		}
-		isDone(s) {
+		isDone (s) {
 			return !!(s.failed || s.confirmed);
 		}
 	}
 
-	function overlay(base, top) {
+	function overlay (base, top) {
 		Object.keys(top).forEach(k => {
 			base[k] = top[k];
 		});
 		return base;
 	}
 
-	function memoized(f) {
+	function memoized (f) {
 		var memo;
-		return function() {
-			if (memo === undefined)
-				memo = f();
+		return function () {
+			if (memo === undefined) { memo = f(); }
 			return memo;
 		};
 	}
 
-	function call(addr, method, args, options) {
+	function call (addr, method, args, options) {
 		let data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);
 		let decode = d => util.abiDecode(method.outputs.map(f => f.type), d);
 		return api().eth.call(overlay({to: addr, data: data}, options)).then(decode);
-	};
+	}
 
-	function post(addr, method, args, options) {
+	function post (addr, method, args, options) {
 		let toOptions = (addr, method, options, ...args) => {
 			return overlay({to: addr, data: util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
 		};
 		// inResolveDepth is 2 to allow for Bonded `condition`values which are
 		// object values in `options`.
 		return new Transaction(new TransformBond(toOptions, [addr, method, options, ...args], [], 0, 2));
-	};
+	}
 
 	function presub (f) {
 		return new Proxy(f, {
 			get (receiver, name) {
-				if (typeof(name) === 'string' || typeof(name) === 'number') {
-					return typeof(receiver[name]) !== 'undefined' ? receiver[name] : receiver(name);
-				} else if (typeof(name) === 'symbol' && oo7.Bond.knowSymbol(name)) {
+				if (typeof (name) === 'string' || typeof (name) === 'number') {
+					return typeof (receiver[name]) !== 'undefined' ? receiver[name] : receiver(name);
+				} else if (typeof (name) === 'symbol' && oo7.Bond.knowSymbol(name)) {
 					return receiver(oo7.Bond.fromSymbol(name));
 				} else {
-					throw new Error(`Weird value type to be subscripted by: ${typeof(name)}: ${JSON.stringify(name)}`);
+					throw new Error(`Weird value type to be subscripted by: ${typeof (name)}: ${JSON.stringify(name)}`);
 				}
 			}
 		});
-	};
+	}
 
-	function isNumber(n) { return typeof(n) === 'number' || (typeof(n) === 'string' && n.match(/^[0-9]+$/)); }
+	function isNumber (n) { return typeof (n) === 'number' || (typeof (n) === 'string' && n.match(/^[0-9]+$/)); }
 
 	let useSubs = false;
 
-	bonds.time = new oo7.TimeBond;
+	bonds.time = new oo7.TimeBond();
 
 	if (!useSubs) {
 		bonds.height = new TransformBond(() => api().eth.blockNumber().then(_ => +_), [], [bonds.time]);
@@ -224,7 +222,7 @@ function createBonds(options) {
 		let onAccountsChanged = bonds.time; // TODO: more accurate notification
 		let onHardwareAccountsChanged = bonds.time; // TODO: more accurate notification
 		let onHeadChanged = bonds.height;	// TODO: more accurate notification
-	//	let onReorg = undefined;	// TODO make more accurate.
+		//	let onReorg = undefined;	// TODO make more accurate.
 		let onSyncingChanged = bonds.time;
 		let onAuthoringDetailsChanged = bonds.time;
 		let onPeerNetChanged = bonds.time; // TODO: more accurate notification
@@ -234,12 +232,12 @@ function createBonds(options) {
 
 		// eth_
 		bonds.blockNumber = bonds.height;
-		bonds.blockByNumber = (x => new TransformBond(x => api().eth.getBlockByNumber(x), [x], []).subscriptable());// TODO: chain reorg that includes number x
-		bonds.blockByHash = (x => new TransformBond(x => api().eth.getBlockByHash(x), [x]).subscriptable());
-		bonds.findBlock = (hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
+		bonds.blockByNumber = x => new TransformBond(x => api().eth.getBlockByNumber(x), [x], []).subscriptable();// TODO: chain reorg that includes number x
+		bonds.blockByHash = x => new TransformBond(x => api().eth.getBlockByHash(x), [x]).subscriptable();
+		bonds.findBlock = hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
 			? api().eth.getBlockByNumber(hashOrNumber)
 			: api().eth.getBlockByHash(hashOrNumber),
-			[hashOrNumberBond], [/*onReorg*/]).subscriptable());// TODO: chain reorg that includes number x, if x is a number
+		[hashOrNumberBond], [/* onReorg */]).subscriptable();// TODO: chain reorg that includes number x, if x is a number
 		bonds.blocks = presub(bonds.findBlock);
 		bonds.block = bonds.blockByNumber(bonds.height);	// TODO: DEPRECATE AND REMOVE
 		bonds.head = new TransformBond(() => api().eth.getBlockByNumber('latest'), [], [onHeadChanged]).subscriptable();// TODO: chain reorgs
@@ -250,42 +248,42 @@ function createBonds(options) {
 		bonds.post = tx => new Transaction(tx);
 		bonds.sign = (message, from = bonds.me) => new Signature(message, from);
 
-		bonds.balance = (x => new TransformBond(x => api().eth.getBalance(x), [x], [onHeadChanged]));
-		bonds.code = (x => new TransformBond(x => api().eth.getCode(x), [x], [onHeadChanged]));
-		bonds.nonce = (x => new TransformBond(x => api().eth.getTransactionCount(x).then(_ => +_), [x], [onHeadChanged]));
-		bonds.storageAt = ((x, y) => new TransformBond((x, y) => api().eth.getStorageAt(x, y), [x, y], [onHeadChanged]));
+		bonds.balance = x => new TransformBond(x => api().eth.getBalance(x), [x], [onHeadChanged]);
+		bonds.code = x => new TransformBond(x => api().eth.getCode(x), [x], [onHeadChanged]);
+		bonds.nonce = x => new TransformBond(x => api().eth.getTransactionCount(x).then(_ => +_), [x], [onHeadChanged]);
+		bonds.storageAt = (x, y) => new TransformBond((x, y) => api().eth.getStorageAt(x, y), [x, y], [onHeadChanged]);
 
 		bonds.syncing = new TransformBond(() => api().eth.syncing(), [], [onSyncingChanged]);
 		bonds.hashrate = new TransformBond(() => api().eth.hashrate(), [], [onAuthoringDetailsChanged]);
 		bonds.authoring = new TransformBond(() => api().eth.mining(), [], [onAuthoringDetailsChanged]);
 		bonds.ethProtocolVersion = new TransformBond(() => api().eth.protocolVersion(), [], []);
 		bonds.gasPrice = new TransformBond(() => api().eth.gasPrice(), [], [onHeadChanged]);
-		bonds.estimateGas = (x => new TransformBond(x => api().eth.estimateGas(x), [x], [onHeadChanged, onPendingChanged]));
+		bonds.estimateGas = x => new TransformBond(x => api().eth.estimateGas(x), [x], [onHeadChanged, onPendingChanged]);
 
-		bonds.blockTransactionCount = (hashOrNumberBond => new TransformBond(
+		bonds.blockTransactionCount = hashOrNumberBond => new TransformBond(
 			hashOrNumber => isNumber(hashOrNumber)
 				? api().eth.getBlockTransactionCountByNumber(hashOrNumber).then(_ => +_)
 				: api().eth.getBlockTransactionCountByHash(hashOrNumber).then(_ => +_),
-			[hashOrNumberBond], [/*onReorg*/]));
-		bonds.uncleCount = (hashOrNumberBond => new TransformBond(
+			[hashOrNumberBond], [/* onReorg */]);
+		bonds.uncleCount = hashOrNumberBond => new TransformBond(
 			hashOrNumber => isNumber(hashOrNumber)
 				? api().eth.getUncleCountByBlockNumber(hashOrNumber).then(_ => +_)
 				: api().eth.getUncleCountByBlockHash(hashOrNumber).then(_ => +_),
-			[hashOrNumberBond], [/*onReorg*/]).subscriptable());
-		bonds.uncle = ((hashOrNumberBond, indexBond) => new TransformBond(
+			[hashOrNumberBond], [/* onReorg */]).subscriptable();
+		bonds.uncle = (hashOrNumberBond, indexBond) => new TransformBond(
 			(hashOrNumber, index) => isNumber(hashOrNumber)
 				? api().eth.getUncleByBlockNumber(hashOrNumber, index)
 				: api().eth.getUncleByBlockHash(hashOrNumber, index),
-			[hashOrNumberBond, indexBond], [/*onReorg*/]).subscriptable());
-		bonds.transaction = ((hashOrNumberBond, indexOrNullBond) => new TransformBond(
+			[hashOrNumberBond, indexBond], [/* onReorg */]).subscriptable();
+		bonds.transaction = (hashOrNumberBond, indexOrNullBond) => new TransformBond(
 			(hashOrNumber, indexOrNull) =>
 				indexOrNull === undefined || indexOrNull === null
 					? api().eth.getTransactionByHash(hashOrNumber)
 					: isNumber(hashOrNumber)
 						? api().eth.getTransactionByBlockNumberAndIndex(hashOrNumber, indexOrNull)
 						: api().eth.getTransactionByBlockHashAndIndex(hashOrNumber, indexOrNull),
-				[hashOrNumberBond, indexOrNullBond], [/*onReorg*/]).subscriptable());
-		bonds.receipt = (hashBond => new TransformBond(x => api().eth.getTransactionReceipt(x), [hashBond], []).subscriptable());
+			[hashOrNumberBond, indexOrNullBond], [/* onReorg */]).subscriptable();
+		bonds.receipt = hashBond => new TransformBond(x => api().eth.getTransactionReceipt(x), [hashBond], []).subscriptable();
 
 		// web3_
 		bonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);
@@ -337,7 +335,6 @@ function createBonds(options) {
 		bonds.versionInfo = new TransformBond(() => api().parity.versionInfo(), [], [onAutoUpdateChanged]).subscriptable();
 		bonds.consensusCapability = new TransformBond(() => api().parity.consensusCapability(), [], [onAutoUpdateChanged]);
 		bonds.upgradeReady = new TransformBond(() => api().parity.upgradeReady(), [], [onAutoUpdateChanged]).subscriptable();
-
 	} else {
 		bonds.height = new TransformBond(_ => +_, [new SubscriptionBond('eth', 'blockNumber')]).subscriptable();
 
@@ -345,12 +342,12 @@ function createBonds(options) {
 
 		// eth_
 		bonds.blockNumber = bonds.height;
-		bonds.blockByNumber = (numberBond => new TransformBond(number => new SubscriptionBond('eth', 'getBlockByNumber', [number]), [numberBond]).subscriptable());
-		bonds.blockByHash = (x => new TransformBond(x => new SubscriptionBond('eth', 'getBlockByHash', [x]), [x]).subscriptable());
-		bonds.findBlock = (hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
+		bonds.blockByNumber = numberBond => new TransformBond(number => new SubscriptionBond('eth', 'getBlockByNumber', [number]), [numberBond]).subscriptable();
+		bonds.blockByHash = x => new TransformBond(x => new SubscriptionBond('eth', 'getBlockByHash', [x]), [x]).subscriptable();
+		bonds.findBlock = hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)
 			? new SubscriptionBond('eth', 'getBlockByNumber', [hashOrNumber])
 			: new SubscriptionBond('eth', 'getBlockByHash', [hashOrNumber]),
-			[hashOrNumberBond]).subscriptable());
+		[hashOrNumberBond]).subscriptable();
 		bonds.blocks = presub(bonds.findBlock);
 		bonds.block = bonds.blockByNumber(bonds.height);	// TODO: DEPRECATE AND REMOVE
 		bonds.head = new SubscriptionBond('eth', 'getBlockByNumber', ['latest']).subscriptable();
@@ -361,43 +358,43 @@ function createBonds(options) {
 		bonds.post = tx => new Transaction(tx);
 		bonds.sign = (message, from = bonds.me) => new Signature(message, from);
 
-		bonds.balance = (x => new TransformBond(x => new SubscriptionBond('eth', 'getBalance', [x]), [x]));
-		bonds.code = (x => new TransformBond(x => new SubscriptionBond('eth', 'getCode', [x]), [x]));
-		bonds.nonce = (x => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionCount', [x]), [x])); // TODO: then(_ => +_) Depth 2 if second TransformBond or apply to result
-		bonds.storageAt = ((x, y) => new TransformBond((x, y) => new SubscriptionBond('eth', 'getStorageAt', [x, y]), [x, y]));
+		bonds.balance = x => new TransformBond(x => new SubscriptionBond('eth', 'getBalance', [x]), [x]);
+		bonds.code = x => new TransformBond(x => new SubscriptionBond('eth', 'getCode', [x]), [x]);
+		bonds.nonce = x => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionCount', [x]), [x]); // TODO: then(_ => +_) Depth 2 if second TransformBond or apply to result
+		bonds.storageAt = (x, y) => new TransformBond((x, y) => new SubscriptionBond('eth', 'getStorageAt', [x, y]), [x, y]);
 
 		bonds.syncing = new SubscriptionBond('eth', 'syncing');
 		bonds.hashrate = new SubscriptionBond('eth', 'hashrate');
 		bonds.authoring = new SubscriptionBond('eth', 'mining');
 		bonds.ethProtocolVersion = new SubscriptionBond('eth', 'protocolVersion');
 		bonds.gasPrice = new SubscriptionBond('eth', 'gasPrice');
-		bonds.estimateGas = (x => new TransformBond(x => new SubscriptionBond('eth', 'estimateGas', [x]), [x]));
+		bonds.estimateGas = x => new TransformBond(x => new SubscriptionBond('eth', 'estimateGas', [x]), [x]);
 
-		bonds.blockTransactionCount = (hashOrNumberBond => new TransformBond(
+		bonds.blockTransactionCount = hashOrNumberBond => new TransformBond(
 			hashOrNumber => isNumber(hashOrNumber)
 				? new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getBlockTransactionCountByNumber', [hashOrNumber])])
 				: new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getBlockTransactionCountByHash', [hashOrNumber])]),
-			[hashOrNumberBond]));
-		bonds.uncleCount = (hashOrNumberBond => new TransformBond(
+			[hashOrNumberBond]);
+		bonds.uncleCount = hashOrNumberBond => new TransformBond(
 			hashOrNumber => isNumber(hashOrNumber)
 				? new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getUncleCountByBlockNumber', [hashOrNumber])])
 				: new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getUncleCountByBlockHash', [hashOrNumber])]),
-			[hashOrNumberBond]).subscriptable());
-		bonds.uncle = ((hashOrNumberBond, indexBond) => new TransformBond(
+			[hashOrNumberBond]).subscriptable();
+		bonds.uncle = (hashOrNumberBond, indexBond) => new TransformBond(
 			(hashOrNumber, index) => isNumber(hashOrNumber)
 				? new SubscriptionBond('eth', 'getUncleByBlockNumberAndIndex', [hashOrNumber, index])
 				: new SubscriptionBond('eth', 'getUncleByBlockHashAndIndex', [hashOrNumber, index]),
-			[hashOrNumberBond, indexBond]).subscriptable());
+			[hashOrNumberBond, indexBond]).subscriptable();
 
-		bonds.transaction = ((hashOrNumberBond, indexOrNullBond) => new TransformBond(
+		bonds.transaction = (hashOrNumberBond, indexOrNullBond) => new TransformBond(
 			(hashOrNumber, indexOrNull) =>
 				indexOrNull === undefined || indexOrNull === null
 					? new SubscriptionBond('eth', 'getTransactionByHash', [hashOrNumber])
 					: isNumber(hashOrNumber)
 						? new SubscriptionBond('eth', 'getTransactionByBlockNumberAndIndex', [hashOrNumber, indexOrNull])
 						: new SubscriptionBond('eth', 'getTransactionByBlockHashAndIndex', [hashOrNumber, indexOrNull]),
-				[hashOrNumberBond, indexOrNullBond]).subscriptable());
-		bonds.receipt = (hashBond => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionReceipt', [x]), [hashBond]).subscriptable());
+			[hashOrNumberBond, indexOrNullBond]).subscriptable();
+		bonds.receipt = hashBond => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionReceipt', [x]), [hashBond]).subscriptable();
 
 		// web3_
 		bonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);
@@ -408,7 +405,7 @@ function createBonds(options) {
 		bonds.chainId = new SubscriptionBond('net', 'version');
 
 		// parity_
-		bonds.hashContent = (u => new TransformBond(x => api().parity.hashContent(x), [u], [], false));
+		bonds.hashContent = u => new TransformBond(x => api().parity.hashContent(x), [u], [], false);
 		bonds.gasPriceHistogram = new SubscriptionBond('parity', 'gasPriceHistogram').subscriptable();
 		bonds.mode = new SubscriptionBond('parity', 'mode');
 		bonds.accountsInfo = new SubscriptionBond('parity', 'accountsInfo').subscriptable(2);
@@ -454,19 +451,19 @@ function createBonds(options) {
 	}
 
 	// trace TODO: Implement contract object with new trace_many feature
-	bonds.replayTx = ((x,whatTrace) => new TransformBond((x,whatTrace) => api().trace.replayTransaction(x, whatTrace), [x, whatTrace], []).subscriptable());
-	bonds.callTx = ((x,whatTrace,blockNumber) => new TransformBond((x,whatTrace,blockNumber) => api().trace.call(x, whatTrace, blockNumber), [x, whatTrace, blockNumber], []).subscriptable());
+	bonds.replayTx = (x, whatTrace) => new TransformBond((x, whatTrace) => api().trace.replayTransaction(x, whatTrace), [x, whatTrace], []).subscriptable();
+	bonds.callTx = (x, whatTrace, blockNumber) => new TransformBond((x, whatTrace, blockNumber) => api().trace.call(x, whatTrace, blockNumber), [x, whatTrace, blockNumber], []).subscriptable();
 
 	function traceCall (addr, method, args, options) {
 		let data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);
 		let decode = d => util.abiDecode(method.outputs.map(f => f.type), d);
 		let traceMode = options.traceMode;
 		delete options.traceMode;
-		return api().trace.call(overlay({to: addr, data: data}, options), traceMode, 'latest');
-	};
+		return api().trace.call(overlay({to: addr, data: data}, options), traceMode, 'latest').then(decode);
+	}
 
 	class DeployContract extends oo7.ReactivePromise {
-		constructor(initBond, abiBond, optionsBond) {
+		constructor (initBond, abiBond, optionsBond) {
 			super([initBond, abiBond, optionsBond, bonds.registry], [], ([init, abi, options, registry]) => {
 				options.data = init;
 				delete options.to;
@@ -481,29 +478,30 @@ function createBonds(options) {
 			}, false);
 			this.then(_ => null);
 		}
-		isDone(s) {
+		isDone (s) {
 			return !!(s.failed || s.confirmed);
 		}
 	}
 
-	bonds.deployContract = function(init, abi, options = {}) {
+	bonds.deployContract = function (init, abi, options = {}) {
 		return new DeployContract(init, abi, options);
-	}
+	};
 
-	bonds.makeContract = function(address, abi, extras = [], debug = false) {
+	bonds.makeContract = function (address, abi, extras = [], debug = false) {
 		var r = { address: address };
-		let unwrapIfOne = a => a.length == 1 ? a[0] : a;
+		let unwrapIfOne = a => a.length === 1 ? a[0] : a;
 		abi.forEach(i => {
-			if (i.type == 'function' && i.constant) {
+			if (i.type === 'function' && i.constant) {
 				let f = function (...args) {
 					var options = args.length === i.inputs.length + 1 ? args.pop() : {};
-					if (args.length != i.inputs.length)
+					if (args.length !== i.inputs.length) {
 						throw new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`);
+					}
 					let f = (addr, ...fargs) => debug
 						? traceCall(address, i, args, options)
 						: call(addr, i, fargs, options)
-						.then(rets => rets.map((r, o) => cleanup(r, i.outputs[o].type, api)))
-						.then(unwrapIfOne);
+							.then(rets => rets.map((r, o) => cleanup(r, i.outputs[o].type, api)))
+							.then(unwrapIfOne);
 					return new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();	// TODO: should be subscription on contract events
 				};
 				r[i.name] = (i.inputs.length === 0) ? memoized(f) : (i.inputs.length === 1) ? presub(f) : f;
@@ -514,14 +512,15 @@ function createBonds(options) {
 			let f = function (...args) {
 				let expectedInputs = (i.numInputs || i.args.length);
 				var options = args.length === expectedInputs + 1 ? args.pop() : {};
-				if (args.length != expectedInputs)
+				if (args.length !== expectedInputs) {
 					throw new Error(`Invalid number of arguments to ${i.name}. Expected ${expectedInputs}, got ${args.length}. ${args}`);
-				let c = abi.find(j => j.name == i.method);
+				}
+				let c = abi.find(j => j.name === i.method);
 				let f = (addr, ...fargs) => {
-					let args = i.args.map((v, index) => v === null ? fargs[index] : typeof(v) === 'function' ? v(fargs[index]) : v);
+					let args = i.args.map((v, index) => v === null ? fargs[index] : typeof (v) === 'function' ? v(fargs[index]) : v);
 					return debug
-									? traceCall(address, i, args, options)
-									: call(addr, c, args, options).then(unwrapIfOne);
+						? traceCall(address, i, args, options)
+						: call(addr, c, args, options).then(unwrapIfOne);
 				};
 				return new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();	// TODO: should be subscription on contract events
 			};
@@ -529,24 +528,23 @@ function createBonds(options) {
 			r[i.name].args = i.args;
 		});
 		abi.forEach(i => {
-			if (i.type == 'function' && !i.constant) {
+			if (i.type === 'function' && !i.constant) {
 				r[i.name] = function (...args) {
 					var options = args.length === i.inputs.length + 1 ? args.pop() : {};
-					if (args.length !== i.inputs.length)
-						throw new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}. ${args}`);
+					if (args.length !== i.inputs.length) { throw new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}. ${args}`); }
 					return debug
-									? traceCall(address, i, args, options)
-									: post(address, i, args, options).subscriptable();
+						? traceCall(address, i, args, options)
+						: post(address, i, args, options).subscriptable();
 				};
 				r[i.name].args = i.inputs;
 			}
 		});
 		var eventLookup = {};
-		abi.filter(i => i.type == 'event').forEach(i => {
+		abi.filter(i => i.type === 'event').forEach(i => {
 			eventLookup[util.abiSignature(i.name, i.inputs.map(f => f.type))] = i.name;
 		});
 
-		function prepareIndexEncode(v, t, top = true) {
+		function prepareIndexEncode (v, t, top = true) {
 			if (v instanceof Array) {
 				if (top) {
 					return v.map(x => prepareIndexEncode(x, t, false));
@@ -555,27 +553,26 @@ function createBonds(options) {
 				}
 			}
 			var val;
-			if (t == 'string' || t == 'bytes') {
+			if (t === 'string' || t === 'bytes') {
 				val = util.sha3(v);
 			} else {
 				val = util.abiEncode(null, [t], [v]);
 			}
-			if (val.length != 66) {
+			if (val.length !== 66) {
 				throw new Error('Invalid length');
 			}
 			return val;
 		}
 
 		abi.forEach(i => {
-			if (i.type == 'event') {
+			if (i.type === 'event') {
 				r[i.name] = function (indexed = {}, params = {}) {
 					return new TransformBond((addr, indexed) => {
 						var topics = [util.abiSignature(i.name, i.inputs.map(f => f.type))];
 						i.inputs.filter(f => f.indexed).forEach(f => {
 							try {
 								topics.push(indexed[f.name] ? prepareIndexEncode(indexed[f.name], f.type) : null);
-							}
-							catch (e) {
+							} catch (e) {
 								throw new Error(`Couldn't encode indexed parameter ${f.name} of type ${f.type} with value ${indexed[f.name]}`);
 							}
 						});
@@ -597,20 +594,20 @@ function createBonds(options) {
 								if (v instanceof Array && !f.type.endsWith(']')) {
 									v = util.bytesToHex(v);
 								}
-								if (f.type.substr(0, 4) == 'uint' && +f.type.substr(4) <= 48) {
+								if (f.type.substr(0, 4) === 'uint' && +f.type.substr(4) <= 48) {
 									v = +v;
 								}
 								e[f.name] = v;
 							});
 							i.inputs.filter(f => f.indexed).forEach((f, j) => {
-								if (f.type == 'string' || f.type == 'bytes') {
+								if (f.type === 'string' || f.type === 'bytes') {
 									e[f.name] = l.topics[1 + j];
 								} else {
 									var v = util.abiDecode([f.type], l.topics[1 + j])[0];
 									if (v instanceof Array) {
 										v = util.bytesToHex(v);
 									}
-									if (f.type.substr(0, 4) == 'uint' && +f.type.substr(4) <= 48) {
+									if (f.type.substr(0, 4) === 'uint' && +f.type.substr(4) <= 48) {
 										v = +v;
 									}
 									e[f.name] = v;
@@ -644,16 +641,16 @@ function createBonds(options) {
 		for (var i = 0; i < +n; ++i) {
 			let id = i;
 			ret.push(oo7.Bond.all([
-					bonds.badgereg.badge(id),
-					bonds.badgereg.meta(id, 'IMG'),
-					bonds.badgereg.meta(id, 'CAPTION')
-				]).map(([[addr, name, owner], img, caption]) => ({
-					id,
-					name,
-					img,
-					caption,
-					badge: bonds.makeContract(addr, BadgeABI)
-				}))
+				bonds.badgereg.badge(id),
+				bonds.badgereg.meta(id, 'IMG'),
+				bonds.badgereg.meta(id, 'CAPTION')
+			]).map(([[addr, name, owner], img, caption]) => ({
+				id,
+				name,
+				img,
+				caption,
+				badge: bonds.makeContract(addr, BadgeABI)
+			}))
 			);
 		}
 		return ret;
@@ -676,18 +673,18 @@ function createBonds(options) {
 		for (var i = 0; i < +n; ++i) {
 			let id = i;
 			ret.push(oo7.Bond.all([
-					bonds.tokenreg.token(id),
-					bonds.tokenreg.meta(id, 'IMG'),
-					bonds.tokenreg.meta(id, 'CAPTION')
-				]).map(([[addr, tla, base, name, owner], img, caption]) => ({
-					id,
-					tla,
-					base,
-					name,
-					img,
-					caption,
-					token: bonds.makeContract(addr, TokenABI)
-				}))
+				bonds.tokenreg.token(id),
+				bonds.tokenreg.meta(id, 'IMG'),
+				bonds.tokenreg.meta(id, 'CAPTION')
+			]).map(([[addr, tla, base, name, owner], img, caption]) => ({
+				id,
+				tla,
+				base,
+				name,
+				img,
+				caption,
+				token: bonds.makeContract(addr, TokenABI)
+			}))
 			);
 		}
 		return ret;
@@ -702,7 +699,7 @@ function createBonds(options) {
 			tla: b.tla,
 			base: b.base,
 			img: b.img,
-			caption: b.caption,
+			caption: b.caption
 		})),
 		[address, bonds.tokens], [], 2
 	).map(all => all.filter(_ => _.balance.gt(0)));
@@ -718,7 +715,7 @@ function createBonds(options) {
 			Object.keys(info).forEach(k => r[k] = info[k].name);
 			reg.forEach(a => r[a.reverse] = bonds.registry.reverse(a.reverse));
 			return r;
-		}, 1)
+		}, 1);
 
 	return bonds;
 }
@@ -737,36 +734,34 @@ const sha3 = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.sha3) : ParityAp
 const isOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);
 const isNotOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) === -1);
 
-////
+/// /
 // Parity Utilities
 
 // TODO: move to parity.js, repackage or repot.
 
-function capitalizeFirstLetter(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
+function capitalizeFirstLetter (s) {
+	return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function singleton(f) {
-    var instance = null;
-    return function() {
-        if (instance === null)
-            instance = f();
-        return instance;
-    }
+function singleton (f) {
+	var instance = null;
+	return function () {
+		if (instance === null) { instance = f(); }
+		return instance;
+	};
 }
 
 const denominations = [ 'wei', 'Kwei', 'Mwei', 'Gwei', 'szabo', 'finney', 'ether', 'grand', 'Mether', 'Gether', 'Tether', 'Pether', 'Eether', 'Zether', 'Yether', 'Nether', 'Dether', 'Vether', 'Uether' ];
 
-function denominationMultiplier(s) {
-    let i = denominations.indexOf(s);
-    if (i < 0)
-        throw new Error('Invalid denomination');
-    return (new BigNumber(1000)).pow(i);
+function denominationMultiplier (s) {
+	let i = denominations.indexOf(s);
+	if (i < 0) { throw new Error('Invalid denomination'); }
+	return (new BigNumber(1000)).pow(i);
 }
 
-function interpretRender(s, defaultDenom = 6) {
-    try {
-        let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
+function interpretRender (s, defaultDenom = 6) {
+	try {
+		let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
 		let di = m[4] ? denominations.indexOf(m[4]) : defaultDenom;
 		if (di === -1) {
 			return null;
@@ -774,13 +769,12 @@ function interpretRender(s, defaultDenom = 6) {
 		let n = (m[1].replace(',', '').replace(/^0*/, '')) || '0';
 		let d = (m[3] || '').replace(/0*$/, '');
 		return { denom: di, units: n, decimals: d, origNum: m[1] + (m[2] || ''), origDenom: m[4] || '' };
-    }
-    catch (e) {
-        return null;
-    }
+	} catch (e) {
+		return null;
+	}
 }
 
-function combineValue(v) {
+function combineValue (v) {
 	let d = (new BigNumber(1000)).pow(v.denom);
 	let n = v.units;
 	if (v.decimals) {
@@ -790,70 +784,68 @@ function combineValue(v) {
 	return new BigNumber(n).mul(d);
 }
 
-function defDenom(v, d) {
+function defDenom (v, d) {
 	if (v.denom === null) {
 		v.denom = d;
 	}
 	return v;
 }
 
-function formatValue(n) {
+function formatValue (n) {
 	return `${formatValueNoDenom(n)} ${denominations[n.denom]}`;
 }
 
-function formatValueNoDenom(n) {
+function formatValueNoDenom (n) {
 	return `${n.units.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}${n.decimals ? '.' + n.decimals : ''}`;
 }
 
-function formatToExponential(v, n) {
+function formatToExponential (v, n) {
 	return new BigNumber(v).toExponential(4);
 }
 
-function interpretQuantity(s) {
-    try {
-        let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
-        let d = denominationMultiplier(m[4] || 'ether');
-        let n = +m[1].replace(',', '');
+function interpretQuantity (s) {
+	try {
+		let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
+		let d = denominationMultiplier(m[4] || 'ether');
+		let n = +m[1].replace(',', '');
 		if (m[2]) {
 			n += m[3];
 			for (let i = 0; i < m[3].length; ++i) {
-	            d = d.div(10);
-	        }
+				d = d.div(10);
+			}
 		}
-        return new BigNumber(n).mul(d);
-    }
-    catch (e) {
-        return null;
-    }
+		return new BigNumber(n).mul(d);
+	} catch (e) {
+		return null;
+	}
 }
 
-function splitValue(a) {
+function splitValue (a) {
 	var i = 0;
-	var a = new BigNumber('' + a);
-	if (a.gte(new BigNumber('10000000000000000')) && a.lt(new BigNumber('100000000000000000000000')) || a.eq(0))
+	a = new BigNumber('' + a);
+	if (a.gte(new BigNumber('10000000000000000')) && a.lt(new BigNumber('100000000000000000000000'))) {
 		i = 6;
-	else
-		for (var aa = a; aa.gte(1000) && i < denominations.length - 1; aa = aa.div(1000))
-			i++;
+	} else {
+		for (var aa = a; aa.gte(1000) && i < denominations.length - 1; aa = aa.div(1000)) { i++; }
+	}
 
-	for (var j = 0; j < i; ++j)
-		a = a.div(1000);
+	for (var j = 0; j < i; ++j) { a = a.div(1000); }
 
 	return {base: a, denom: i};
 }
 
-function formatBalance(n) {
+function formatBalance (n) {
 	let a = splitValue(n);
-//	let b = Math.floor(a.base * 1000) / 1000;
+	//	let b = Math.floor(a.base * 1000) / 1000;
 	return `${a.base} ${denominations[a.denom]}`;
 }
 
-function formatBlockNumber(n) {
-    return '#' + ('' + n).replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+function formatBlockNumber (n) {
+	return '#' + ('' + n).replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
-function isNullData(a) {
-	return !a || typeof(a) !== 'string' || a.match(/^(0x)?0+$/) !== null;
+function isNullData (a) {
+	return !a || typeof (a) !== 'string' || a.match(/^(0x)?0+$/) !== null;
 }
 
 function splitSignature (sig) {
@@ -864,19 +856,19 @@ function splitSignature (sig) {
 		// rsv
 		return [`0x${sig.substr(130, 2)}`, `0x${sig.substr(2, 64)}`, `0x${sig.substr(66, 64)}`];
 	}
-};
+}
 
 function removeSigningPrefix (message) {
 	if (!message.startsWith('\x19Ethereum Signed Message:\n')) {
 		throw new Error('Invalid message - doesn\'t contain security prefix');
 	}
 	for (var i = 1; i < 6; ++i) {
-		if (message.length == 26 + i + +message.substr(26, i)) {
+		if (message.length === 26 + i + +message.substr(26, i)) {
 			return message.substr(26 + i);
 		}
 	}
 	throw new Error('Invalid message - invalid security prefix');
-};
+}
 
 function cleanup (value, type = 'bytes32', api = parity.api) {
 	// TODO: make work with arbitrary depth arrays
@@ -895,7 +887,7 @@ function cleanup (value, type = 'bytes32', api = parity.api) {
 		}
 		value = ascii === null ? '0x' + value.map(n => ('0' + n.toString(16)).slice(-2)).join('') : ascii;
 	}
-	if (type.substr(0, 4) == 'uint' && +type.substr(4) <= 48) {
+	if (type.substr(0, 4) === 'uint' && +type.substr(4) <= 48) {
 		value = +value;
 	}
 	return value;
@@ -903,17 +895,47 @@ function cleanup (value, type = 'bytes32', api = parity.api) {
 
 module.exports = {
 	// Bonds stuff
-	abiPolyfill, options, bonds, Bonds, createBonds,
+	abiPolyfill,
+	options,
+	bonds,
+	Bonds,
+	createBonds,
 
 	// Util functions
-	asciiToHex, bytesToHex, hexToAscii, isAddressValid, toChecksumAddress, sha3,
-	isOwned, isNotOwned, capitalizeFirstLetter, singleton, denominations,
-	denominationMultiplier, interpretRender, combineValue, defDenom,
-	formatValue, formatValueNoDenom, formatToExponential, interpretQuantity,
-	splitValue, formatBalance, formatBlockNumber, isNullData, splitSignature,
-	removeSigningPrefix, cleanup,
+	asciiToHex,
+	bytesToHex,
+	hexToAscii,
+	isAddressValid,
+	toChecksumAddress,
+	sha3,
+	isOwned,
+	isNotOwned,
+	capitalizeFirstLetter,
+	singleton,
+	denominations,
+	denominationMultiplier,
+	interpretRender,
+	combineValue,
+	defDenom,
+	formatValue,
+	formatValueNoDenom,
+	formatToExponential,
+	interpretQuantity,
+	splitValue,
+	formatBalance,
+	formatBlockNumber,
+	isNullData,
+	splitSignature,
+	removeSigningPrefix,
+	cleanup,
 
 	// ABIs
-	RegistryABI, RegistryExtras, GitHubHintABI, OperationsABI,
-	BadgeRegABI, TokenRegABI, BadgeABI, TokenABI
+	RegistryABI,
+	RegistryExtras,
+	GitHubHintABI,
+	OperationsABI,
+	BadgeRegABI,
+	TokenRegABI,
+	BadgeABI,
+	TokenABI
 };

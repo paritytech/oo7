@@ -18,7 +18,7 @@ const Bond = require('./bond');
  * Derivative {@link Bond} representing the non-readiness of another {@link Bond}.
  */
 class NotReadyBond extends Bond {
-	constructor(targetBond) {
+	constructor (targetBond) {
 		super(false);
 
 		this._poll = () => this.changed(!targetBond._ready);
