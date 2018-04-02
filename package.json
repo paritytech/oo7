@@ -1,5 +1,6 @@
 {
 	"scripts": {
+		"postinstall": "lerna bootstrap",
 		"bootstrap": "lerna bootstrap",
 		"publish": "lerna publish",
 		"lint": "lerna run lint",
