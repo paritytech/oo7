@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">packages/oo7/lib/reactiveBond.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src">oo7-parity/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7-parity/src/index.js~Bonds.html">Bonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createBonds">createBonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isNotOwned">isNotOwned</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isOwned">isOwned</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-bonds">bonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-options">options</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src-abis">oo7-parity/src/abis</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-abiPolyfill">abiPolyfill</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-BadgeABI">BadgeABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-BadgeRegABI">BadgeRegABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-GitHubHintABI">GitHubHintABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-OperationsABI">OperationsABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-RegistryExtras">RegistryExtras</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TokenABI">TokenABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TokenRegABI">TokenRegABI</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src-utils">oo7-parity/src/utils</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-capitalizeFirstLetter">capitalizeFirstLetter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cleanup">cleanup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-combineValue">combineValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-defDenom">defDenom</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-denominationMultiplier">denominationMultiplier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatBalance">formatBalance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatBlockNumber">formatBlockNumber</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatToExponential">formatToExponential</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatValue">formatValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatValueNoDenom">formatValueNoDenom</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-interpretQuantity">interpretQuantity</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-interpretRender">interpretRender</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isAddressValid">isAddressValid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isNullData">isNullData</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-removeSigningPrefix">removeSigningPrefix</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sha3">sha3</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-singleton">singleton</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-splitSignature">splitSignature</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-splitValue">splitValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toChecksumAddress">toChecksumAddress</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-asciiToHex">asciiToHex</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-bytesToHex">bytesToHex</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-denominations">denominations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hexToAscii">hexToAscii</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-lib">oo7/lib</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/bond.js~Bond.html">Bond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/bondCache.js~BondCache.html">BondCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html">NotReadyBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html">ReactiveBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/reactivePromise.js~ReactivePromise.html">ReactivePromise</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/readyBond.js~ReadyBond.html">ReadyBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/timeBond.js~TimeBond.html">TimeBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/transformBond.js~TransformBond.html">TransformBond</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">packages/oo7/lib/reactiveBond.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+const Bond = require(&apos;./bond&apos;);
+
+/* Determines whether a `resolvable` value is actually resolved.
+ * If true, then `resolvable` is not an unready {@link Bond} or
+ * a {@link Promise}, nor is a possibly recursive structure that contains such
+ * a thing up to a depth `depthLeft` into it.
+ */
+function isReady (resolvable, depthLeft) {
+	if (typeof (resolvable) === &apos;object&apos; &amp;&amp; resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) { return resolvable._ready; } else if (resolvable instanceof Promise) { return typeof (resolvable._value) !== &apos;undefined&apos;; } else if (depthLeft &gt; 0 &amp;&amp; resolvable.constructor === Array) { return resolvable.every(index =&gt; isReady(index, depthLeft - 1)); } else if (depthLeft &gt; 0 &amp;&amp; resolvable.constructor === Object) {
+			return Object.keys(resolvable).every(key =&gt;
+				isReady(resolvable[key], depthLeft - 1)
+			);
+		} else { return true; }
+	} else { return true; }
+}
+
+/* Determines whether a `value` is an array which has at least one item which is
+ * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
+ * than 1, another array or object. Returns `false` if `depthLeft` is zero.
+ */
+function isArrayWithNonPlainItems (array, depthLeft) {
+	return depthLeft &gt; 0 &amp;&amp;
+		array.constructor === Array &amp;&amp;
+		(
+			(depthLeft === 1 &amp;&amp; array.findIndex(item =&gt;
+				Bond.instanceOf(item) ||
+				item instanceof Promise
+			) !== -1)		||
+			(depthLeft &gt; 1 &amp;&amp; array.findIndex(item =&gt;
+				Bond.instanceOf(item) ||
+				item instanceof Promise ||
+				item instanceof Array ||
+				item instanceof Object
+			) !== -1)
+		);
+}
+
+/* Determines whether a `value` is an object which has at least one item which is
+ * either a {@link Bond} or a {@link Promise}, or, if `depthLeft` is greater
+ * than 1, another array or object. Returns `false` if `depthLeft` is zero.
+ */
+function isObjectWithNonPlainItems (object, depthLeft) {
+	return depthLeft &gt; 0 &amp;&amp;
+		object.constructor === Object &amp;&amp;
+		(
+			(depthLeft === 1 &amp;&amp; Object.keys(object).findIndex(item =&gt;
+				Bond.instanceOf(object[item]) ||
+				object[item] instanceof Promise
+			) !== -1)		||
+			(depthLeft &gt; 1 &amp;&amp; Object.keys(object).findIndex(item =&gt;
+				Bond.instanceOf(object[item]) ||
+				object[item] instanceof Promise ||
+				object[item] instanceof Array ||
+				object[item] instanceof Object
+			) !== -1)
+		);
+}
+
+/* Returns the value represented by `resolvable`, resolving Bonds and
+ * Promises as necessary up to a depth of `depthLeft`.
+ */
+function resolved (resolvable, depthLeft) {
+	/* if (!isReady(resolvable, depthLeft)) {
+		throw `Internal error: Unready value being resolved`;
+	} */
+//	console.log(`resolvable info: ${resolvable} ${typeof(resolvable)} ${resolvable.constructor.name} ${JSON.stringify(resolvable)}; depthLeft: ${depthLeft}`);
+	if (typeof (resolvable) === &apos;object&apos; &amp;&amp; resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) {
+			if (resolvable._ready !== true) {
+				throw new Error(`Internal error: Unready Bond being resolved`);
+			}
+			if (typeof (resolvable._value) === &apos;undefined&apos;) {
+				throw new Error(`Internal error: Ready Bond with undefined value in resolved`);
+			}
+			//			console.log(`Bond: ${JSON.stringify(resolvable._value)}}`);
+			return resolvable._value;
+		} else if (resolvable instanceof Promise) {
+			if (typeof (resolvable._value) === &apos;undefined&apos;) {
+				throw new Error(`Internal error: Ready Promise has undefined value`);
+			}
+			//			console.log(`Promise: ${JSON.stringify(resolvable._value)}}`);
+			return resolvable._value;
+		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
+			//			console.log(`Deep array...`);
+			return resolvable.slice().map(item =&gt;
+				resolved(item, depthLeft - 1)
+			);
+		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
+			var result = {};
+			//			console.log(`Deep object...`);
+			Object.keys(resolvable).forEach(key =&gt; {
+				result[key] = resolved(resolvable[key], depthLeft - 1);
+			});
+			//			console.log(`...Deep object: ${JSON.stringify(o)}`);
+			return result;
+		} else {
+			//			console.log(`Shallow object.`);
+			return resolvable;
+		}
+	} else {
+		//		console.log(`Basic value.`);
+		return resolvable;
+	}
+}
+
+/* Recurses up to `depthLeft` levels into the possibly deep structure
+ * `resolvable`, placing a notify callback `callback` onto any `Bond`s found
+ * and a then callback `callback` onto any `Promise`s found.
+ * All resultant identifiers for the `notify` callbacks are added to `notifyKeys`s in
+ * depth-first order of traveral of the possible deep structure `resolvable`.
+ *
+ * Returns `true` if there were any `Bond`s or `Promise`s encountered.
+ */
+function deepNotify (resolvable, callback, notifyKeys, depthLeft) {
+//	console.log(`Setitng up deep notification on object: ${JSON.stringify(resolvable)} - ${typeof(resolvable)}/${resolvable === null}/${resolvable.constructor.name} (depthLeft: ${depthLeft})`);
+	if (typeof (resolvable) === &apos;object&apos; &amp;&amp; resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) {
+			notifyKeys.push(resolvable.notify(callback));
+			return true;
+		} else if (resolvable instanceof Promise) {
+			resolvable.then(resolved =&gt; {
+				resolvable._value = resolved;
+				callback();
+			});
+			return true;
+		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
+			let result = false;
+			resolvable.forEach(item =&gt; {
+				result = deepNotify(item, callback, notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
+		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
+			let result = false;
+			Object.keys(resolvable).forEach(key =&gt; {
+				result = deepNotify(resolvable[key], callback, notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
+/* Recurses up to `depthLeft` levels into the possibly deep structure
+ * `resolvable`, placing an unnotify call onto any `Bond`s found, using
+ * `notifyKeys` as the depth-first sequence of notify key identifiers.
+ */
+function deepUnnotify (resolvable, notifyKeys, depthLeft) {
+	if (typeof (resolvable) === &apos;object&apos; &amp;&amp; resolvable !== null) {
+		if (Bond.instanceOf(resolvable)) {
+			resolvable.unnotify(notifyKeys.shift());
+			return true;
+		} else if (isArrayWithNonPlainItems(resolvable, depthLeft)) {
+			let result = false;
+			resolvable.forEach(item =&gt; {
+				result = deepUnnotify(item, notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
+		} else if (isObjectWithNonPlainItems(resolvable, depthLeft)) {
+			let result = false;
+			Object.keys(resolvable).forEach(key =&gt; {
+				result = deepUnnotify(resolvable[key], notifyKeys, depthLeft - 1) || result;
+			});
+			return result;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
+/**
+ * @summary A {@link Bond} which retains dependencies on other {@link Bond}s.
+ * @description This inherits from the {@link Bond} class, providing its full API,
+ * but also allows for dependencies to other `Bond`s to be registered. When
+ * any dependency changes value (or _readiness_), a callback is executed and
+ * is passed the new set of underlying values corresponding to each dependency.
+ *
+ * The callback is made if and only if this object is in use (i.e. {@link Bond#use}
+ * or one of its dependents has been called).
+ */
+class ReactiveBond extends Bond {
+	/**
+	 * Constructs a new object.
+	 *
+	 * @param {array} args - Each item that this object&apos;s representative value
+	 * is dependent upon, and which needs to be used by the callback function
+	 * (presumably to determine that value to be passed into {@link Bond#changed}).
+	 * @param {array} dependencies - {@link Bond}s or {Promise}s that the representative
+	 * value is dependent on, but which are not needed for passing into the
+	 * callback.
+	 * @param {function} execute - The callback function which is called when
+	 * any item of `args` or `deps` changes its underlying value. A value corresponding
+	 * to each item in `args` are passed to the callback:
+	 * items that are {@link Bond}s are resolved to the value they represent before
+	 * being passed into the callback `execute` function. {Promise} objects are
+	 * likewise resolved for their underlying value. Structures such as arrays
+	 * and objects are traversed recursively and likewise interpreted. Other
+	 * types are passed straight through.
+	 * The callback is only made when all items of `args` are considered _ready_.
+	 * @param {boolean} mayBeNull - Noramlly, `null` is a valid value for dependent `Bond`s
+	 * and `Promise`s to represent. Pass `false` here to disallow `null` to be
+	 * considered valid (and thus any `null` dependencies in `args` will mean that
+	 * dependency is considered not _ready_ and no callback will happen).
+	 * @defaultValue true
+	 * @param {number} resolveDepth - The maximum number of times to recurse into
+	 * arrays or objects of `args` items in searching for {@link Bond}s or {Promise}s
+	 * to resolve.
+	 * @defaultValue 1
+	 */
+	constructor (
+		args,
+		dependencies,
+		execute,
+		mayBeNull = true,
+		resolveDepth = 1,
+		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse }
+	) {
+		super(mayBeNull, cache);
+
+		this._execute = (execute ? typeof execute === &apos;object&apos; ? execute.ready : execute : this.changed).bind(this);
+		this._executeReset = (execute &amp;&amp; typeof execute === &apos;object&apos; ? execute.reset : this.reset).bind(this);
+		this._active = false;
+		this._dependencies = dependencies.slice();
+		this._args = args.slice();
+		this._resolveDepth = resolveDepth;
+	}
+
+	_notified () {
+		//		console.log(`Polling ReactiveBond with resolveDepth ${resolveDepth}`);
+		if (this._args.every(item =&gt; isReady(item, this._resolveDepth))) {
+			//			console.log(`poll: All dependencies good...`, a, resolveDepth);
+			let resolvedArgs = this._args.map(argument =&gt;
+				resolved(argument, this._resolveDepth)
+			);
+			//			console.log(`poll: Mapped dependencies:`, am);
+			this._execute(resolvedArgs);
+		} else {
+			//			console.log(&quot;poll: One or more dependencies undefined&quot;);
+			this._executeReset();
+		}
+	}
+
+	// TODO: implement isDone.
+	initialise () {
+		//		console.log(`Initialising ReactiveBond for resolveDepth ${this.resolveDepth}`);
+		this._notifyKeys = [];
+		this._dependencies.forEach(dependency =&gt;
+			this._notifyKeys.push(dependency.notify(this._notified.bind(this)))
+		);
+
+		// true if any of our args are/contain Bonds/Promises.
+		var active = false;
+		this._args.forEach(argument =&gt; {
+			if (deepNotify(
+				argument,
+				this._notified.bind(this),
+				this._notifyKeys,
+				this._resolveDepth
+			)) {
+				active = true;
+			}
+		});
+
+		// no active args, no dependencies - nothing will happen. make the
+		// _notified call now.
+		if (!active &amp;&amp; this._dependencies.length === 0) {
+			this._notified();
+		}
+	}
+
+	finalise () {
+		//		console.log(`Finalising ReactiveBond with resolveDepth ${this.resolveDepth}`);
+		this._dependencies.forEach(dependency =&gt;
+			dependency.unnotify(this._notifyKeys.shift())
+		);
+		this._args.forEach(argument =&gt;
+			deepUnnotify(argument, this._notifyKeys, this._resolveDepth)
+		);
+	}
+}
+
+module.exports = ReactiveBond;
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

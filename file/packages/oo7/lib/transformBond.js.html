@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">packages/oo7/lib/transformBond.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src">oo7-parity/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7-parity/src/index.js~Bonds.html">Bonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createBonds">createBonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isNotOwned">isNotOwned</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isOwned">isOwned</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-bonds">bonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-options">options</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src-abis">oo7-parity/src/abis</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-abiPolyfill">abiPolyfill</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-BadgeABI">BadgeABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-BadgeRegABI">BadgeRegABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-GitHubHintABI">GitHubHintABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-OperationsABI">OperationsABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-RegistryExtras">RegistryExtras</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TokenABI">TokenABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TokenRegABI">TokenRegABI</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src-utils">oo7-parity/src/utils</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-capitalizeFirstLetter">capitalizeFirstLetter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cleanup">cleanup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-combineValue">combineValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-defDenom">defDenom</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-denominationMultiplier">denominationMultiplier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatBalance">formatBalance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatBlockNumber">formatBlockNumber</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatToExponential">formatToExponential</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatValue">formatValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatValueNoDenom">formatValueNoDenom</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-interpretQuantity">interpretQuantity</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-interpretRender">interpretRender</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isAddressValid">isAddressValid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isNullData">isNullData</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-removeSigningPrefix">removeSigningPrefix</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sha3">sha3</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-singleton">singleton</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-splitSignature">splitSignature</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-splitValue">splitValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toChecksumAddress">toChecksumAddress</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-asciiToHex">asciiToHex</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-bytesToHex">bytesToHex</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-denominations">denominations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hexToAscii">hexToAscii</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-lib">oo7/lib</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/bond.js~Bond.html">Bond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/bondCache.js~BondCache.html">BondCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html">NotReadyBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html">ReactiveBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/reactivePromise.js~ReactivePromise.html">ReactivePromise</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/readyBond.js~ReadyBond.html">ReadyBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/timeBond.js~TimeBond.html">TimeBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/lib/transformBond.js~TransformBond.html">TransformBond</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">packages/oo7/lib/transformBond.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+const Bond = require(&apos;./bond&apos;);
+const ReactiveBond = require(&apos;./reactiveBond&apos;);
+
+let defaultContext = typeof (global.parity) === &apos;undefined&apos; ? null : global.parity.api;
+
+/* Determines whether a `value` is not a {@link Bond} or
+ * a {@link Promise}, nor a possibly recursive structure that contains such
+ * a thing up to a depth `depthLeft` into it.
+ */
+function isPlain (value, depthLeft) {
+	if (typeof (value) !== &apos;object&apos; || value === null) {
+		return true;
+	}
+
+	if (Bond.instanceOf(value)) {
+		return false;
+	}
+
+	if (value instanceof Promise) {
+		return false;
+	}
+
+	if (depthLeft &gt; 0 &amp;&amp; value.constructor === Array) {
+		return value.every(index =&gt; isPlain(index, depthLeft - 1));
+	}
+
+	if (depthLeft &gt; 0 &amp;&amp; value.constructor === Object) {
+		return Object.keys(value).every(key =&gt;
+			isPlain(value[key], depthLeft - 1)
+		);
+	}
+
+	return true;
+}
+
+/**
+ * @summary Configurable {@link Bond}-derivation representing a functional transformation
+ * of a number of other items.
+ * @description This is the underlying class which powers the {@link Bond#map} and {@link Bond#mapAll}
+ * functions; you&apos;ll generally want to use those unless there is some particular
+ * aspect of this class&apos;s configurability that you need.
+ *
+ * It is constructed with a transform function and a number of args; this
+ * {@link Bond} represents the result of the function when applied to those arguemnts&apos;
+ * representative values. `Bond`s and `Promises`, are resolved automatically at
+ * a configurable depth within complex structures, both as input items and
+ * the value resulting from the transform function.
+ */
+class TransformBond extends ReactiveBond {
+	/**
+	 * Constructs a new object.
+	 *
+	 * @param {function} transform - The transformation function. It is called with
+	 * values corresponding (in order) to the items of `args`. It may return a
+	 * {@link Bond}, {Promise} or plain value resolving to representative values.
+	 * @param {array} args - A list of items whose representative values should be
+	 * passed to `transform`.
+	 * @defaultValue [].
+	 * @param {array} dependencies - A list of {@link Bond}s on which `transform` indirectly
+	 * depends.
+	 * @defaultValue [].
+	 * @param {number} outResolveDepth - The depth in any returned structure
+	 * that a {@link Bond} may be for it to be resolved.
+	 * @defaultValue 0.
+	 * @param {number} resolveDepth - The depth in a structure (array or object)
+	 * that a {@link Bond} may be in any of `args`&apos;s items for it to be resolved
+	 * (in place) to its representative value. Beyond this depth, {@link Bond}s amd
+	 * {Promise}s will be left alone.
+	 * @defaultValue 1.
+	 * @param {number} latched - If `false`, this object becomes _not ready_ as
+	 * long as there is an output value waiting for resolution.
+	 * @defaultValue `true`
+	 * @param {boolean} mayBeNull - If `false`, a resultant value of `null` from
+	 * `transform` causes this {@link Bond} to become _not ready_. Optional.
+	 * @defaultValue `true`
+	 * @param {object} context - The context (i.e. `this` object) that `transform`
+	 * is bound to. Optional; defaults to the value set by {@link setDefaultTransformBondContext}.
+	 * @defaultValue `null`
+	 */
+	constructor (
+		transform,
+		args = [],
+		dependencies = [],
+		outResolveDepth = 0,
+		resolveDepth = 1,
+		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse },
+		latched = true,
+		mayBeNull = true,
+		context = defaultContext
+	) {
+		super(args, dependencies, function (resolvedArguments) {
+			//			console.log(`Applying: ${JSON.stringify(args)}`);
+			// Cancel any previous result-resolving.
+			this.dropOut();
+
+			// Apply transform to the resolved argument values.
+			let result = transform.apply(context, resolvedArguments);
+
+			// Assue an undefined result means &quot;reset&quot;.
+			if (typeof (result) === &apos;undefined&apos;) {
+				console.warn(`Transformation returned undefined: Applied ${transform} to ${JSON.stringify(resolvedArguments)}.`);
+				this.reset();
+			} else if (result instanceof Promise) {
+				// If we&apos;re not latching, we reset while we resolve the
+				// resultant promise.
+				if (!latched) {
+					this.reset();
+				}
+				// Then resolve the Promise; by calling `changed`, we recurse
+				// as necessary.
+				result.then(this.changed.bind(this));
+			} else if (!isPlain(result, outResolveDepth)) {
+				//				console.log(`Using ReactiveBond to resolve and trigger non-plain result (at depth ${outResolveDepth})`);
+				// If we&apos;re not latching, we reset while we resolve the
+				// resultant Bond(s)/Promise(s).
+				if (!latched) {
+					this.reset();
+				}
+				// Then create a new `Bond` which we own to maintain the
+				// resultant complex resolvable structure.
+				this.useOut(new ReactiveBond([result], [], ([resolvedResult]) =&gt; {
+					//					console.log(`Resolved results: ${JSON.stringify(v)}. Triggering...`);
+					// Call `changed` to recurse as neccessary.
+					this.changed.bind(this)(resolvedResult);
+				}, false, outResolveDepth));
+			} else {
+				// Nothing special here - just call changed with the result.
+				this.changed(result);
+			}
+		}, mayBeNull, resolveDepth, cache);
+
+		// the current Bond used to resolve the result (output) value if the
+		// result of our transform is itself a Bond.
+		this._outBond = null;
+	}
+
+	// Register `newOutBond` as our result-resolving bond. Ensures it knows
+	// we depend on it via `use`.
+	useOut (newOutBond) {
+		this._outBond = newOutBond.use();
+	}
+
+	// Unregister our current result-resolving bond. Ensures it knows
+	// we no longer depend on it via `drop`.
+	dropOut () {
+		if (this._outBond !== null) {
+			this._outBond.drop();
+		}
+		this._outBond = null;
+	}
+
+	// If nobody depends on us (anymore), then drop our result-resolving Bond.
+	finalise () {
+		this.dropOut();
+		ReactiveBond.prototype.finalise.call(this);
+	}
+
+	/**
+	 * Set the default context under which {@link Bond} transformations run.
+	 *
+	 * @see {@link Bond#map} {@link Bond#mapAll} {@link TransformBond}
+	 */
+	static setDefaultContext (c) {
+		defaultContext = c;
+	}
+}
+
+module.exports = TransformBond;
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

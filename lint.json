@@ -1,0 +1,1330 @@
+[
+  {
+    "name": "Bond#defaultTo",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 217,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 218,
+        "line": "\t * Alters this object so that it is always _ready_."
+      },
+      {
+        "lineNumber": 219,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 220,
+        "line": "\t * If this object is ever {@link Bond#reset}, then it will be changed to the"
+      },
+      {
+        "lineNumber": 221,
+        "line": "\t * value given."
+      },
+      {
+        "lineNumber": 222,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 223,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 224,
+        "line": "\t * let x = (new Bond).defaultTo(42);"
+      },
+      {
+        "lineNumber": 225,
+        "line": "\t * x.log();\t// 42"
+      },
+      {
+        "lineNumber": 226,
+        "line": "\t * x.changed(69);"
+      },
+      {
+        "lineNumber": 227,
+        "line": "\t * x.log();\t// 69"
+      },
+      {
+        "lineNumber": 228,
+        "line": "\t * x.reset();"
+      },
+      {
+        "lineNumber": 229,
+        "line": "\t * x.log() // 42"
+      },
+      {
+        "lineNumber": 230,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 231,
+        "line": "\t * @param {*} x - The value that this object represents if it would otherwise"
+      },
+      {
+        "lineNumber": 232,
+        "line": "\t * be _not ready_."
+      },
+      {
+        "lineNumber": 233,
+        "line": "\t * @returns {@link Bond} - This (mutated) object."
+      },
+      {
+        "lineNumber": 234,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 235,
+        "line": "\tdefaultTo (_defaultValue) {"
+      }
+    ],
+    "codeParams": [
+      "_defaultValue"
+    ],
+    "docParams": [
+      "x"
+    ]
+  },
+  {
+    "name": "Bond#changed",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 260,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 261,
+        "line": "\t * Makes the object _ready_ and sets its current value."
+      },
+      {
+        "lineNumber": 262,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 263,
+        "line": "\t * Any functions that are registered for _notification_ (see {@link Bond#notify})"
+      },
+      {
+        "lineNumber": 264,
+        "line": "\t * or are _tied_ (see {@link Bond#tie}) will be called if this {@link Bond} is not"
+      },
+      {
+        "lineNumber": 265,
+        "line": "\t * currently _ready_ or is _ready_ but has a different value."
+      },
+      {
+        "lineNumber": 266,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 267,
+        "line": "\t * This function is a no-op if the JSON representations of `v` and of the"
+      },
+      {
+        "lineNumber": 268,
+        "line": "\t * current value, if any, are equal."
+      },
+      {
+        "lineNumber": 269,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 270,
+        "line": "\t * @param {*} v - The new value that this object should represent. If `undefined`"
+      },
+      {
+        "lineNumber": 271,
+        "line": "\t * then the function does nothing."
+      },
+      {
+        "lineNumber": 272,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 273,
+        "line": "\tchanged (newValue) {"
+      }
+    ],
+    "codeParams": [
+      "newValue"
+    ],
+    "docParams": [
+      "v"
+    ]
+  },
+  {
+    "name": "Bond#trigger",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 285,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 286,
+        "line": "\t * Makes the object _ready_ and sets its current value."
+      },
+      {
+        "lineNumber": 287,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 288,
+        "line": "\t * Any functions that are registered for _notification_ (see {@link Bond#notify})"
+      },
+      {
+        "lineNumber": 289,
+        "line": "\t * or are _tied_ (see {@link Bond#tie}) will be called if this {@link Bond} is not"
+      },
+      {
+        "lineNumber": 290,
+        "line": "\t * currently _ready_ or is _ready_ but has a different value."
+      },
+      {
+        "lineNumber": 291,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 292,
+        "line": "\t * Unlike {@link Bond#changed}, this function doesn't check equivalence"
+      },
+      {
+        "lineNumber": 293,
+        "line": "\t * between the new value and the current value."
+      },
+      {
+        "lineNumber": 294,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 295,
+        "line": "\t * @param {*} v - The new value that this object should represent. By default,"
+      },
+      {
+        "lineNumber": 296,
+        "line": "\t * it will reissue the current value. It is an error to call it without"
+      },
+      {
+        "lineNumber": 297,
+        "line": "\t * an argument if it is not _ready_."
+      },
+      {
+        "lineNumber": 298,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 299,
+        "line": "\ttrigger (newValue = this._value) {"
+      }
+    ],
+    "codeParams": [
+      "newValue"
+    ],
+    "docParams": [
+      "v"
+    ]
+  },
+  {
+    "name": "Bond#notify",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 417,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 418,
+        "line": "\t * Register a function to be called when the value or the _readiness_"
+      },
+      {
+        "lineNumber": 419,
+        "line": "\t * changes."
+      },
+      {
+        "lineNumber": 420,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 421,
+        "line": "\t * Calling this function already implies calling {@link Bond#use} - there"
+      },
+      {
+        "lineNumber": 422,
+        "line": "\t * is no need to call both."
+      },
+      {
+        "lineNumber": 423,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 424,
+        "line": "\t * Use this only when you need to be notified should the object be reset to"
+      },
+      {
+        "lineNumber": 425,
+        "line": "\t * a not _ready_ state. In general you will want to use {@link Bond#tie}"
+      },
+      {
+        "lineNumber": 426,
+        "line": "\t * instead."
+      },
+      {
+        "lineNumber": 427,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 428,
+        "line": "\t * @param {Bond~notifyCallback} f - The function to be called. Takes no parameters."
+      },
+      {
+        "lineNumber": 429,
+        "line": "\t * @returns {Symbol} An identifier for this registration. Must be provided"
+      },
+      {
+        "lineNumber": 430,
+        "line": "\t * to {@link Bond#unnotify} when the function no longer needs to be called."
+      },
+      {
+        "lineNumber": 431,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 432,
+        "line": "\tnotify (callback) {"
+      }
+    ],
+    "codeParams": [
+      "callback"
+    ],
+    "docParams": [
+      "f"
+    ]
+  },
+  {
+    "name": "Bond#tie",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 463,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 464,
+        "line": "\t * Register a function to be called when the value changes."
+      },
+      {
+        "lineNumber": 465,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 466,
+        "line": "\t * Calling this function already implies calling {@link Bond#use} - there"
+      },
+      {
+        "lineNumber": 467,
+        "line": "\t * is no need to call both."
+      },
+      {
+        "lineNumber": 468,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 469,
+        "line": "\t * Unlike {@link Bond#notify}, this does not get"
+      },
+      {
+        "lineNumber": 470,
+        "line": "\t * called should the object become reset into being not _ready_."
+      },
+      {
+        "lineNumber": 471,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 472,
+        "line": "\t * @param {Bond~tieCallback} f - The function to be called."
+      },
+      {
+        "lineNumber": 473,
+        "line": "\t * @returns {Symbol} - An identifier for this registration. Must be provided"
+      },
+      {
+        "lineNumber": 474,
+        "line": "\t * to {@link Bond#untie} when the function no longer needs to be called."
+      },
+      {
+        "lineNumber": 475,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 476,
+        "line": "\ttie (callback) {"
+      }
+    ],
+    "codeParams": [
+      "callback"
+    ],
+    "docParams": [
+      "f"
+    ]
+  },
+  {
+    "name": "Bond#then",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 553,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 554,
+        "line": "\t * Register a function to be called when this object becomes _ready_."
+      },
+      {
+        "lineNumber": 555,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 556,
+        "line": "\t * For an object to be considered _ready_, it must represent a definite"
+      },
+      {
+        "lineNumber": 557,
+        "line": "\t * value. In this case, {@link Bond#isReady} will return `true`."
+      },
+      {
+        "lineNumber": 558,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 559,
+        "line": "\t * If the object is already _ready_, then `f` will be called immediately. If"
+      },
+      {
+        "lineNumber": 560,
+        "line": "\t * not, `f` will be deferred until the object assumes a value. `f` will be"
+      },
+      {
+        "lineNumber": 561,
+        "line": "\t * called at most once."
+      },
+      {
+        "lineNumber": 562,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 563,
+        "line": "\t * @param {Bond~thenCallback} f The callback to be made once the object is ready."
+      },
+      {
+        "lineNumber": 564,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 565,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 566,
+        "line": "\t * let x = new Bond;"
+      },
+      {
+        "lineNumber": 567,
+        "line": "\t * x.then(console.log);"
+      },
+      {
+        "lineNumber": 568,
+        "line": "\t * x.changed(42); // 42 is written to the console."
+      },
+      {
+        "lineNumber": 569,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 570,
+        "line": "\tthen (callback) {"
+      }
+    ],
+    "codeParams": [
+      "callback"
+    ],
+    "docParams": [
+      "f"
+    ]
+  },
+  {
+    "name": "Bond#done",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 581,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 582,
+        "line": "\t * Register a function to be called when this object becomes _done_."
+      },
+      {
+        "lineNumber": 583,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 584,
+        "line": "\t * For an object to be considered `done`, it must be _ready_ and the"
+      },
+      {
+        "lineNumber": 585,
+        "line": "\t * function {@link Bond#isDone} should exist and return `true`."
+      },
+      {
+        "lineNumber": 586,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 587,
+        "line": "\t * If the object is already _done_, then `f` will be called immediately. If"
+      },
+      {
+        "lineNumber": 588,
+        "line": "\t * not, `f` will be deferred until the object assumes a value. `f` will be"
+      },
+      {
+        "lineNumber": 589,
+        "line": "\t * called at most once."
+      },
+      {
+        "lineNumber": 590,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 591,
+        "line": "\t * @param {Bond~thenCallback} f The callback to be made once the object is ready."
+      },
+      {
+        "lineNumber": 592,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 593,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 594,
+        "line": "\t * let x = new Bond;"
+      },
+      {
+        "lineNumber": 595,
+        "line": "\t * x.then(console.log);"
+      },
+      {
+        "lineNumber": 596,
+        "line": "\t * x.changed(42); // 42 is written to the console."
+      },
+      {
+        "lineNumber": 597,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 598,
+        "line": "\tdone (callback) {"
+      }
+    ],
+    "codeParams": [
+      "callback"
+    ],
+    "docParams": [
+      "f"
+    ]
+  },
+  {
+    "name": "Bond#map",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 630,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 631,
+        "line": "\t * Make a new {@link Bond} which is the functional transformation of this object."
+      },
+      {
+        "lineNumber": 632,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 633,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 634,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 635,
+        "line": "\t * let t = b.map(_ => _ * 2);"
+      },
+      {
+        "lineNumber": 636,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 637,
+        "line": "\t * b.changed(21); // logs 42"
+      },
+      {
+        "lineNumber": 638,
+        "line": "\t * b.changed(34.5); // logs 69"
+      },
+      {
+        "lineNumber": 639,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 640,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 641,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 642,
+        "line": "\t * let t = b.map(_ => { let r = new Bond; r.changed(_ * 2); return r; });"
+      },
+      {
+        "lineNumber": 643,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 644,
+        "line": "\t * b.changed(21); // logs 42"
+      },
+      {
+        "lineNumber": 645,
+        "line": "\t * b.changed(34.5); // logs 69"
+      },
+      {
+        "lineNumber": 646,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 647,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 648,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 649,
+        "line": "\t * let t = b.map(_ => { let r = new Bond; r.changed(_ * 2); return [r]; }, 1);"
+      },
+      {
+        "lineNumber": 650,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 651,
+        "line": "\t * b.changed(21); // logs [42]"
+      },
+      {
+        "lineNumber": 652,
+        "line": "\t * b.changed(34.5); // logs [69]"
+      },
+      {
+        "lineNumber": 653,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 654,
+        "line": "\t * @param {function} f - The transformation to apply to the value represented"
+      },
+      {
+        "lineNumber": 655,
+        "line": "\t * by this {@link Bond}."
+      },
+      {
+        "lineNumber": 656,
+        "line": "\t * @param {number} outResolveDepth - The number of levels deep in any array"
+      },
+      {
+        "lineNumber": 657,
+        "line": "\t * object values of the result of the transformation that {@link Bond} values"
+      },
+      {
+        "lineNumber": 658,
+        "line": "\t * will be resolved."
+      },
+      {
+        "lineNumber": 659,
+        "line": "\t * @default 0"
+      },
+      {
+        "lineNumber": 660,
+        "line": "\t * @returns {@link Bond} - An object representing this object's value with"
+      },
+      {
+        "lineNumber": 661,
+        "line": "\t * the function `f` applied to it."
+      },
+      {
+        "lineNumber": 662,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 663,
+        "line": "\tmap (transform, outResolveDepth = 0, cache = undefined) {"
+      }
+    ],
+    "codeParams": [
+      "transform",
+      "outResolveDepth",
+      "cache"
+    ],
+    "docParams": [
+      "f",
+      "outResolveDepth"
+    ]
+  },
+  {
+    "name": "Bond#mapEach",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 668,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 669,
+        "line": "\t * Create a new {@link Bond} which represents this object's array value with"
+      },
+      {
+        "lineNumber": 670,
+        "line": "\t * its elements transformed by a function."
+      },
+      {
+        "lineNumber": 671,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 672,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 673,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 674,
+        "line": "\t * let t = b.mapEach(_ => _ * 2);"
+      },
+      {
+        "lineNumber": 675,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 676,
+        "line": "\t * b.changed([1, 2, 3]); // logs [2, 4, 6]"
+      },
+      {
+        "lineNumber": 677,
+        "line": "\t * b.changed([21]); // logs [42]"
+      },
+      {
+        "lineNumber": 678,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 679,
+        "line": "\t * @param {function} f - The transformation to apply to each element."
+      },
+      {
+        "lineNumber": 680,
+        "line": "\t * @returns The new {@link Bond} object representing the element-wise"
+      },
+      {
+        "lineNumber": 681,
+        "line": "\t * Transformation."
+      },
+      {
+        "lineNumber": 682,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 683,
+        "line": "\tmapEach (transform, cache = undefined) {"
+      }
+    ],
+    "codeParams": [
+      "transform",
+      "cache"
+    ],
+    "docParams": [
+      "f"
+    ]
+  },
+  {
+    "name": "Bond#sub",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 687,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 688,
+        "line": "\t * Create a new {@link Bond} which represents this object's value when"
+      },
+      {
+        "lineNumber": 689,
+        "line": "\t * subscripted."
+      },
+      {
+        "lineNumber": 690,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 691,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 692,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 693,
+        "line": "\t * let t = b.sub('foo');"
+      },
+      {
+        "lineNumber": 694,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 695,
+        "line": "\t * b.changed({foo: 42}); // logs 42"
+      },
+      {
+        "lineNumber": 696,
+        "line": "\t * b.changed({foo: 69}); // logs 69"
+      },
+      {
+        "lineNumber": 697,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 698,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 699,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 700,
+        "line": "\t * let c = new Bond;"
+      },
+      {
+        "lineNumber": 701,
+        "line": "\t * let t = b.sub(c);"
+      },
+      {
+        "lineNumber": 702,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 703,
+        "line": "\t * b.changed([42, 4, 2]);"
+      },
+      {
+        "lineNumber": 704,
+        "line": "\t * c.changed(0); // logs 42"
+      },
+      {
+        "lineNumber": 705,
+        "line": "\t * c.changed(1); // logs 4"
+      },
+      {
+        "lineNumber": 706,
+        "line": "\t * b.changed([68, 69, 70]); // logs 69"
+      },
+      {
+        "lineNumber": 707,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 708,
+        "line": "\t * @param {string|number} name - The field or index by which to subscript this object's"
+      },
+      {
+        "lineNumber": 709,
+        "line": "\t * represented value. May itself be a {@link Bond}, in which case, the"
+      },
+      {
+        "lineNumber": 710,
+        "line": "\t * resolved value is used."
+      },
+      {
+        "lineNumber": 711,
+        "line": "\t * @param {number} outResolveDepth - The depth in any returned structure"
+      },
+      {
+        "lineNumber": 712,
+        "line": "\t * that a {@link Bond} may be for it to be resolved."
+      },
+      {
+        "lineNumber": 713,
+        "line": "\t * @returns {@link Bond} - The object representing the value which is the"
+      },
+      {
+        "lineNumber": 714,
+        "line": "\t * value represented by this object subscripted by the value represented by"
+      },
+      {
+        "lineNumber": 715,
+        "line": "\t * `name`."
+      },
+      {
+        "lineNumber": 716,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 717,
+        "line": "\tsub (name, outResolveDepth = 0, cache = undefined) {"
+      }
+    ],
+    "codeParams": [
+      "name",
+      "outResolveDepth",
+      "cache"
+    ],
+    "docParams": [
+      "name",
+      "outResolveDepth"
+    ]
+  },
+  {
+    "name": "Bond.all",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 729,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 730,
+        "line": "\t * Create a new {@link Bond} which represents the array of many objects'"
+      },
+      {
+        "lineNumber": 731,
+        "line": "\t * representative values."
+      },
+      {
+        "lineNumber": 732,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 733,
+        "line": "\t * This object will be _ready_ if and only if all objects in `list` are"
+      },
+      {
+        "lineNumber": 734,
+        "line": "\t * themselves _ready_."
+      },
+      {
+        "lineNumber": 735,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 736,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 737,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 738,
+        "line": "\t * let c = new Bond;"
+      },
+      {
+        "lineNumber": 739,
+        "line": "\t * let t = Bond.all([b, c]);"
+      },
+      {
+        "lineNumber": 740,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 741,
+        "line": "\t * b.changed(42);"
+      },
+      {
+        "lineNumber": 742,
+        "line": "\t * c.changed(69); // logs [42, 69]"
+      },
+      {
+        "lineNumber": 743,
+        "line": "\t * b.changed(3); // logs [3, 69]"
+      },
+      {
+        "lineNumber": 744,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 745,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 746,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 747,
+        "line": "\t * let c = new Bond;"
+      },
+      {
+        "lineNumber": 748,
+        "line": "\t * let t = Bond.all(['a', {b, c}, 'd'], 2);"
+      },
+      {
+        "lineNumber": 749,
+        "line": "\t * t.tie(console.log);"
+      },
+      {
+        "lineNumber": 750,
+        "line": "\t * b.changed(42);"
+      },
+      {
+        "lineNumber": 751,
+        "line": "\t * c.changed(69); // logs ['a', {b: 42, c: 69}, 'd']"
+      },
+      {
+        "lineNumber": 752,
+        "line": "\t * b.changed(null); // logs ['a', {b: null, c: 69}, 'd']"
+      },
+      {
+        "lineNumber": 753,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 754,
+        "line": "\t * @param {array} list - An array of {@link Bond} objects, plain values or"
+      },
+      {
+        "lineNumber": 755,
+        "line": "\t * structures (arrays/objects) which contain either of these."
+      },
+      {
+        "lineNumber": 756,
+        "line": "\t * @param {number} resolveDepth - The depth in a structure (array or object)"
+      },
+      {
+        "lineNumber": 757,
+        "line": "\t * that a {@link Bond} may be in any of `list`'s items for it to be resolved."
+      },
+      {
+        "lineNumber": 758,
+        "line": "\t * @returns {@link Bond} - The object representing the value of the array of"
+      },
+      {
+        "lineNumber": 759,
+        "line": "\t * each object's representative value in `list`."
+      },
+      {
+        "lineNumber": 760,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 761,
+        "line": "\tstatic all (list, resolveDepth = 1, cache = undefined) {"
+      }
+    ],
+    "codeParams": [
+      "list",
+      "resolveDepth",
+      "cache"
+    ],
+    "docParams": [
+      "list",
+      "resolveDepth"
+    ]
+  },
+  {
+    "name": "Bond.mapAll",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 766,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 767,
+        "line": "\t * Create a new {@link Bond} which represents a functional transformation of"
+      },
+      {
+        "lineNumber": 768,
+        "line": "\t * many objects' representative values."
+      },
+      {
+        "lineNumber": 769,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 770,
+        "line": "\t * @example"
+      },
+      {
+        "lineNumber": 771,
+        "line": "\t * let b = new Bond;"
+      },
+      {
+        "lineNumber": 772,
+        "line": "\t * b.changed(23);"
+      },
+      {
+        "lineNumber": 773,
+        "line": "\t * let c = new Bond;"
+      },
+      {
+        "lineNumber": 774,
+        "line": "\t * c.changed(3);"
+      },
+      {
+        "lineNumber": 775,
+        "line": "\t * let multiply = (x, y) => x * y;"
+      },
+      {
+        "lineNumber": 776,
+        "line": "\t * // These two are exactly equivalent:"
+      },
+      {
+        "lineNumber": 777,
+        "line": "\t * let bc = Bond.all([b, c]).map(([b, c]) => multiply(b, c));"
+      },
+      {
+        "lineNumber": 778,
+        "line": "\t * let bc2 = Bond.mapAll([b, c], multiply);"
+      },
+      {
+        "lineNumber": 779,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 780,
+        "line": "\t * @param {array} list - An array of {@link Bond} objects or plain values."
+      },
+      {
+        "lineNumber": 781,
+        "line": "\t * @param {function} f - A function which accepts as many parameters are there"
+      },
+      {
+        "lineNumber": 782,
+        "line": "\t * values in `list` and transforms it into a {@link Bond}, {@link Promise}"
+      },
+      {
+        "lineNumber": 783,
+        "line": "\t * or other value."
+      },
+      {
+        "lineNumber": 784,
+        "line": "\t * @param {number} resolveDepth - The depth in a structure (array or object)"
+      },
+      {
+        "lineNumber": 785,
+        "line": "\t * that a {@link Bond} may be in any of `list`'s items for it to be resolved."
+      },
+      {
+        "lineNumber": 786,
+        "line": "\t * @param {number} outResolveDepth - The depth in any returned structure"
+      },
+      {
+        "lineNumber": 787,
+        "line": "\t * that a {@link Bond} may be for it to be resolved."
+      },
+      {
+        "lineNumber": 788,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 789,
+        "line": "\tstatic mapAll (list, transform, outResolveDepth = 0, resolveDepth = 1, cache = undefined) {"
+      }
+    ],
+    "codeParams": [
+      "list",
+      "transform",
+      "outResolveDepth",
+      "resolveDepth",
+      "cache"
+    ],
+    "docParams": [
+      "list",
+      "f",
+      "resolveDepth",
+      "outResolveDepth"
+    ]
+  },
+  {
+    "name": "Bond#reduce",
+    "filePath": "packages/oo7/lib/bond.js",
+    "lines": [
+      {
+        "lineNumber": 799,
+        "line": "\t/**"
+      },
+      {
+        "lineNumber": 800,
+        "line": "\t * Lazily transforms the contents of this object's value when it is an array."
+      },
+      {
+        "lineNumber": 801,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 802,
+        "line": "\t * This operates on a {@link Bond} which should represent an array. It"
+      },
+      {
+        "lineNumber": 803,
+        "line": "\t * transforms this into a value based on a number of elements at the"
+      },
+      {
+        "lineNumber": 804,
+        "line": "\t * beginning of that array using a recursive _reduce_ algorithm."
+      },
+      {
+        "lineNumber": 805,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 806,
+        "line": "\t * The reduce algorithm works around an accumulator model. It begins with"
+      },
+      {
+        "lineNumber": 807,
+        "line": "\t * the `init` value, and incremenetally accumulates"
+      },
+      {
+        "lineNumber": 808,
+        "line": "\t * elements from the array by changing its value to one returned from the"
+      },
+      {
+        "lineNumber": 809,
+        "line": "\t * `accum` function, when passed the current accumulator and the next value"
+      },
+      {
+        "lineNumber": 810,
+        "line": "\t * from the array. The `accum` function may return a {@link Bond}, in which case it"
+      },
+      {
+        "lineNumber": 811,
+        "line": "\t * will be resolved (using {@link Bond#then}) and that value used."
+      },
+      {
+        "lineNumber": 812,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 813,
+        "line": "\t * The `accum` function returns a value (or a {@link Bond} which resolves to a value)"
+      },
+      {
+        "lineNumber": 814,
+        "line": "\t * of an array with exactly two elements; the first is the new value for the"
+      },
+      {
+        "lineNumber": 815,
+        "line": "\t * accumulator. The second is a boolean _early exit_ flag."
+      },
+      {
+        "lineNumber": 816,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 817,
+        "line": "\t * Accumulation will continue until either there are no more elements in the"
+      },
+      {
+        "lineNumber": 818,
+        "line": "\t * array to be processed, or until the _early exit_ flag is true, which ever"
+      },
+      {
+        "lineNumber": 819,
+        "line": "\t * happens first."
+      },
+      {
+        "lineNumber": 820,
+        "line": "\t *"
+      },
+      {
+        "lineNumber": 821,
+        "line": "\t * @param {function} accum - The reduce's accumulator function."
+      },
+      {
+        "lineNumber": 822,
+        "line": "\t * @param {*} init - The initialisation value for the reduce algorithm."
+      },
+      {
+        "lineNumber": 823,
+        "line": "\t * @returns {Bond} - A {@link Bond} representing `init` when the input array is empty,"
+      },
+      {
+        "lineNumber": 824,
+        "line": "\t * otherwise the reduction of that array."
+      },
+      {
+        "lineNumber": 825,
+        "line": "\t */"
+      },
+      {
+        "lineNumber": 826,
+        "line": "\treduce (accum, init, cache = undefined) {"
+      }
+    ],
+    "codeParams": [
+      "accum",
+      "init",
+      "cache"
+    ],
+    "docParams": [
+      "accum",
+      "init"
+    ]
+  },
+  {
+    "name": "createBonds",
+    "filePath": "packages/oo7-parity/src/index.js",
+    "lines": [
+      {
+        "lineNumber": 101,
+        "line": "/**"
+      },
+      {
+        "lineNumber": 102,
+        "line": " * @param {{api: ParityApi}} Options object"
+      },
+      {
+        "lineNumber": 103,
+        "line": " * @returns {Bonds}"
+      },
+      {
+        "lineNumber": 104,
+        "line": " */"
+      },
+      {
+        "lineNumber": 105,
+        "line": "function createBonds (options) {"
+      }
+    ],
+    "codeParams": [
+      "options"
+    ],
+    "docParams": [
+      "Options"
+    ]
+  }
+]
