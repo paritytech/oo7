@@ -16,6 +16,7 @@ const ParityApi = require('@parity/api');
 
 const sha3 = ParityApi.util.sha3;
 
+/** @type {ABI} */
 const RegistryABI = require('./registry.json');
 const RegistryExtras = [
 	{ name: 'lookupData', method: 'getData', args: [n => sha3(n.toLowerCase()), null] },
@@ -23,14 +24,26 @@ const RegistryExtras = [
 	{ name: 'lookupUint', method: 'getUint', args: [n => sha3(n.toLowerCase()), null] },
 	{ name: 'lookupOwner', method: 'getOwner', args: [n => sha3(n.toLowerCase())] }
 ];
-const GitHubHintABI = require('./githubhint.json');
-const OperationsABI = require('./operations.json');
-const BadgeRegABI = require('./badgereg.json');
-const TokenRegABI = require('./tokenreg.json');
-const BadgeABI = require('./badge.json');
-const TokenABI = require('./token.json');
+/**
+ * Github Hint ABI definition.
+ *
+ * @type {ABI}
+ */
+const GitHubHintABI = (() => require('./githubhint.json'))();
+/** @type {ABI} */
+const OperationsABI = (() => require('./operations.json'))();
+/** @type {ABI} */
+const BadgeRegABI = (() => require('./badgereg.json'))();
+/** @type {ABI} */
+const TokenRegABI = (() => require('./tokenreg.json'))();
+/** @type {ABI} */
+const BadgeABI = (() => require('./badge.json'))();
+/** @type {ABI} */
+const TokenABI = (() => require('./token.json'))();
 
-// Deprecated.
+/**
+ * Deprecated.
+ */
 function abiPolyfill () {
 	return {
 		registry: RegistryABI,
@@ -44,7 +57,8 @@ function abiPolyfill () {
 	};
 }
 
-module.exports = { abiPolyfill,
+module.exports = {
+	abiPolyfill,
 	RegistryABI,
 	RegistryExtras,
 	GitHubHintABI,
