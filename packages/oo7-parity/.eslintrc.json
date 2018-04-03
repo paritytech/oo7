@@ -1,6 +1,5 @@
 {
 	"extends": ["semistandard"],
-	"parser": "babel-eslint",
 	"env": {
 		"browser": true,
 		"mocha": true,
