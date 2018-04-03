@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global setInterval,clearInterval */
+
 const Bond = require('./bond');
 
 var privateTestIntervals = {};
@@ -34,19 +36,27 @@ class TimeBond extends Bond {
 		this.trigger(Math.floor(Date.now() / 1000) * 1000);
 	}
 	initialise () {
-		if (typeof (window) !== 'undefined') { this.interval = window.setInterval(this.poll.bind(this), 1000); } else {
+		if (!TimeBond.useTestIntervals) {
+			this.interval = setInterval(this.poll.bind(this), 1000);
+		} else {
 			this.interval = Object.keys(privateTestIntervals).length + 1;
 			privateTestIntervals[this.interval] = this.poll.bind(this);
 		}
 	}
 	finalise () {
-		if (typeof (window) !== 'undefined') { window.clearInterval(this.interval); } else {
-			if (!privateTestIntervals[this.interval]) { throw new Error(`finalise() called multiple time on same timer!`); }
+		if (!TimeBond.useTestIntervals) {
+			clearInterval(this.interval);
+		} else {
+			if (!privateTestIntervals[this.interval]) {
+				throw new Error(`finalise() called multiple time on same timer!`);
+			}
 			delete privateTestIntervals[this.interval];
 		}
 	}
 
 	static testIntervals () { return privateTestIntervals; }
 }
+
+TimeBond.useTestIntervals = false;
 
 module.exports = TimeBond;

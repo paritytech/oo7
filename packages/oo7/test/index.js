@@ -425,6 +425,7 @@ describe('TransformBond', function () {
 });
 
 function intervalCount () { return Object.keys(TimeBond.testIntervals()).length; }
+TimeBond.useTestIntervals = true;
 
 describe('TimeBond', function () {
 	it('should be testable', () => {

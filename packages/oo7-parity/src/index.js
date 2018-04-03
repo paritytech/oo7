@@ -15,6 +15,8 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable no-proto */
 
+// TODO [Document auxilary types]
+
 const oo7 = require('oo7');
 const ParityApi = require('@parity/api');
 
@@ -73,20 +75,6 @@ function defaultProvider () {
 
 class Bonds {
 	/**
-	 *
-	 * @type {TimeBond}
-	 */
-	time;
-
-	/**
-	 * A {@link Bond} representing latest block number.
-	 *
-	 * @type {Bond}
-	 */
-	height;
-
-
-	/**
 	 * Creates a new oo7-parity bonds aggregate object with given ethereum provider.
 	 *
 	 * @param {?Provider} provider Web3-compatible transport Provider (i.e. `window.ethereum`). Uses a sane default if not provided.
@@ -96,7 +84,477 @@ class Bonds {
 		if (!this) {
 			return createBonds({ api: new ParityApi(provider) });
 		}
+
+		/**
+		 *
+		 * A {@link Bond} representing latest time. Updated every second.
+		 *
+		 * @type {TimeBond}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.time
+		 *	.tie(console.log) // prints time periodically
+		 */
+		this.time = null;
+
+		/**
+		 * A {@link Bond} representing latest block number.
+		 * Alias for {@link Bonds.blockNumber}
+		 *
+		 * @type {Bond.<Number>}
+		 */
+		this.height = null;
+
+		/**
+		 * A {@link Bond} representing latest block number.
+		 *
+		 * @type {Bond.<Number>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.blockNumber
+		 *	.tie(console.log) // prints latest block number when it changes
+		 */
+		this.blockNumber = null;
+
+		/**
+		 * A function returning bond that represents given block content.
+		 *
+		 * @param {string|number|Bond} number block number
+		 * @returns {Bond.<Block>} block bond
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.blockByNumber(bonds.height)
+		 *	.tie(console.log) // prints latest block
+		 */
+		this.blockByNumber = null;
+
+		/**
+		 * A function returning bond that represents given block content.
+		 *
+		 * @param {string|number|Bond} hash block hash
+		 * @returns {Bond.<Block>} block bond
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.blockByHash('0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d')
+		 *	.tie(console.log) // prints block with given hash
+		 */
+		this.blockByHash = null;
+
+		/**
+		 * Similar to {@link Bonds.blockByNumber} and {@link Bonds.blockByHash},
+		 * but accepts both hashes and numbers as arguments.
+		 *
+		 * @param {string|number|Bond} hashOrNumber block hash or block number
+		 * @returns {Bond.<Block>} block bond
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.findBlock('0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d')
+		 *	.tie(console.log) // prints block with given hash
+		 */
+		this.findBlock = null;
+
+		/**
+		 * A subscriptable version of {@link Bonds.findBlock}
+		 *
+		 * You can retrieve bonds given block numbers or hashes or other Bonds.
+		 *
+		 * @type {Object.<string|number|Bond, Bond>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.blocks['0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d']
+		 *	.tie(console.log) // prints block with given hash
+		 *
+		 * bonds
+		 *	.blocks[bonds.height]
+		 *	.tie(console.log) // prints latest block every time it changes
+		 */
+		this.blocks = null;
+
+		/**
+		 * A {@link Bond} for latest block.
+		 *
+		 * @type {Bond.<Block>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.head
+		 *	.tie(console.log) // prints latest block every time it changes
+		 *
+		 */
+		this.head = null;
+
+		/**
+		 * A {@link Bond} for currently set block author.
+		 * Represents a result of `eth_coinbase` RPC call.
+		 *
+		 * @type {Bond.<Address>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.author
+		 *	.tie(console.log) // prints currently set block author (coinbase/miner) every time it changes
+		 *
+		 */
+		this.author = null;
+
+		/**
+		 * List of accounts managed by the node.
+		 *
+		 * @type {Bond.<Address[]>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.accounts
+		 *	.tie(console.log) // prints accounts list every time it changes
+		 *
+		 */
+		this.accounts = null;
+
+		/**
+		 * User-selected default account for this dapp.
+		 *
+		 * @type {Bond.<Address>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.defaultAccount
+		 *	.tie(console.log) // prints default account every time it changes
+		 *
+		 */
+		this.defaultAccount = null;
+
+		/**
+		 * Alias for {@link Bonds.defaultAccount}
+		 *
+		 * @type {Bond.<Address>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.me
+		 *	.tie(console.log) // prints default account every time it changes
+		 *
+		 */
+		this.me = null;
+
+		this.post = null;
+		this.sign = null;
+
+		/**
+		 * Returns balance of given address.
+		 *
+		 * @param {string|Bond.<Address>} address
+		 * @returns {Bond.<BigNumber>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.balance(bonds.me)
+		 *	.tie(console.log) // prints default account balance every time any of them changes
+		 *
+		 */
+		this.balance = null;
+
+		/**
+		 * Returns code of given address.
+		 *
+		 * @param {string|Bond.<Address>} address
+		 * @returns {Bond.<Bytes>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.code(bonds.me)
+		 *	.tie(console.log) // prints default account code every time any of them changes
+		 *
+		 */
+		this.code = null;
+
+		/**
+		 * Returns the nonce of given address.
+		 *
+		 * @param {string|Bond.<Address>} address
+		 * @returns {Bond.<BigNumber>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.nonce(bonds.me)
+		 *	.tie(console.log) // prints default account nonce every time any of them changes
+		 *
+		 */
+		this.nonce = null;
+
+		/**
+		 * Returns storage at given index of an address.
+		 *
+		 * @param {string|Bond.<Address>} address Contract address
+		 * @param {string|number|Bond.<H256>} storageIdx Contract storage index
+		 * @returns {Bond.<BigNumber>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.storageAt(bonds.me, 0)
+		 *	.tie(console.log) // prints default account storage at position 0 every time any of them changes
+		 *
+		 */
+		this.storageAt = null;
+
+		/**
+		 * Returns node's syncing status.
+		 * If the node is fully synced this will return `false`.
+		 *
+		 * @type {Bond.<bool>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.syncing
+		 *	.tie(console.log) // prints sync status every time it changes
+		 *
+		 */
+		this.syncing = null;
+		/**
+		 * Returns node's authoring status.
+		 * If the node is not authoring blocks this will return `false`.
+		 *
+		 * @type {Bond.<bool>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.authoring
+		 *	.tie(console.log) // prints authoring status every time it changes
+		 *
+		 */
+		this.authoring = null;
+		/**
+		 * Reported hashrate.
+		 * If there is an external miner connected to the node it will return reported values.
+		 *
+		 * @type {Bond.<BigNumber>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.hashrate
+		 *	.tie(console.log) // prints current average hashrate
+		 *
+		 */
+		this.hashrate = null;
+		this.ethProtocolVersion = null;
+		/**
+		 * Suggested gas price value. (Gas Price Oracle)
+		 * This returns a suggested gas price for next transaction. The estimation is based on statistics from last blocks.
+		 *
+		 * @type {Bond.<BigNumber>}
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.gasPrice
+		 *	.tie(console.log) // prints current gas price suggestion
+		 *
+		 */
+		this.gasPrice = null;
+		/**
+		 * Estimates gas required to execute given transaction
+		 *
+		 * @param {{ from: ?Address, to: ?Address, data: ?Bytes }} call Transaction request
+		 * @returns {Bond.<BigNumber>} gas estimate
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.estimateGas({ from: bonds.me, to: '0x00D6Cc1BA9cf89BD2e58009741f4F7325BAdc0ED' })
+		 *	.tie(console.log) // prints current gas estimate
+		 *
+		 */
+		this.estimateGas = null;
+
+		/**
+		 * Returns block transaction count given block number or hash.
+		 *
+		 * @param {string|number|Bond} block block number or hash
+		 * @returns {Bond.<Number>} number of transactions in block
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.blockTransactionCount(bonds.blockNumber)
+		 *	.tie(console.log) // prints number of transactions in latest block
+		 *
+		 */
+		this.blockTransactionCount = null;
+		/**
+		 * Returns uncle count given block number or hash.
+		 *
+		 * @param {string|number|Bond} block block number or hash
+		 * @returns {Bond.<Number>} number of uncles in a block
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.uncleCount(bonds.blockNumber)
+		 *	.tie(console.log) // prints number of uncles in latest block
+		 *
+		 */
+		this.uncleCount = null;
+		/**
+		 * Returns uncle given block number or hash and uncle index
+		 *
+		 * @param {string|number|Bond} block block number or hash
+		 * @param {string|number|Bond} index index of an uncle within a block
+		 * @returns {Bond.<Header>} uncle header at that index
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.uncle(bonds.blockNumber, 0)
+		 *	.tie(console.log) // prints the first uncle in latest block
+		 *
+		 */
+		this.uncle = null;
+		/**
+		 * Returns transaction given block number or hash and transaction index
+		 *
+		 * @param {string|number|Bond} block block number or hash
+		 * @param {string|number|Bond} index index of a transaction within a block
+		 * @returns {Bond.<Transaction>} transaction at that index
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.transaction(bonds.blockNumber, 0)
+		 *	.tie(console.log) // prints the first uncle in latest block
+		 *
+		 */
+		this.transaction = null;
+		/**
+		 * Returns receipt given transaction hash.
+		 *
+		 * @param {string|number|Bond} hash transaction hash
+		 * @returns {Bond.<TransactionReceipt>} transaction at that index
+		 *
+		 * @example
+		 * const { bonds } = require('oo7-parity')
+		 *
+		 * bonds
+		 *	.receipt(bonds.transaction(bonds.height, 0))
+		 *	.tie(console.log) // prints receipt of first transaction in latest block
+		 *
+		 */
+		this.receipt = null;
+
+		this.clientVersion = null;
+
+		this.peerCount = null;
+		this.listening = null;
+		this.chainId = null;
+
+		this.hashContent = null;
+		this.gasPriceHistogram = null;
+		this.accountsInfo = null;
+		this.allAccontsInfo = null;
+		this.hardwareAccountsInfo = null;
+		this.mode = null;
+
+		this.defaultExtraData = null;
+		this.extraData = null;
+		this.gasCeilTarget = null;
+		this.gasFloorTarget = null;
+		this.minGasPrice = null;
+		this.transactionsLimit = null;
+
+		this.chainName = null;
+		this.chainStatus = null;
+
+		this.peers = null;
+		this.enode = null;
+		this.nodePort = null;
+		this.nodeName = null;
+		this.signerPort = null;
+		this.dappsPort = null;
+		this.dappsInterface = null;
+
+		this.nextNonce = null;
+		this.pending = null;
+		this.local = null;
+		this.future = null;
+		this.pendingStats = null;
+		this.unsignedCount = null;
+
+		this.releaseInfo = null;
+		this.versionInfo = null;
+		this.consensusCapability = null;
+		this.upgradeReady = null;
+
+		this.replyTx = null;
+		this.callTx = null;
+
+		this.deployContract = null;
+		this.makeContract = null;
+
+		this.registry = null;
+
+		this.githubhint = null;
+		this.operations = null;
+		this.badgereg = null;
+		this.tokenreg = null;
+
+		this.badges = null;
+		this.badgesOf = null;
+
+		this.tokens = null;
+		this.tokensOf = null;
+
+		return this;
 	}
+}
+
+function isNumber (n) {
+	return typeof (n) === 'number' || (typeof (n) === 'string' && n.match(/^[0-9]+$/));
 }
 
 /**
@@ -104,7 +562,7 @@ class Bonds {
  * @returns {Bonds}
  */
 function createBonds (options) {
-	const bonds = new Bonds;
+	const bonds = new Bonds();
 
 	// We only ever use api() at call-time of this function; this allows the
 	// options (particularly the transport option) to be changed dynamically
@@ -272,8 +730,6 @@ function createBonds (options) {
 		});
 	}
 
-	function isNumber (n) { return typeof (n) === 'number' || (typeof (n) === 'string' && n.match(/^[0-9]+$/)); }
-
 	let useSubs = false;
 
 	bonds.time = new oo7.TimeBond();
@@ -307,6 +763,7 @@ function createBonds (options) {
 		bonds.accounts = new TransformBond(a => a.map(util.toChecksumAddress), [new TransformBond(() => api().eth.accounts(), [], [onAccountsChanged])]).subscriptable();
 		bonds.defaultAccount = bonds.accounts[0];	// TODO: make this use its subscription
 		bonds.me = bonds.accounts[0];
+		// TODO [ToDr] document (Post & Sign)
 		bonds.post = tx => new Transaction(tx);
 		bonds.sign = (message, from = bonds.me) => new Signature(message, from);
 
