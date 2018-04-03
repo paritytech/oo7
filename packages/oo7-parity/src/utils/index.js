@@ -26,15 +26,26 @@ const sha3 = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.sha3) : ParityAp
 
 const denominations = [ 'wei', 'Kwei', 'Mwei', 'Gwei', 'szabo', 'finney', 'ether', 'grand', 'Mether', 'Gether', 'Tether', 'Pether', 'Eether', 'Zether', 'Yether', 'Nether', 'Dether', 'Vether', 'Uether' ];
 
-/// /
 // Parity Utilities
-
 // TODO: move to parity.js, repackage or repot.
 
+/**
+ * Capitalizes the first letter of a string
+ *
+ * @param {string} s
+ * @returns {string}
+ */
 function capitalizeFirstLetter (s) {
 	return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/**
+ * Wrap `f` in a function that ensures it's called at most once.
+ * The value returned from `f` is memoized and returned for all subsequent calls.
+ *
+ * @param {F} f
+ * @returns {function(): F}
+ */
 function singleton (f) {
 	var instance = null;
 	return function () {
@@ -43,6 +54,12 @@ function singleton (f) {
 	};
 }
 
+/**
+ * Returns a {@link BigNumber} multiplier for give string denominator
+ *
+ * @param {string} denominator denominator (wei, eth, finney, Gwei, etc)
+ * @returns {BigNumber} multiplier
+ */
 function denominationMultiplier (s) {
 	let i = denominations.indexOf(s);
 	if (i < 0) { throw new Error('Invalid denomination'); }
@@ -74,6 +91,13 @@ function combineValue (v) {
 	return new BigNumber(n).mul(d);
 }
 
+/**
+ * Add missing denominator to the value
+ *
+ * @param {BigNumber} v value
+ * @param {string} d denominator
+ * @returns {Value}
+ */
 function defDenom (v, d) {
 	if (v.denom === null) {
 		v.denom = d;
@@ -81,16 +105,34 @@ function defDenom (v, d) {
 	return v;
 }
 
+/**
+ * Formats a value with denominator
+ *
+ * @param {Value} n value with denominator
+ * @returns {string}
+ */
 function formatValue (n) {
 	return `${formatValueNoDenom(n)} ${denominations[n.denom]}`;
 }
 
+/**
+ * Format value without denominator
+ * @param {Value} v
+ * @returns {string}
+ */
 function formatValueNoDenom (n) {
 	return `${n.units.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}${n.decimals ? '.' + n.decimals : ''}`;
 }
 
-function formatToExponential (v, n) {
-	return new BigNumber(v).toExponential(4);
+/**
+ * Format value without denominator
+ *
+ * @param {number|BigNumber} v
+ * @param {number| exponent
+ * @returns {string}
+ */
+function formatToExponential (v, n = 4) {
+	return new BigNumber(v).toExponential(n);
 }
 
 function interpretQuantity (s) {
@@ -110,6 +152,12 @@ function interpretQuantity (s) {
 	}
 }
 
+/**
+ * Split value into base and denominator
+ *
+ * @param {number|BigNumber} a
+ * @returns {Value}
+ */
 function splitValue (a) {
 	var i = 0;
 	a = new BigNumber('' + a);
@@ -124,12 +172,23 @@ function splitValue (a) {
 	return {base: a, denom: i};
 }
 
+/**
+ * Display balance into human-readable format with denomnator
+ *
+ * @param {string|BigNumber} balance
+ * @returns {string}
+ */
 function formatBalance (n) {
 	let a = splitValue(n);
 	//	let b = Math.floor(a.base * 1000) / 1000;
 	return `${a.base} ${denominations[a.denom]}`;
 }
 
+/**
+ * Format block number into human-readable representation.
+ * @param {string|number|BigNumber} blockNumber
+ * @returns {string}
+ */
 function formatBlockNumber (n) {
 	return '#' + ('' + n).replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
