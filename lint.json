@@ -1300,23 +1300,23 @@
     "filePath": "packages/oo7-parity/src/index.js",
     "lines": [
       {
-        "lineNumber": 101,
+        "lineNumber": 856,
         "line": "/**"
       },
       {
-        "lineNumber": 102,
+        "lineNumber": 857,
         "line": " * @param {{api: ParityApi}} Options object"
       },
       {
-        "lineNumber": 103,
+        "lineNumber": 858,
         "line": " * @returns {Bonds}"
       },
       {
-        "lineNumber": 104,
+        "lineNumber": 859,
         "line": " */"
       },
       {
-        "lineNumber": 105,
+        "lineNumber": 860,
         "line": "function createBonds (options) {"
       }
     ],
@@ -1325,6 +1325,204 @@
     ],
     "docParams": [
       "Options"
+    ]
+  },
+  {
+    "name": "denominationMultiplier",
+    "filePath": "packages/oo7-parity/src/utils/index.js",
+    "lines": [
+      {
+        "lineNumber": 56,
+        "line": "/**"
+      },
+      {
+        "lineNumber": 57,
+        "line": " * Returns a {@link BigNumber} multiplier for give string denominator"
+      },
+      {
+        "lineNumber": 58,
+        "line": " *"
+      },
+      {
+        "lineNumber": 59,
+        "line": " * @param {string} denominator denominator (wei, eth, finney, Gwei, etc)"
+      },
+      {
+        "lineNumber": 60,
+        "line": " * @returns {BigNumber} multiplier"
+      },
+      {
+        "lineNumber": 61,
+        "line": " */"
+      },
+      {
+        "lineNumber": 62,
+        "line": "function denominationMultiplier (s) {"
+      }
+    ],
+    "codeParams": [
+      "s"
+    ],
+    "docParams": [
+      "denominator"
+    ]
+  },
+  {
+    "name": "formatValueNoDenom",
+    "filePath": "packages/oo7-parity/src/utils/index.js",
+    "lines": [
+      {
+        "lineNumber": 117,
+        "line": "/**"
+      },
+      {
+        "lineNumber": 118,
+        "line": " * Format value without denominator"
+      },
+      {
+        "lineNumber": 119,
+        "line": " * @param {Value} v"
+      },
+      {
+        "lineNumber": 120,
+        "line": " * @returns {string}"
+      },
+      {
+        "lineNumber": 121,
+        "line": " */"
+      },
+      {
+        "lineNumber": 122,
+        "line": "function formatValueNoDenom (n) {"
+      }
+    ],
+    "codeParams": [
+      "n"
+    ],
+    "docParams": [
+      "v"
+    ]
+  },
+  {
+    "name": "formatToExponential",
+    "filePath": "packages/oo7-parity/src/utils/index.js",
+    "lines": [
+      {
+        "lineNumber": 126,
+        "line": "/**"
+      },
+      {
+        "lineNumber": 127,
+        "line": " * Format value without denominator"
+      },
+      {
+        "lineNumber": 128,
+        "line": " *"
+      },
+      {
+        "lineNumber": 129,
+        "line": " * @param {number|BigNumber} v"
+      },
+      {
+        "lineNumber": 130,
+        "line": " * @param {number| exponent"
+      },
+      {
+        "lineNumber": 131,
+        "line": " * @returns {string}"
+      },
+      {
+        "lineNumber": 132,
+        "line": " */"
+      },
+      {
+        "lineNumber": 133,
+        "line": "function formatToExponential (v, n = 4) {"
+      }
+    ],
+    "codeParams": [
+      "v",
+      "n"
+    ],
+    "docParams": [
+      "v",
+      "{number|"
+    ]
+  },
+  {
+    "name": "formatBalance",
+    "filePath": "packages/oo7-parity/src/utils/index.js",
+    "lines": [
+      {
+        "lineNumber": 174,
+        "line": "/**"
+      },
+      {
+        "lineNumber": 175,
+        "line": " * Display balance into human-readable format with denomnator"
+      },
+      {
+        "lineNumber": 176,
+        "line": " *"
+      },
+      {
+        "lineNumber": 177,
+        "line": " * @param {string|BigNumber} balance"
+      },
+      {
+        "lineNumber": 178,
+        "line": " * @returns {string}"
+      },
+      {
+        "lineNumber": 179,
+        "line": " */"
+      },
+      {
+        "lineNumber": 180,
+        "line": "function formatBalance (n) {"
+      }
+    ],
+    "codeParams": [
+      "n"
+    ],
+    "docParams": [
+      "balance"
+    ]
+  },
+  {
+    "name": "formatBlockNumber",
+    "filePath": "packages/oo7-parity/src/utils/index.js",
+    "lines": [
+      {
+        "lineNumber": 186,
+        "line": "/**"
+      },
+      {
+        "lineNumber": 187,
+        "line": " * Format block number into human-readable representation."
+      },
+      {
+        "lineNumber": 188,
+        "line": " * @param {string|number|BigNumber} blockNumber"
+      },
+      {
+        "lineNumber": 189,
+        "line": " * @returns {string}"
+      },
+      {
+        "lineNumber": 190,
+        "line": " */"
+      },
+      {
+        "lineNumber": 191,
+        "line": "function formatBlockNumber (n) {"
+      }
+    ],
+    "codeParams": [
+      "n"
+    ],
+    "docParams": [
+      "blockNumber"
     ]
   }
 ]

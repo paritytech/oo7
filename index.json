@@ -3431,7 +3431,7 @@
     "__docId__": 178,
     "kind": "file",
     "name": "packages/oo7/lib/timeBond.js",
-    "content": "// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//         http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\nconst Bond = require('./bond');\n\nvar privateTestIntervals = {};\n\n/**\n * @summary {@link Bond} object which represents the current time rounded down\n * to the second.\n *\n * @example\n * let b = new TimeBond;\n * b.log(); // logs 1497080209000\n * window.setTimeout(() => b.log(), 1000); // logs 1497080210000\n */\nclass TimeBond extends Bond {\n\tconstructor () {\n\t\tsuper();\n\t\tthis.poll();\n\t}\n\tpoll () {\n\t\tthis.trigger(Math.floor(Date.now() / 1000) * 1000);\n\t}\n\tinitialise () {\n\t\tif (typeof (window) !== 'undefined') { this.interval = window.setInterval(this.poll.bind(this), 1000); } else {\n\t\t\tthis.interval = Object.keys(privateTestIntervals).length + 1;\n\t\t\tprivateTestIntervals[this.interval] = this.poll.bind(this);\n\t\t}\n\t}\n\tfinalise () {\n\t\tif (typeof (window) !== 'undefined') { window.clearInterval(this.interval); } else {\n\t\t\tif (!privateTestIntervals[this.interval]) { throw new Error(`finalise() called multiple time on same timer!`); }\n\t\t\tdelete privateTestIntervals[this.interval];\n\t\t}\n\t}\n\n\tstatic testIntervals () { return privateTestIntervals; }\n}\n\nmodule.exports = TimeBond;\n",
+    "content": "// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//         http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\n/* global setInterval,clearInterval */\n\nconst Bond = require('./bond');\n\nvar privateTestIntervals = {};\n\n/**\n * @summary {@link Bond} object which represents the current time rounded down\n * to the second.\n *\n * @example\n * let b = new TimeBond;\n * b.log(); // logs 1497080209000\n * window.setTimeout(() => b.log(), 1000); // logs 1497080210000\n */\nclass TimeBond extends Bond {\n\tconstructor () {\n\t\tsuper();\n\t\tthis.poll();\n\t}\n\tpoll () {\n\t\tthis.trigger(Math.floor(Date.now() / 1000) * 1000);\n\t}\n\tinitialise () {\n\t\tif (!TimeBond.useTestIntervals) {\n\t\t\tthis.interval = setInterval(this.poll.bind(this), 1000);\n\t\t} else {\n\t\t\tthis.interval = Object.keys(privateTestIntervals).length + 1;\n\t\t\tprivateTestIntervals[this.interval] = this.poll.bind(this);\n\t\t}\n\t}\n\tfinalise () {\n\t\tif (!TimeBond.useTestIntervals) {\n\t\t\tclearInterval(this.interval);\n\t\t} else {\n\t\t\tif (!privateTestIntervals[this.interval]) {\n\t\t\t\tthrow new Error(`finalise() called multiple time on same timer!`);\n\t\t\t}\n\t\t\tdelete privateTestIntervals[this.interval];\n\t\t}\n\t}\n\n\tstatic testIntervals () { return privateTestIntervals; }\n}\n\nTimeBond.useTestIntervals = false;\n\nmodule.exports = TimeBond;\n",
     "static": true,
     "longname": "/home/tomusdrw/workspace/oo7-new/packages/oo7/lib/timeBond.js",
     "access": "public",
@@ -3450,7 +3450,7 @@
     "importPath": "./packages/oo7/lib/timeBond.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 17,
+    "lineNumber": 19,
     "undocument": true,
     "type": {
       "types": [
@@ -3474,7 +3474,7 @@
     "examples": [
       "let b = new TimeBond;\nb.log(); // logs 1497080209000\nwindow.setTimeout(() => b.log(), 1000); // logs 1497080210000"
     ],
-    "lineNumber": 28,
+    "lineNumber": 30,
     "unknown": [
       {
         "tagName": "@summary",
@@ -3497,7 +3497,7 @@
     "longname": "packages/oo7/lib/timeBond.js~TimeBond#constructor",
     "access": "public",
     "description": null,
-    "lineNumber": 29,
+    "lineNumber": 31,
     "undocument": true
   },
   {
@@ -3511,7 +3511,7 @@
     "longname": "packages/oo7/lib/timeBond.js~TimeBond#poll",
     "access": "public",
     "description": null,
-    "lineNumber": 33,
+    "lineNumber": 35,
     "undocument": true,
     "params": [],
     "return": null
@@ -3527,7 +3527,7 @@
     "longname": "packages/oo7/lib/timeBond.js~TimeBond#initialise",
     "access": "public",
     "description": null,
-    "lineNumber": 36,
+    "lineNumber": 38,
     "undocument": true,
     "params": [],
     "return": null
@@ -3541,7 +3541,7 @@
     "longname": "packages/oo7/lib/timeBond.js~TimeBond#interval",
     "access": "public",
     "description": null,
-    "lineNumber": 37,
+    "lineNumber": 40,
     "undocument": true,
     "type": {
       "types": [
@@ -3560,7 +3560,7 @@
     "longname": "packages/oo7/lib/timeBond.js~TimeBond#finalise",
     "access": "public",
     "description": null,
-    "lineNumber": 42,
+    "lineNumber": 46,
     "undocument": true,
     "params": [],
     "return": null
@@ -3576,7 +3576,7 @@
     "longname": "packages/oo7/lib/timeBond.js~TimeBond.testIntervals",
     "access": "public",
     "description": null,
-    "lineNumber": 49,
+    "lineNumber": 57,
     "undocument": true,
     "params": [],
     "return": {
@@ -4114,7 +4114,7 @@
     "__docId__": 210,
     "kind": "file",
     "name": "packages/oo7-parity/src/index.js",
-    "content": "// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//         http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\n/* eslint-disable no-return-assign */\n/* eslint-disable no-proto */\n\nconst oo7 = require('oo7');\nconst ParityApi = require('@parity/api');\n\nconst {\n\tasciiToHex,\n\tbytesToHex,\n\thexToAscii,\n\tisAddressValid,\n\ttoChecksumAddress,\n\tsha3,\n\tcapitalizeFirstLetter,\n\tsingleton,\n\tdenominations,\n\tdenominationMultiplier,\n\tinterpretRender,\n\tcombineValue,\n\tdefDenom,\n\tformatValue,\n\tformatValueNoDenom,\n\tformatToExponential,\n\tinterpretQuantity,\n\tsplitValue,\n\tformatBalance,\n\tformatBlockNumber,\n\tisNullData,\n\tsplitSignature,\n\tremoveSigningPrefix,\n\tcleanup\n} = require('./utils');\n\nconst {\n\tabiPolyfill,\n\tRegistryABI,\n\tRegistryExtras,\n\tGitHubHintABI,\n\tOperationsABI,\n\tBadgeRegABI,\n\tTokenRegABI,\n\tBadgeABI,\n\tTokenABI\n} = require('./abis');\n\nfunction defaultProvider () {\n\tif (typeof window !== 'undefined' && window.ethereum) {\n\t\treturn window.ethereum;\n\t}\n\n\ttry {\n\t\tif (typeof window !== 'undefined' && window.parent && window.parent.ethereum) {\n\t\t\treturn window.parent.ethereum;\n\t\t}\n\t} catch (e) {}\n\n\treturn new ParityApi.Provider.Http('http://localhost:8545');\n}\n\nclass Bonds {\n\t/**\n\t *\n\t * @type {TimeBond}\n\t */\n\ttime;\n\n\t/**\n\t * A {@link Bond} representing latest block number.\n\t *\n\t * @type {Bond}\n\t */\n\theight;\n\n\n\t/**\n\t * Creates a new oo7-parity bonds aggregate object with given ethereum provider.\n\t *\n\t * @param {?Provider} provider Web3-compatible transport Provider (i.e. `window.ethereum`). Uses a sane default if not provided.\n\t * @returns {Bonds}\n\t */\n\tconstructor (provider = defaultProvider()) {\n\t\tif (!this) {\n\t\t\treturn createBonds({ api: new ParityApi(provider) });\n\t\t}\n\t}\n}\n\n/**\n * @param {{api: ParityApi}} Options object\n * @returns {Bonds}\n */\nfunction createBonds (options) {\n\tconst bonds = new Bonds;\n\n\t// We only ever use api() at call-time of this function; this allows the\n\t// options (particularly the transport option) to be changed dynamically\n\t// and the datastructure to be reused.\n\tconst api = () => options.api;\n\tconst util = ParityApi.util;\n\n\tclass TransformBond extends oo7.TransformBond {\n\t\tconstructor (f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true) {\n\t\t\tsuper(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api());\n\t\t}\n\t\tmap (f, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond(f, [this], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tsub (name, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tstatic all (list) {\n\t\t\treturn new TransformBond((...args) => args, list);\n\t\t}\n\t}\n\n\tclass SubscriptionBond extends oo7.Bond {\n\t\tconstructor (module, rpcName, options = []) {\n\t\t\tsuper();\n\t\t\tthis.module = module;\n\t\t\tthis.rpcName = rpcName;\n\t\t\tthis.options = [(_, n) => this.trigger(n), ...options];\n\t\t}\n\t\tinitialise () {\n\t\t\t// promise instead of id because if a dependency triggers finalise() before id's promise is resolved the unsubscribing would call with undefined\n\t\t\tthis.subscription = api().pubsub[this.module][this.rpcName](...this.options);\n\t\t}\n\t\tfinalise () {\n\t\t\tthis.subscription.then(id => api().pubsub.unsubscribe([id]));\n\t\t}\n\t\tmap (f, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond(f, [this], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tsub (name, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tstatic all (list) {\n\t\t\treturn new TransformBond((...args) => args, list);\n\t\t}\n\t}\n\n\tclass Signature extends oo7.ReactivePromise {\n\t\tconstructor (message, from) {\n\t\t\tsuper([message, from], [], ([message, from]) => {\n\t\t\t\tapi().parity.postSign(from, asciiToHex(message))\n\t\t\t\t\t.then(signerRequestId => {\n\t\t\t\t\t\tthis.trigger({requested: signerRequestId});\n\t\t\t\t\t\treturn api().pollMethod('parity_checkRequest', signerRequestId);\n\t\t\t\t\t})\n\t\t\t\t\t.then(signature => {\n\t\t\t\t\t\tthis.trigger({\n\t\t\t\t\t\t\tsigned: splitSignature(signature)\n\t\t\t\t\t\t});\n\t\t\t\t\t})\n\t\t\t\t\t.catch(error => {\n\t\t\t\t\t\tconsole.error(error);\n\t\t\t\t\t\tthis.trigger({failed: error});\n\t\t\t\t\t});\n\t\t\t}, false);\n\t\t\tthis.then(_ => null);\n\t\t}\n\t\tisDone (s) {\n\t\t\treturn !!s.failed || !!s.signed;\n\t\t}\n\t}\n\n\tfunction transactionPromise (tx, progress, f) {\n\t\tprogress({initialising: null});\n\t\tlet condition = tx.condition || null;\n\t\tPromise.all([api().eth.accounts(), api().eth.gasPrice()])\n\t\t\t.then(([a, p]) => {\n\t\t\t\tprogress({estimating: null});\n\t\t\t\ttx.from = tx.from || a[0];\n\t\t\t\ttx.gasPrice = tx.gasPrice || p;\n\t\t\t\treturn tx.gas || api().eth.estimateGas(tx);\n\t\t\t})\n\t\t\t.then(g => {\n\t\t\t\tprogress({estimated: g});\n\t\t\t\ttx.gas = tx.gas || g;\n\t\t\t\treturn api().parity.postTransaction(tx);\n\t\t\t})\n\t\t\t.then(signerRequestId => {\n\t\t\t\tprogress({requested: signerRequestId});\n\t\t\t\treturn api().pollMethod('parity_checkRequest', signerRequestId);\n\t\t\t})\n\t\t\t.then(transactionHash => {\n\t\t\t\tif (condition) {\n\t\t\t\t\tprogress(f({signed: transactionHash, scheduled: condition}));\n\t\t\t\t\treturn {signed: transactionHash, scheduled: condition};\n\t\t\t\t} else {\n\t\t\t\t\tprogress({signed: transactionHash});\n\t\t\t\t\treturn api()\n\t\t\t\t\t\t.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0))\n\t\t\t\t\t\t.then(receipt => {\n\t\t\t\t\t\t\tprogress(f({confirmed: receipt}));\n\t\t\t\t\t\t\treturn receipt;\n\t\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t})\n\t\t\t.catch(error => {\n\t\t\t\tprogress({failed: error});\n\t\t\t});\n\t}\n\n\tclass Transaction extends oo7.ReactivePromise {\n\t\tconstructor (tx) {\n\t\t\tsuper([tx], [], ([tx]) => {\n\t\t\t\tlet progress = this.trigger.bind(this);\n\t\t\t\ttransactionPromise(tx, progress, _ => _);\n\t\t\t}, false);\n\t\t\tthis.then(_ => null);\n\t\t}\n\t\tisDone (s) {\n\t\t\treturn !!(s.failed || s.confirmed);\n\t\t}\n\t}\n\n\tfunction overlay (base, top) {\n\t\tObject.keys(top).forEach(k => {\n\t\t\tbase[k] = top[k];\n\t\t});\n\t\treturn base;\n\t}\n\n\tfunction memoized (f) {\n\t\tvar memo;\n\t\treturn function () {\n\t\t\tif (memo === undefined) { memo = f(); }\n\t\t\treturn memo;\n\t\t};\n\t}\n\n\tfunction call (addr, method, args, options) {\n\t\tlet data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);\n\t\tlet decode = d => util.abiDecode(method.outputs.map(f => f.type), d);\n\t\treturn api().eth.call(overlay({to: addr, data: data}, options)).then(decode);\n\t}\n\n\tfunction post (addr, method, args, options) {\n\t\tlet toOptions = (addr, method, options, ...args) => {\n\t\t\treturn overlay({to: addr, data: util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);\n\t\t};\n\t\t// inResolveDepth is 2 to allow for Bonded `condition`values which are\n\t\t// object values in `options`.\n\t\treturn new Transaction(new TransformBond(toOptions, [addr, method, options, ...args], [], 0, 2));\n\t}\n\n\tfunction presub (f) {\n\t\treturn new Proxy(f, {\n\t\t\tget (receiver, name) {\n\t\t\t\tif (typeof (name) === 'string' || typeof (name) === 'number') {\n\t\t\t\t\treturn typeof (receiver[name]) !== 'undefined' ? receiver[name] : receiver(name);\n\t\t\t\t} else if (typeof (name) === 'symbol' && oo7.Bond.knowSymbol(name)) {\n\t\t\t\t\treturn receiver(oo7.Bond.fromSymbol(name));\n\t\t\t\t} else {\n\t\t\t\t\tthrow new Error(`Weird value type to be subscripted by: ${typeof (name)}: ${JSON.stringify(name)}`);\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n\n\tfunction isNumber (n) { return typeof (n) === 'number' || (typeof (n) === 'string' && n.match(/^[0-9]+$/)); }\n\n\tlet useSubs = false;\n\n\tbonds.time = new oo7.TimeBond();\n\n\tif (!useSubs) {\n\t\tbonds.height = new TransformBond(() => api().eth.blockNumber().then(_ => +_), [], [bonds.time]);\n\n\t\tlet onAccountsChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onHardwareAccountsChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onHeadChanged = bonds.height;\t// TODO: more accurate notification\n\t\t//\tlet onReorg = undefined;\t// TODO make more accurate.\n\t\tlet onSyncingChanged = bonds.time;\n\t\tlet onAuthoringDetailsChanged = bonds.time;\n\t\tlet onPeerNetChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onPendingChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onUnsignedChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onAutoUpdateChanged = bonds.height;\n\n\t\t// eth_\n\t\tbonds.blockNumber = bonds.height;\n\t\tbonds.blockByNumber = x => new TransformBond(x => api().eth.getBlockByNumber(x), [x], []).subscriptable();// TODO: chain reorg that includes number x\n\t\tbonds.blockByHash = x => new TransformBond(x => api().eth.getBlockByHash(x), [x]).subscriptable();\n\t\tbonds.findBlock = hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)\n\t\t\t? api().eth.getBlockByNumber(hashOrNumber)\n\t\t\t: api().eth.getBlockByHash(hashOrNumber),\n\t\t[hashOrNumberBond], [/* onReorg */]).subscriptable();// TODO: chain reorg that includes number x, if x is a number\n\t\tbonds.blocks = presub(bonds.findBlock);\n\t\tbonds.block = bonds.blockByNumber(bonds.height);\t// TODO: DEPRECATE AND REMOVE\n\t\tbonds.head = new TransformBond(() => api().eth.getBlockByNumber('latest'), [], [onHeadChanged]).subscriptable();// TODO: chain reorgs\n\t\tbonds.author = new TransformBond(() => api().eth.coinbase(), [], [onAccountsChanged]);\n\t\tbonds.accounts = new TransformBond(a => a.map(util.toChecksumAddress), [new TransformBond(() => api().eth.accounts(), [], [onAccountsChanged])]).subscriptable();\n\t\tbonds.defaultAccount = bonds.accounts[0];\t// TODO: make this use its subscription\n\t\tbonds.me = bonds.accounts[0];\n\t\tbonds.post = tx => new Transaction(tx);\n\t\tbonds.sign = (message, from = bonds.me) => new Signature(message, from);\n\n\t\tbonds.balance = x => new TransformBond(x => api().eth.getBalance(x), [x], [onHeadChanged]);\n\t\tbonds.code = x => new TransformBond(x => api().eth.getCode(x), [x], [onHeadChanged]);\n\t\tbonds.nonce = x => new TransformBond(x => api().eth.getTransactionCount(x).then(_ => +_), [x], [onHeadChanged]);\n\t\tbonds.storageAt = (x, y) => new TransformBond((x, y) => api().eth.getStorageAt(x, y), [x, y], [onHeadChanged]);\n\n\t\tbonds.syncing = new TransformBond(() => api().eth.syncing(), [], [onSyncingChanged]);\n\t\tbonds.hashrate = new TransformBond(() => api().eth.hashrate(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.authoring = new TransformBond(() => api().eth.mining(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.ethProtocolVersion = new TransformBond(() => api().eth.protocolVersion(), [], []);\n\t\tbonds.gasPrice = new TransformBond(() => api().eth.gasPrice(), [], [onHeadChanged]);\n\t\tbonds.estimateGas = x => new TransformBond(x => api().eth.estimateGas(x), [x], [onHeadChanged, onPendingChanged]);\n\n\t\tbonds.blockTransactionCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? api().eth.getBlockTransactionCountByNumber(hashOrNumber).then(_ => +_)\n\t\t\t\t: api().eth.getBlockTransactionCountByHash(hashOrNumber).then(_ => +_),\n\t\t\t[hashOrNumberBond], [/* onReorg */]);\n\t\tbonds.uncleCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? api().eth.getUncleCountByBlockNumber(hashOrNumber).then(_ => +_)\n\t\t\t\t: api().eth.getUncleCountByBlockHash(hashOrNumber).then(_ => +_),\n\t\t\t[hashOrNumberBond], [/* onReorg */]).subscriptable();\n\t\tbonds.uncle = (hashOrNumberBond, indexBond) => new TransformBond(\n\t\t\t(hashOrNumber, index) => isNumber(hashOrNumber)\n\t\t\t\t? api().eth.getUncleByBlockNumber(hashOrNumber, index)\n\t\t\t\t: api().eth.getUncleByBlockHash(hashOrNumber, index),\n\t\t\t[hashOrNumberBond, indexBond], [/* onReorg */]).subscriptable();\n\t\tbonds.transaction = (hashOrNumberBond, indexOrNullBond) => new TransformBond(\n\t\t\t(hashOrNumber, indexOrNull) =>\n\t\t\t\tindexOrNull === undefined || indexOrNull === null\n\t\t\t\t\t? api().eth.getTransactionByHash(hashOrNumber)\n\t\t\t\t\t: isNumber(hashOrNumber)\n\t\t\t\t\t\t? api().eth.getTransactionByBlockNumberAndIndex(hashOrNumber, indexOrNull)\n\t\t\t\t\t\t: api().eth.getTransactionByBlockHashAndIndex(hashOrNumber, indexOrNull),\n\t\t\t[hashOrNumberBond, indexOrNullBond], [/* onReorg */]).subscriptable();\n\t\tbonds.receipt = hashBond => new TransformBond(x => api().eth.getTransactionReceipt(x), [hashBond], []).subscriptable();\n\n\t\t// web3_\n\t\tbonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);\n\n\t\t// net_\n\t\tbonds.peerCount = new TransformBond(() => api().net.peerCount().then(_ => +_), [], [onPeerNetChanged]);\n\t\tbonds.listening = new TransformBond(() => api().net.listening(), [], [onPeerNetChanged]);\n\t\tbonds.chainId = new TransformBond(() => api().net.version(), [], []);\n\n\t\t// parity_\n\t\tbonds.hashContent = u => new TransformBond(x => api().parity.hashContent(x), [u], [], false);\n\t\tbonds.gasPriceHistogram = new TransformBond(() => api().parity.gasPriceHistogram(), [], [onHeadChanged]).subscriptable();\n\t\tbonds.accountsInfo = new TransformBond(() => api().parity.accountsInfo(), [], [onAccountsChanged]).subscriptable(2);\n\t\tbonds.allAccountsInfo = new TransformBond(() => api().parity.allAccountsInfo(), [], [onAccountsChanged]).subscriptable(2);\n\t\tbonds.hardwareAccountsInfo = new TransformBond(() => api().parity.hardwareAccountsInfo(), [], [onHardwareAccountsChanged]).subscriptable(2);\n\t\tbonds.mode = new TransformBond(() => api().parity.mode(), [], [bonds.height]);\n\n\t\t// ...authoring\n\t\tbonds.defaultExtraData = new TransformBond(() => api().parity.defaultExtraData(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.extraData = new TransformBond(() => api().parity.extraData(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.gasCeilTarget = new TransformBond(() => api().parity.gasCeilTarget(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.gasFloorTarget = new TransformBond(() => api().parity.gasFloorTarget(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.minGasPrice = new TransformBond(() => api().parity.minGasPrice(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.transactionsLimit = new TransformBond(() => api().parity.transactionsLimit(), [], [onAuthoringDetailsChanged]);\n\n\t\t// ...chain info\n\t\tbonds.chainName = new TransformBond(() => api().parity.netChain(), [], []);\n\t\tbonds.chainStatus = new TransformBond(() => api().parity.chainStatus(), [], [onSyncingChanged]).subscriptable();\n\n\t\t// ...networking\n\t\tbonds.peers = new TransformBond(() => api().parity.netPeers(), [], [onPeerNetChanged]).subscriptable(2);\n\t\tbonds.enode = new TransformBond(() => api().parity.enode(), [], []);\n\t\tbonds.nodePort = new TransformBond(() => api().parity.netPort().then(_ => +_), [], []);\n\t\tbonds.nodeName = new TransformBond(() => api().parity.nodeName(), [], []);\n\t\tbonds.signerPort = new TransformBond(() => api().parity.signerPort().then(_ => +_), [], []);\n\t\tbonds.dappsPort = new TransformBond(() => api().parity.dappsPort().then(_ => +_), [], []);\n\t\tbonds.dappsInterface = new TransformBond(() => api().parity.dappsInterface(), [], []);\n\n\t\t// ...transaction queue\n\t\tbonds.nextNonce = new TransformBond(() => api().parity.nextNonce().then(_ => +_), [], [onPendingChanged]);\n\t\tbonds.pending = new TransformBond(() => api().parity.pendingTransactions(), [], [onPendingChanged]);\n\t\tbonds.local = new TransformBond(() => api().parity.localTransactions(), [], [onPendingChanged]).subscriptable(3);\n\t\tbonds.future = new TransformBond(() => api().parity.futureTransactions(), [], [onPendingChanged]).subscriptable(2);\n\t\tbonds.pendingStats = new TransformBond(() => api().parity.pendingTransactionsStats(), [], [onPendingChanged]).subscriptable(2);\n\t\tbonds.unsignedCount = new TransformBond(() => api().parity.parity_unsignedTransactionsCount().then(_ => +_), [], [onUnsignedChanged]);\n\n\t\t// ...auto-update\n\t\tbonds.releasesInfo = new TransformBond(() => api().parity.releasesInfo(), [], [onAutoUpdateChanged]).subscriptable();\n\t\tbonds.versionInfo = new TransformBond(() => api().parity.versionInfo(), [], [onAutoUpdateChanged]).subscriptable();\n\t\tbonds.consensusCapability = new TransformBond(() => api().parity.consensusCapability(), [], [onAutoUpdateChanged]);\n\t\tbonds.upgradeReady = new TransformBond(() => api().parity.upgradeReady(), [], [onAutoUpdateChanged]).subscriptable();\n\t} else {\n\t\tbonds.height = new TransformBond(_ => +_, [new SubscriptionBond('eth', 'blockNumber')]).subscriptable();\n\n\t\tlet onAutoUpdateChanged = bonds.height;\n\n\t\t// eth_\n\t\tbonds.blockNumber = bonds.height;\n\t\tbonds.blockByNumber = numberBond => new TransformBond(number => new SubscriptionBond('eth', 'getBlockByNumber', [number]), [numberBond]).subscriptable();\n\t\tbonds.blockByHash = x => new TransformBond(x => new SubscriptionBond('eth', 'getBlockByHash', [x]), [x]).subscriptable();\n\t\tbonds.findBlock = hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)\n\t\t\t? new SubscriptionBond('eth', 'getBlockByNumber', [hashOrNumber])\n\t\t\t: new SubscriptionBond('eth', 'getBlockByHash', [hashOrNumber]),\n\t\t[hashOrNumberBond]).subscriptable();\n\t\tbonds.blocks = presub(bonds.findBlock);\n\t\tbonds.block = bonds.blockByNumber(bonds.height);\t// TODO: DEPRECATE AND REMOVE\n\t\tbonds.head = new SubscriptionBond('eth', 'getBlockByNumber', ['latest']).subscriptable();\n\t\tbonds.author = new SubscriptionBond('eth', 'coinbase');\n\t\tbonds.me = new SubscriptionBond('parity', 'defaultAccount');\n\t\tbonds.defaultAccount = bonds.me;\t// TODO: DEPRECATE\n\t\tbonds.accounts = new SubscriptionBond('eth', 'accounts').subscriptable();\n\t\tbonds.post = tx => new Transaction(tx);\n\t\tbonds.sign = (message, from = bonds.me) => new Signature(message, from);\n\n\t\tbonds.balance = x => new TransformBond(x => new SubscriptionBond('eth', 'getBalance', [x]), [x]);\n\t\tbonds.code = x => new TransformBond(x => new SubscriptionBond('eth', 'getCode', [x]), [x]);\n\t\tbonds.nonce = x => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionCount', [x]), [x]); // TODO: then(_ => +_) Depth 2 if second TransformBond or apply to result\n\t\tbonds.storageAt = (x, y) => new TransformBond((x, y) => new SubscriptionBond('eth', 'getStorageAt', [x, y]), [x, y]);\n\n\t\tbonds.syncing = new SubscriptionBond('eth', 'syncing');\n\t\tbonds.hashrate = new SubscriptionBond('eth', 'hashrate');\n\t\tbonds.authoring = new SubscriptionBond('eth', 'mining');\n\t\tbonds.ethProtocolVersion = new SubscriptionBond('eth', 'protocolVersion');\n\t\tbonds.gasPrice = new SubscriptionBond('eth', 'gasPrice');\n\t\tbonds.estimateGas = x => new TransformBond(x => new SubscriptionBond('eth', 'estimateGas', [x]), [x]);\n\n\t\tbonds.blockTransactionCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getBlockTransactionCountByNumber', [hashOrNumber])])\n\t\t\t\t: new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getBlockTransactionCountByHash', [hashOrNumber])]),\n\t\t\t[hashOrNumberBond]);\n\t\tbonds.uncleCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getUncleCountByBlockNumber', [hashOrNumber])])\n\t\t\t\t: new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getUncleCountByBlockHash', [hashOrNumber])]),\n\t\t\t[hashOrNumberBond]).subscriptable();\n\t\tbonds.uncle = (hashOrNumberBond, indexBond) => new TransformBond(\n\t\t\t(hashOrNumber, index) => isNumber(hashOrNumber)\n\t\t\t\t? new SubscriptionBond('eth', 'getUncleByBlockNumberAndIndex', [hashOrNumber, index])\n\t\t\t\t: new SubscriptionBond('eth', 'getUncleByBlockHashAndIndex', [hashOrNumber, index]),\n\t\t\t[hashOrNumberBond, indexBond]).subscriptable();\n\n\t\tbonds.transaction = (hashOrNumberBond, indexOrNullBond) => new TransformBond(\n\t\t\t(hashOrNumber, indexOrNull) =>\n\t\t\t\tindexOrNull === undefined || indexOrNull === null\n\t\t\t\t\t? new SubscriptionBond('eth', 'getTransactionByHash', [hashOrNumber])\n\t\t\t\t\t: isNumber(hashOrNumber)\n\t\t\t\t\t\t? new SubscriptionBond('eth', 'getTransactionByBlockNumberAndIndex', [hashOrNumber, indexOrNull])\n\t\t\t\t\t\t: new SubscriptionBond('eth', 'getTransactionByBlockHashAndIndex', [hashOrNumber, indexOrNull]),\n\t\t\t[hashOrNumberBond, indexOrNullBond]).subscriptable();\n\t\tbonds.receipt = hashBond => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionReceipt', [x]), [hashBond]).subscriptable();\n\n\t\t// web3_\n\t\tbonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);\n\n\t\t// net_\n\t\tbonds.peerCount = new TransformBond(_ => +_, [new SubscriptionBond('net', 'peerCount')]);\n\t\tbonds.listening = new SubscriptionBond('net', 'listening');\n\t\tbonds.chainId = new SubscriptionBond('net', 'version');\n\n\t\t// parity_\n\t\tbonds.hashContent = u => new TransformBond(x => api().parity.hashContent(x), [u], [], false);\n\t\tbonds.gasPriceHistogram = new SubscriptionBond('parity', 'gasPriceHistogram').subscriptable();\n\t\tbonds.mode = new SubscriptionBond('parity', 'mode');\n\t\tbonds.accountsInfo = new SubscriptionBond('parity', 'accountsInfo').subscriptable(2);\n\t\tbonds.allAccountsInfo = new SubscriptionBond('parity', 'allAccountsInfo').subscriptable(2);\n\t\tbonds.hardwareAccountsInfo = new SubscriptionBond('parity', 'hardwareAccountsInfo').subscriptable(2);\n\n\t\t// ...authoring\n\t\tbonds.defaultExtraData = new SubscriptionBond('parity', 'defaultExtraData');\n\t\tbonds.extraData = new SubscriptionBond('parity', 'extraData');\n\t\tbonds.gasCeilTarget = new SubscriptionBond('parity', 'gasCeilTarget');\n\t\tbonds.gasFloorTarget = new SubscriptionBond('parity', 'gasFloorTarget');\n\t\tbonds.minGasPrice = new SubscriptionBond('parity', 'minGasPrice');\n\t\tbonds.transactionsLimit = new SubscriptionBond('parity', 'transactionsLimit');\n\n\t\t// ...chain info\n\t\tbonds.chainName = new SubscriptionBond('parity', 'netChain');\n\t\tbonds.chainStatus = new SubscriptionBond('parity', 'chainStatus').subscriptable();\n\n\t\t// ...networking\n\t\tbonds.peers = new SubscriptionBond('parity', 'netPeers').subscriptable(2);\n\t\tbonds.enode = new SubscriptionBond('parity', 'enode');\n\t\tbonds.nodePort = new TransformBond(_ => +_, [new SubscriptionBond('parity', 'netPort')]);\n\t\tbonds.nodeName = new SubscriptionBond('parity', 'nodeName');\n\t\t// Where defined ?\n\t\tbonds.signerPort = new TransformBond(() => api().parity.signerPort().then(_ => +_), [], []);\n\t\tbonds.dappsPort = new TransformBond(() => api().parity.dappsPort().then(_ => +_), [], []);\n\t\tbonds.dappsInterface = new TransformBond(() => api().parity.dappsInterface(), [], []);\n\n\t\t// ...transaction queue\n\t\tbonds.nextNonce = new TransformBond(_ => +_, [new SubscriptionBond('parity', 'nextNonce')]);\n\t\tbonds.pending = new SubscriptionBond('parity', 'pendingTransactions').subscriptable();\n\t\tbonds.local = new SubscriptionBond('parity', 'localTransactions').subscriptable(3);\n\t\tbonds.future = new SubscriptionBond('parity', 'futureTransactions').subscriptable(2);\n\t\tbonds.pendingStats = new SubscriptionBond('parity', 'pendingTransactionsStats').subscriptable(2);\n\t\tbonds.unsignedCount = new TransformBond(_ => +_, [new SubscriptionBond('parity', 'unsignedTransactionsCount')]);\n\t\tbonds.requestsToConfirm = new SubscriptionBond('signer', 'requestsToConfirm');\n\n\t\t// ...auto-update\n\t\tbonds.releasesInfo = new SubscriptionBond('parity', 'releasesInfo').subscriptable();\n\t\tbonds.versionInfo = new SubscriptionBond('parity', 'versionInfo').subscriptable();\n\t\tbonds.consensusCapability = new SubscriptionBond('parity', 'consensusCapability').subscriptable();\n\t\tbonds.upgradeReady = new TransformBond(() => api().parity.upgradeReady(), [], [onAutoUpdateChanged]).subscriptable();\n\t}\n\n\t// trace TODO: Implement contract object with new trace_many feature\n\tbonds.replayTx = (x, whatTrace) => new TransformBond((x, whatTrace) => api().trace.replayTransaction(x, whatTrace), [x, whatTrace], []).subscriptable();\n\tbonds.callTx = (x, whatTrace, blockNumber) => new TransformBond((x, whatTrace, blockNumber) => api().trace.call(x, whatTrace, blockNumber), [x, whatTrace, blockNumber], []).subscriptable();\n\n\tfunction traceCall (addr, method, args, options) {\n\t\tlet data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);\n\t\tlet decode = d => util.abiDecode(method.outputs.map(f => f.type), d);\n\t\tlet traceMode = options.traceMode;\n\t\tdelete options.traceMode;\n\t\treturn api().trace.call(overlay({to: addr, data: data}, options), traceMode, 'latest').then(decode);\n\t}\n\n\tclass DeployContract extends oo7.ReactivePromise {\n\t\tconstructor (initBond, abiBond, optionsBond) {\n\t\t\tsuper([initBond, abiBond, optionsBond, bonds.registry], [], ([init, abi, options, registry]) => {\n\t\t\t\toptions.data = init;\n\t\t\t\tdelete options.to;\n\t\t\t\tlet progress = this.trigger.bind(this);\n\t\t\t\ttransactionPromise(options, progress, status => {\n\t\t\t\t\tif (status.confirmed) {\n\t\t\t\t\t\tstatus.deployed = bonds.makeContract(status.confirmed.contractAddress, abi, options.extras || []);\n\t\t\t\t\t}\n\t\t\t\t\treturn status;\n\t\t\t\t});\n\t\t\t\t// TODO: consider allowing registry of the contract here.\n\t\t\t}, false);\n\t\t\tthis.then(_ => null);\n\t\t}\n\t\tisDone (s) {\n\t\t\treturn !!(s.failed || s.confirmed);\n\t\t}\n\t}\n\n\tbonds.deployContract = function (init, abi, options = {}) {\n\t\treturn new DeployContract(init, abi, options);\n\t};\n\n\tbonds.makeContract = function (address, abi, extras = [], debug = false) {\n\t\tvar r = { address: address };\n\t\tlet unwrapIfOne = a => a.length === 1 ? a[0] : a;\n\t\tabi.forEach(i => {\n\t\t\tif (i.type === 'function' && i.constant) {\n\t\t\t\tlet f = function (...args) {\n\t\t\t\t\tvar options = args.length === i.inputs.length + 1 ? args.pop() : {};\n\t\t\t\t\tif (args.length !== i.inputs.length) {\n\t\t\t\t\t\tthrow new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`);\n\t\t\t\t\t}\n\t\t\t\t\tlet f = (addr, ...fargs) => debug\n\t\t\t\t\t\t? traceCall(address, i, args, options)\n\t\t\t\t\t\t: call(addr, i, fargs, options)\n\t\t\t\t\t\t\t.then(rets => rets.map((r, o) => cleanup(r, i.outputs[o].type, api)))\n\t\t\t\t\t\t\t.then(unwrapIfOne);\n\t\t\t\t\treturn new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();\t// TODO: should be subscription on contract events\n\t\t\t\t};\n\t\t\t\tr[i.name] = (i.inputs.length === 0) ? memoized(f) : (i.inputs.length === 1) ? presub(f) : f;\n\t\t\t\tr[i.name].args = i.inputs;\n\t\t\t}\n\t\t});\n\t\textras.forEach(i => {\n\t\t\tlet f = function (...args) {\n\t\t\t\tlet expectedInputs = (i.numInputs || i.args.length);\n\t\t\t\tvar options = args.length === expectedInputs + 1 ? args.pop() : {};\n\t\t\t\tif (args.length !== expectedInputs) {\n\t\t\t\t\tthrow new Error(`Invalid number of arguments to ${i.name}. Expected ${expectedInputs}, got ${args.length}. ${args}`);\n\t\t\t\t}\n\t\t\t\tlet c = abi.find(j => j.name === i.method);\n\t\t\t\tlet f = (addr, ...fargs) => {\n\t\t\t\t\tlet args = i.args.map((v, index) => v === null ? fargs[index] : typeof (v) === 'function' ? v(fargs[index]) : v);\n\t\t\t\t\treturn debug\n\t\t\t\t\t\t? traceCall(address, i, args, options)\n\t\t\t\t\t\t: call(addr, c, args, options).then(unwrapIfOne);\n\t\t\t\t};\n\t\t\t\treturn new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();\t// TODO: should be subscription on contract events\n\t\t\t};\n\t\t\tr[i.name] = (i.args.length === 1) ? presub(f) : f;\n\t\t\tr[i.name].args = i.args;\n\t\t});\n\t\tabi.forEach(i => {\n\t\t\tif (i.type === 'function' && !i.constant) {\n\t\t\t\tr[i.name] = function (...args) {\n\t\t\t\t\tvar options = args.length === i.inputs.length + 1 ? args.pop() : {};\n\t\t\t\t\tif (args.length !== i.inputs.length) { throw new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}. ${args}`); }\n\t\t\t\t\treturn debug\n\t\t\t\t\t\t? traceCall(address, i, args, options)\n\t\t\t\t\t\t: post(address, i, args, options).subscriptable();\n\t\t\t\t};\n\t\t\t\tr[i.name].args = i.inputs;\n\t\t\t}\n\t\t});\n\t\tvar eventLookup = {};\n\t\tabi.filter(i => i.type === 'event').forEach(i => {\n\t\t\teventLookup[util.abiSignature(i.name, i.inputs.map(f => f.type))] = i.name;\n\t\t});\n\n\t\tfunction prepareIndexEncode (v, t, top = true) {\n\t\t\tif (v instanceof Array) {\n\t\t\t\tif (top) {\n\t\t\t\t\treturn v.map(x => prepareIndexEncode(x, t, false));\n\t\t\t\t} else {\n\t\t\t\t\tthrow new Error('Invalid type');\n\t\t\t\t}\n\t\t\t}\n\t\t\tvar val;\n\t\t\tif (t === 'string' || t === 'bytes') {\n\t\t\t\tval = util.sha3(v);\n\t\t\t} else {\n\t\t\t\tval = util.abiEncode(null, [t], [v]);\n\t\t\t}\n\t\t\tif (val.length !== 66) {\n\t\t\t\tthrow new Error('Invalid length');\n\t\t\t}\n\t\t\treturn val;\n\t\t}\n\n\t\tabi.forEach(i => {\n\t\t\tif (i.type === 'event') {\n\t\t\t\tr[i.name] = function (indexed = {}, params = {}) {\n\t\t\t\t\treturn new TransformBond((addr, indexed) => {\n\t\t\t\t\t\tvar topics = [util.abiSignature(i.name, i.inputs.map(f => f.type))];\n\t\t\t\t\t\ti.inputs.filter(f => f.indexed).forEach(f => {\n\t\t\t\t\t\t\ttry {\n\t\t\t\t\t\t\t\ttopics.push(indexed[f.name] ? prepareIndexEncode(indexed[f.name], f.type) : null);\n\t\t\t\t\t\t\t} catch (e) {\n\t\t\t\t\t\t\t\tthrow new Error(`Couldn't encode indexed parameter ${f.name} of type ${f.type} with value ${indexed[f.name]}`);\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t});\n\t\t\t\t\t\treturn api().eth.getLogs({\n\t\t\t\t\t\t\taddress: addr,\n\t\t\t\t\t\t\tfromBlock: params.fromBlock || 0,\n\t\t\t\t\t\t\ttoBlock: params.toBlock || 'pending',\n\t\t\t\t\t\t\tlimit: params.limit || 10,\n\t\t\t\t\t\t\ttopics: topics\n\t\t\t\t\t\t}).then(logs => logs.map(l => {\n\t\t\t\t\t\t\tl.blockNumber = +l.blockNumber;\n\t\t\t\t\t\t\tl.transactionIndex = +l.transactionIndex;\n\t\t\t\t\t\t\tl.logIndex = +l.logIndex;\n\t\t\t\t\t\t\tl.transactionLogIndex = +l.transactionLogIndex;\n\t\t\t\t\t\t\tvar e = {};\n\t\t\t\t\t\t\tlet unins = i.inputs.filter(f => !f.indexed);\n\t\t\t\t\t\t\tutil.abiDecode(unins.map(f => f.type), l.data).forEach((v, j) => {\n\t\t\t\t\t\t\t\tlet f = unins[j];\n\t\t\t\t\t\t\t\tif (v instanceof Array && !f.type.endsWith(']')) {\n\t\t\t\t\t\t\t\t\tv = util.bytesToHex(v);\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\tif (f.type.substr(0, 4) === 'uint' && +f.type.substr(4) <= 48) {\n\t\t\t\t\t\t\t\t\tv = +v;\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\te[f.name] = v;\n\t\t\t\t\t\t\t});\n\t\t\t\t\t\t\ti.inputs.filter(f => f.indexed).forEach((f, j) => {\n\t\t\t\t\t\t\t\tif (f.type === 'string' || f.type === 'bytes') {\n\t\t\t\t\t\t\t\t\te[f.name] = l.topics[1 + j];\n\t\t\t\t\t\t\t\t} else {\n\t\t\t\t\t\t\t\t\tvar v = util.abiDecode([f.type], l.topics[1 + j])[0];\n\t\t\t\t\t\t\t\t\tif (v instanceof Array) {\n\t\t\t\t\t\t\t\t\t\tv = util.bytesToHex(v);\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\tif (f.type.substr(0, 4) === 'uint' && +f.type.substr(4) <= 48) {\n\t\t\t\t\t\t\t\t\t\tv = +v;\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\te[f.name] = v;\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t});\n\t\t\t\t\t\t\te.event = eventLookup[l.topics[0]];\n\t\t\t\t\t\t\te.log = l;\n\t\t\t\t\t\t\treturn e;\n\t\t\t\t\t\t}));\n\t\t\t\t\t}, [address, indexed], [bonds.height]).subscriptable();\n\t\t\t\t};\n\t\t\t\tr[i.name].args = i.inputs;\n\t\t\t}\n\t\t});\n\t\treturn r;\n\t};\n\n\tif (useSubs) {\n\t\tbonds.registry = bonds.makeContract(new SubscriptionBond('parity', 'registryAddress'), RegistryABI, RegistryExtras);\n\t} else {\n\t\tbonds.registry = bonds.makeContract(new TransformBond(() => api().parity.registryAddress(), [], [bonds.time]), RegistryABI, RegistryExtras);\n\t}\n\n\tbonds.githubhint = bonds.makeContract(bonds.registry.lookupAddress('githubhint', 'A'), GitHubHintABI);\n\tbonds.operations = bonds.makeContract(bonds.registry.lookupAddress('operations', 'A'), OperationsABI);\n\tbonds.badgereg = bonds.makeContract(bonds.registry.lookupAddress('badgereg', 'A'), BadgeRegABI);\n\tbonds.tokenreg = bonds.makeContract(bonds.registry.lookupAddress('tokenreg', 'A'), TokenRegABI);\n\n\tbonds.badges = new TransformBond(n => {\n\t\tvar ret = [];\n\t\tfor (var i = 0; i < +n; ++i) {\n\t\t\tlet id = i;\n\t\t\tret.push(oo7.Bond.all([\n\t\t\t\tbonds.badgereg.badge(id),\n\t\t\t\tbonds.badgereg.meta(id, 'IMG'),\n\t\t\t\tbonds.badgereg.meta(id, 'CAPTION')\n\t\t\t]).map(([[addr, name, owner], img, caption]) => ({\n\t\t\t\tid,\n\t\t\t\tname,\n\t\t\t\timg,\n\t\t\t\tcaption,\n\t\t\t\tbadge: bonds.makeContract(addr, BadgeABI)\n\t\t\t}))\n\t\t\t);\n\t\t}\n\t\treturn ret;\n\t}, [bonds.badgereg.badgeCount()], [], 1);\n\n\tbonds.badgesOf = address => new TransformBond(\n\t\t(addr, bads) => bads.map(b => ({\n\t\t\tcertified: b.badge.certified(addr),\n\t\t\tbadge: b.badge,\n\t\t\tid: b.id,\n\t\t\timg: b.img,\n\t\t\tcaption: b.caption,\n\t\t\tname: b.name\n\t\t})),\n\t\t[address, bonds.badges], [], 2\n\t).map(all => all.filter(_ => _.certified));\n\n\tbonds.tokens = new TransformBond(n => {\n\t\tvar ret = [];\n\t\tfor (var i = 0; i < +n; ++i) {\n\t\t\tlet id = i;\n\t\t\tret.push(oo7.Bond.all([\n\t\t\t\tbonds.tokenreg.token(id),\n\t\t\t\tbonds.tokenreg.meta(id, 'IMG'),\n\t\t\t\tbonds.tokenreg.meta(id, 'CAPTION')\n\t\t\t]).map(([[addr, tla, base, name, owner], img, caption]) => ({\n\t\t\t\tid,\n\t\t\t\ttla,\n\t\t\t\tbase,\n\t\t\t\tname,\n\t\t\t\timg,\n\t\t\t\tcaption,\n\t\t\t\ttoken: bonds.makeContract(addr, TokenABI)\n\t\t\t}))\n\t\t\t);\n\t\t}\n\t\treturn ret;\n\t}, [bonds.tokenreg.tokenCount()], [], 1);\n\n\tbonds.tokensOf = address => new TransformBond(\n\t\t(addr, bads) => bads.map(b => ({\n\t\t\tbalance: b.token.balanceOf(addr),\n\t\t\ttoken: b.token,\n\t\t\tid: b.id,\n\t\t\tname: b.name,\n\t\t\ttla: b.tla,\n\t\t\tbase: b.base,\n\t\t\timg: b.img,\n\t\t\tcaption: b.caption\n\t\t})),\n\t\t[address, bonds.tokens], [], 2\n\t).map(all => all.filter(_ => _.balance.gt(0)));\n\n\tbonds.namesOf = address => new TransformBond((reg, addr, accs) => ({\n\t\towned: accs[addr] ? accs[addr].name : null,\n\t\tregistry: reg || null\n\t}), [bonds.registry.reverse(address), address, bonds.accountsInfo]);\n\n\tbonds.registry.names = oo7.Bond.mapAll([bonds.registry.ReverseConfirmed({}, {limit: 100}), bonds.accountsInfo],\n\t\t(reg, info) => {\n\t\t\tlet r = {};\n\t\t\tObject.keys(info).forEach(k => r[k] = info[k].name);\n\t\t\treg.forEach(a => r[a.reverse] = bonds.registry.reverse(a.reverse));\n\t\t\treturn r;\n\t\t}, 1);\n\n\treturn bonds;\n}\n\nconst t = defaultProvider();\nconst options = t ? { api: new ParityApi(t) } : null;\n/** @type {Bonds} */\nconst bonds = options ? createBonds(options) : null;\n\nconst isOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);\nconst isNotOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) === -1);\n\nmodule.exports = {\n\t// Bonds stuff\n\t// abiPolyfill,\n\toptions,\n\tbonds,\n\tBonds,\n\tcreateBonds,\n\n\t// Util functions\n\tisOwned,\n\tisNotOwned,\n\tasciiToHex,\n\tbytesToHex,\n\thexToAscii,\n\tisAddressValid,\n\ttoChecksumAddress,\n\tsha3,\n\tcapitalizeFirstLetter,\n\tsingleton,\n\tdenominations,\n\tdenominationMultiplier,\n\tinterpretRender,\n\tcombineValue,\n\tdefDenom,\n\tformatValue,\n\tformatValueNoDenom,\n\tformatToExponential,\n\tinterpretQuantity,\n\tsplitValue,\n\tformatBalance,\n\tformatBlockNumber,\n\tisNullData,\n\tsplitSignature,\n\tremoveSigningPrefix,\n\tcleanup,\n\n\t// ABIs\n\tabiPolyfill,\n\tRegistryABI,\n\tRegistryExtras,\n\tGitHubHintABI,\n\tOperationsABI,\n\tBadgeRegABI,\n\tTokenRegABI,\n\tBadgeABI,\n\tTokenABI\n};\n",
+    "content": "// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//         http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\n/* eslint-disable no-return-assign */\n/* eslint-disable no-proto */\n\n// TODO [Document auxilary types]\n\nconst oo7 = require('oo7');\nconst ParityApi = require('@parity/api');\n\nconst {\n\tasciiToHex,\n\tbytesToHex,\n\thexToAscii,\n\tisAddressValid,\n\ttoChecksumAddress,\n\tsha3,\n\tcapitalizeFirstLetter,\n\tsingleton,\n\tdenominations,\n\tdenominationMultiplier,\n\tinterpretRender,\n\tcombineValue,\n\tdefDenom,\n\tformatValue,\n\tformatValueNoDenom,\n\tformatToExponential,\n\tinterpretQuantity,\n\tsplitValue,\n\tformatBalance,\n\tformatBlockNumber,\n\tisNullData,\n\tsplitSignature,\n\tremoveSigningPrefix,\n\tcleanup\n} = require('./utils');\n\nconst {\n\tabiPolyfill,\n\tRegistryABI,\n\tRegistryExtras,\n\tGitHubHintABI,\n\tOperationsABI,\n\tBadgeRegABI,\n\tTokenRegABI,\n\tBadgeABI,\n\tTokenABI\n} = require('./abis');\n\nfunction defaultProvider () {\n\tif (typeof window !== 'undefined' && window.ethereum) {\n\t\treturn window.ethereum;\n\t}\n\n\ttry {\n\t\tif (typeof window !== 'undefined' && window.parent && window.parent.ethereum) {\n\t\t\treturn window.parent.ethereum;\n\t\t}\n\t} catch (e) {}\n\n\treturn new ParityApi.Provider.Http('http://localhost:8545');\n}\n\nclass Bonds {\n\t/**\n\t * Creates a new oo7-parity bonds aggregate object with given ethereum provider.\n\t *\n\t * Additional documentation can be found at https://wiki.parity.io/oo7-Parity-Reference.html\n\t *\n\t * @param {?Provider} provider Web3-compatible transport Provider (i.e. `window.ethereum`). Uses a sane default if not provided.\n\t * @returns {Bonds}\n\t */\n\tconstructor (provider = defaultProvider()) {\n\t\tif (!this) {\n\t\t\treturn createBonds({ api: new ParityApi(provider) });\n\t\t}\n\n\t\t/**\n\t\t *\n\t\t * A {@link Bond} representing latest time. Updated every second.\n\t\t *\n\t\t * @type {TimeBond}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.time\n\t\t *\t.tie(console.log) // prints time periodically\n\t\t */\n\t\tthis.time = null;\n\n\t\t/**\n\t\t * A {@link Bond} representing latest block number.\n\t\t * Alias for {@link Bonds.blockNumber}\n\t\t *\n\t\t * @type {Bond.<Number>}\n\t\t */\n\t\tthis.height = null;\n\n\t\t/**\n\t\t * A {@link Bond} representing latest block number.\n\t\t *\n\t\t * @type {Bond.<Number>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.blockNumber\n\t\t *\t.tie(console.log) // prints latest block number when it changes\n\t\t */\n\t\tthis.blockNumber = null;\n\n\t\t/**\n\t\t * A function returning bond that represents given block content.\n\t\t *\n\t\t * @param {string|number|Bond} number block number\n\t\t * @returns {Bond.<Block>} block bond\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.blockByNumber(bonds.height)\n\t\t *\t.tie(console.log) // prints latest block\n\t\t */\n\t\tthis.blockByNumber = null;\n\n\t\t/**\n\t\t * A function returning bond that represents given block content.\n\t\t *\n\t\t * @param {string|number|Bond} hash block hash\n\t\t * @returns {Bond.<Block>} block bond\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.blockByHash('0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d')\n\t\t *\t.tie(console.log) // prints block with given hash\n\t\t */\n\t\tthis.blockByHash = null;\n\n\t\t/**\n\t\t * Similar to {@link Bonds.blockByNumber} and {@link Bonds.blockByHash},\n\t\t * but accepts both hashes and numbers as arguments.\n\t\t *\n\t\t * @param {string|number|Bond} hashOrNumber block hash or block number\n\t\t * @returns {Bond.<Block>} block bond\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.findBlock('0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d')\n\t\t *\t.tie(console.log) // prints block with given hash\n\t\t */\n\t\tthis.findBlock = null;\n\n\t\t/**\n\t\t * A subscriptable version of {@link Bonds.findBlock}\n\t\t *\n\t\t * You can retrieve bonds given block numbers or hashes or other Bonds.\n\t\t *\n\t\t * @type {Object.<string|number|Bond, Bond>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.blocks['0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d']\n\t\t *\t.tie(console.log) // prints block with given hash\n\t\t *\n\t\t * bonds\n\t\t *\t.blocks[bonds.height]\n\t\t *\t.tie(console.log) // prints latest block every time it changes\n\t\t */\n\t\tthis.blocks = null;\n\n\t\t/**\n\t\t * A {@link Bond} for latest block.\n\t\t *\n\t\t * @type {Bond.<Block>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.head\n\t\t *\t.tie(console.log) // prints latest block every time it changes\n\t\t *\n\t\t */\n\t\tthis.head = null;\n\n\t\t/**\n\t\t * A {@link Bond} for currently set block author.\n\t\t * Represents a result of `eth_coinbase` RPC call.\n\t\t *\n\t\t * @type {Bond.<Address>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.author\n\t\t *\t.tie(console.log) // prints currently set block author (coinbase/miner) every time it changes\n\t\t *\n\t\t */\n\t\tthis.author = null;\n\n\t\t/**\n\t\t * List of accounts managed by the node.\n\t\t *\n\t\t * @type {Bond.<Address[]>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.accounts\n\t\t *\t.tie(console.log) // prints accounts list every time it changes\n\t\t *\n\t\t */\n\t\tthis.accounts = null;\n\n\t\t/**\n\t\t * User-selected default account for this dapp.\n\t\t *\n\t\t * @type {Bond.<Address>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.defaultAccount\n\t\t *\t.tie(console.log) // prints default account every time it changes\n\t\t *\n\t\t */\n\t\tthis.defaultAccount = null;\n\n\t\t/**\n\t\t * Alias for {@link Bonds.defaultAccount}\n\t\t *\n\t\t * @type {Bond.<Address>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.me\n\t\t *\t.tie(console.log) // prints default account every time it changes\n\t\t *\n\t\t */\n\t\tthis.me = null;\n\t\t/**\n\t\t * Posts a transaction to the network.\n\t\t *\n\t\t * @param {TransactionRequest} tx Transaction details\n\t\t * @returns {ReactivePromise.<TransactionStatus>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.post({ to: bonds.me, value: 0  })\n\t\t *\t.tie(console.log) // Reports transaction progress\n\t\t */\n\t\tthis.post = null;\n\t\t/**\n\t\t * Returns a signature of given message\n\t\t *\n\t\t * @param {Hash|Bond} hash Hash to sign\n\t\t * @param {?Address|Bond} from Optional account that should be used for signing.\n\t\t * @returns {ReactivePromise.<SignStatus>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.sign('0x2ea2e504d09c458dbadc703112125564d53ca03c27a5b28e7b3e2b5804289c45')\n\t\t *\t.tie(console.log) // Reports signing progress\n\t\t */\n\t\tthis.sign = null;\n\n\t\t/**\n\t\t * Returns balance of given address.\n\t\t *\n\t\t * @param {string|Bond.<Address>} address\n\t\t * @returns {Bond.<BigNumber>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.balance(bonds.me)\n\t\t *\t.tie(console.log) // prints default account balance every time any of them changes\n\t\t *\n\t\t */\n\t\tthis.balance = null;\n\n\t\t/**\n\t\t * Returns code of given address.\n\t\t *\n\t\t * @param {string|Bond.<Address>} address\n\t\t * @returns {Bond.<Bytes>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.code(bonds.me)\n\t\t *\t.tie(console.log) // prints default account code every time any of them changes\n\t\t *\n\t\t */\n\t\tthis.code = null;\n\n\t\t/**\n\t\t * Returns the nonce of given address.\n\t\t *\n\t\t * @param {string|Bond.<Address>} address\n\t\t * @returns {Bond.<BigNumber>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.nonce(bonds.me)\n\t\t *\t.tie(console.log) // prints default account nonce every time any of them changes\n\t\t *\n\t\t */\n\t\tthis.nonce = null;\n\n\t\t/**\n\t\t * Returns storage at given index of an address.\n\t\t *\n\t\t * @param {string|Bond.<Address>} address Contract address\n\t\t * @param {string|number|Bond.<H256>} storageIdx Contract storage index\n\t\t * @returns {Bond.<BigNumber>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.storageAt(bonds.me, 0)\n\t\t *\t.tie(console.log) // prints default account storage at position 0 every time any of them changes\n\t\t *\n\t\t */\n\t\tthis.storageAt = null;\n\n\t\t/**\n\t\t * Returns node's syncing status.\n\t\t * If the node is fully synced this will return `false`.\n\t\t *\n\t\t * @type {Bond.<bool>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.syncing\n\t\t *\t.tie(console.log) // prints sync status every time it changes\n\t\t *\n\t\t */\n\t\tthis.syncing = null;\n\t\t/**\n\t\t * Returns node's authoring status.\n\t\t * If the node is not authoring blocks this will return `false`.\n\t\t *\n\t\t * @type {Bond.<bool>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.authoring\n\t\t *\t.tie(console.log) // prints authoring status every time it changes\n\t\t *\n\t\t */\n\t\tthis.authoring = null;\n\t\t/**\n\t\t * Reported hashrate.\n\t\t * If there is an external miner connected to the node it will return reported values.\n\t\t *\n\t\t * @type {Bond.<BigNumber>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.hashrate\n\t\t *\t.tie(console.log) // prints current average hashrate\n\t\t *\n\t\t */\n\t\tthis.hashrate = null;\n\t\tthis.ethProtocolVersion = null;\n\t\t/**\n\t\t * Suggested gas price value. (Gas Price Oracle)\n\t\t * This returns a suggested gas price for next transaction. The estimation is based on statistics from last blocks.\n\t\t *\n\t\t * @type {Bond.<BigNumber>}\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.gasPrice\n\t\t *\t.tie(console.log) // prints current gas price suggestion\n\t\t *\n\t\t */\n\t\tthis.gasPrice = null;\n\t\t/**\n\t\t * Estimates gas required to execute given transaction\n\t\t *\n\t\t * @param {{ from: ?Address, to: ?Address, data: ?Bytes }} call Transaction request\n\t\t * @returns {Bond.<BigNumber>} gas estimate\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.estimateGas({ from: bonds.me, to: '0x00D6Cc1BA9cf89BD2e58009741f4F7325BAdc0ED' })\n\t\t *\t.tie(console.log) // prints current gas estimate\n\t\t *\n\t\t */\n\t\tthis.estimateGas = null;\n\n\t\t/**\n\t\t * Returns block transaction count given block number or hash.\n\t\t *\n\t\t * @param {string|number|Bond} block block number or hash\n\t\t * @returns {Bond.<Number>} number of transactions in block\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.blockTransactionCount(bonds.blockNumber)\n\t\t *\t.tie(console.log) // prints number of transactions in latest block\n\t\t *\n\t\t */\n\t\tthis.blockTransactionCount = null;\n\t\t/**\n\t\t * Returns uncle count given block number or hash.\n\t\t *\n\t\t * @param {string|number|Bond} block block number or hash\n\t\t * @returns {Bond.<Number>} number of uncles in a block\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.uncleCount(bonds.blockNumber)\n\t\t *\t.tie(console.log) // prints number of uncles in latest block\n\t\t *\n\t\t */\n\t\tthis.uncleCount = null;\n\t\t/**\n\t\t * Returns uncle given block number or hash and uncle index\n\t\t *\n\t\t * @param {string|number|Bond} block block number or hash\n\t\t * @param {string|number|Bond} index index of an uncle within a block\n\t\t * @returns {Bond.<Header>} uncle header at that index\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.uncle(bonds.blockNumber, 0)\n\t\t *\t.tie(console.log) // prints the first uncle in latest block\n\t\t *\n\t\t */\n\t\tthis.uncle = null;\n\t\t/**\n\t\t * Returns transaction given block number or hash and transaction index\n\t\t *\n\t\t * @param {string|number|Bond} block block number or hash\n\t\t * @param {string|number|Bond} index index of a transaction within a block\n\t\t * @returns {Bond.<Transaction>} transaction at that index\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.transaction(bonds.blockNumber, 0)\n\t\t *\t.tie(console.log) // prints the first uncle in latest block\n\t\t *\n\t\t */\n\t\tthis.transaction = null;\n\t\t/**\n\t\t * Returns receipt given transaction hash.\n\t\t *\n\t\t * @param {string|number|Bond} hash transaction hash\n\t\t * @returns {Bond.<TransactionReceipt>} transaction at that index\n\t\t *\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.receipt(bonds.transaction(bonds.height, 0).map(x => x ? x.hash : undefined))\n\t\t *\t.tie(console.log) // prints receipt of first transaction in latest block\n\t\t *\n\t\t */\n\t\tthis.receipt = null;\n\n\t\t/**\n\t\t * Returns client version string. (`web3_clientVersion`).\n\t\t *\n\t\t * @type {Bond.<String>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.clientVersion\n\t\t *\t.tie(console.log)\n\t\t *\n\t\t */\n\t\tthis.clientVersion = null;\n\n\t\t/**\n\t\t * Returns current peer count. (`net_peerCount`).\n\t\t *\n\t\t * @type {Bond.<Number>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.peerCount\n\t\t *\t.tie(console.log)\n\t\t *\n\t\t */\n\t\tthis.peerCount = null;\n\t\t/**\n\t\t * Returns true if the node is actively listening for network connections.\n\t\t *\n\t\t * @type {Bond.<bool>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.listening\n\t\t *\t.tie(console.log)\n\t\t *\n\t\t */\n\t\tthis.listening = null;\n\t\t/**\n\t\t * Returns chain id (used for chain replay protection).\n\t\t * NOTE: It's _not_ network id.\n\t\t *\n\t\t * @type {Bond.<Number>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.chainId\n\t\t *\t.tie(console.log)\n\t\t *\n\t\t */\n\t\tthis.chainId = null;\n\n\t\t/**\n\t\t * Returns a hash of content under given URL.\n\t\t *\n\t\t * @param {string|Bond} url URL of the content\n\t\t * @returns {Bond.<string>} hash of the content\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.hashContent('https://google.com')\n\t\t *\t.tie(console.log)\n\t\t *\n\t\t */\n\t\tthis.hashContent = null;\n\t\tthis.gasPriceHistogram = null;\n\t\tthis.accountsInfo = null;\n\t\tthis.allAccontsInfo = null;\n\t\tthis.hardwareAccountsInfo = null;\n\t\tthis.mode = null;\n\n\t\tthis.defaultExtraData = null;\n\t\tthis.extraData = null;\n\t\tthis.gasCeilTarget = null;\n\t\tthis.gasFloorTarget = null;\n\t\tthis.minGasPrice = null;\n\t\tthis.transactionsLimit = null;\n\t\t/**\n\t\t * Returns a string name of currently connected chain.\n\t\t *\n\t\t * @type {Bond.<string>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.chainName\n\t\t *\t.tie(console.log)\n\t\t */\n\t\tthis.chainName = null;\n\t\t/**\n\t\t * Returns a status of currently connected chain.\n\t\t *\n\t\t * @type {Bond.<object>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.chainStatus\n\t\t *\t.tie(console.log)\n\t\t */\n\t\tthis.chainStatus = null;\n\n\t\tthis.peers = null;\n\t\tthis.enode = null;\n\t\tthis.nodePort = null;\n\t\tthis.nodeName = null;\n\t\tthis.signerPort = null;\n\t\tthis.dappsPort = null;\n\t\tthis.dappsInterface = null;\n\n\t\tthis.nextNonce = null;\n\t\tthis.pending = null;\n\t\tthis.local = null;\n\t\tthis.future = null;\n\t\tthis.pendingStats = null;\n\t\tthis.unsignedCount = null;\n\n\t\tthis.releaseInfo = null;\n\t\tthis.versionInfo = null;\n\t\tthis.consensusCapability = null;\n\t\tthis.upgradeReady = null;\n\n\t\t/**\n\t\t * Replays (re-executes) a transaction. Returns requested traces of execution.\n\t\t *\n\t\t * @param {string} hash Transaction hash\n\t\t * @param {String[]} traces Any subset of `trace`,`vmTrace`,`stateDiff`.\n\t\t * @returns {Bond.<object>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.replayTx('0x2ea2e504d09c458dbadc703112125564d53ca03c27a5b28e7b3e2b5804289c45', ['trace'])\n\t\t *\t.tie(console.log)\n\t\t */\n\t\tthis.replayTx = null;\n\t\t/**\n\t\t * Executs a transaction and collects traces.\n\t\t *\n\t\t * @param {TransactionRequest} transaction Transaction request\n\t\t * @param {String[]} traces Any subset of `trace`,`vmTrace`,`stateDiff`.\n\t\t * @param {string|number|Bond} block Block number or hash\n\t\t * @returns {Bond.<object>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.callTx({\n\t\t *\t\tfrom: bonds.me,\n\t\t *\t\tto: bonds.registry.address\n\t\t *\t}, ['trace'], 'latest')\n\t\t *\t.tie(console.log)\n\t\t */\n\t\tthis.callTx = null;\n\n\t\t/**\n\t\t * Deploys a new contract\n\t\t *\n\t\t * @param {string|Bytes} init Initialization bytecode\n\t\t * @param {ABI} abi Contract ABI\n\t\t * @param {{from: ?Address, gas: ?BigNumber, gasPrice: ?BigNumber, nonce: ?BigNumber}} options Deployment options\n\t\t * @returns {ReactivePromise.<DeployStatus>}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.deployContract('0x1234', abi, {})\n\t\t *\t.tie(console.log) // Reports deployment progress\n\t\t */\n\t\tthis.deployContract = null;\n\t\t/**\n\t\t * Creates bond-enabled contract object for existing contract.\n\t\t *\n\t\t * @param {string|Bond} address Contract address\n\t\t * @param {ABI} abi Contract ABI\n\t\t * @param {?ABI} extras Additional methods not defined in the ABI.\n\t\t * @returns {Contract}\n\t\t * @example\n\t\t * const { bonds } = require('oo7-parity')\n\t\t *\n\t\t * bonds\n\t\t *\t.makeContract(bonds.me, abi)\n\t\t *\t.someMethod()\n\t\t *\t.tie(console.log) // returns a result of someMethod call\n\t\t */\n\t\tthis.makeContract = null;\n\n\t\t/**\n\t\t * Parity registry contract instance.\n\t\t * @type {Contract.<Registry>}\n\t\t */\n\t\tthis.registry = null;\n\n\t\t/**\n\t\t * Parity registry contract instance.\n\t\t * @type {Contract.<GithubHint>}\n\t\t */\n\t\tthis.githubhint = null;\n\t\t/**\n\t\t * Parity registry contract instance.\n\t\t * @type {Contract.<Operations>}\n\t\t */\n\t\tthis.operations = null;\n\t\t/**\n\t\t * Parity registry contract instance.\n\t\t * @type {Contract.<BadgeReg>}\n\t\t */\n\t\tthis.badgereg = null;\n\t\t/**\n\t\t * Parity registry contract instance.\n\t\t * @type {Contract.<TokenReg>}\n\t\t */\n\t\tthis.tokenreg = null;\n\n\t\t/**\n\t\t * A {@link Bond} representing all currently registered badges from BadgeReg.\n\t\t *\n\t\t * @type {Bond.<{id:string,name:string,img:string,caption:string,badge:Contract}[]>}\n\t\t */\n\t\tthis.badges = null;\n\t\t/**\n\t\t * Returns a list of badges for given address.\n\t\t *\n\t\t * @param {Address} address\n\t\t * @returns {Bond.<Badge[]>} see {@link Bonds.badges}\n\t\t */\n\t\tthis.badgesOf = null;\n\n\t\t/**\n\t\t * A {@link Bond} representing all currently registered tokens from TokenReg.\n\t\t *\n\t\t * @type {Bond.<{id:string,tla:string,base:string,name:string,owner:address,img:string,caption:string}[]>}\n\t\t */\n\t\tthis.tokens = null;\n\t\t/**\n\t\t * Returns a list of tokens with a non-empty balance for given address.\n\t\t *\n\t\t * @param {Address} address\n\t\t * @returns {Bond.<Token[]>} see {@link Bonds.tokens}\n\t\t */\n\t\tthis.tokensOf = null;\n\n\t\treturn this;\n\t}\n}\n\nfunction isNumber (n) {\n\treturn typeof (n) === 'number' || (typeof (n) === 'string' && n.match(/^[0-9]+$/));\n}\n\nfunction memoized (f) {\n\tvar memo;\n\treturn function () {\n\t\tif (memo === undefined) { memo = f(); }\n\t\treturn memo;\n\t};\n}\n\nfunction overlay (base, top) {\n\tObject.keys(top).forEach(k => {\n\t\tbase[k] = top[k];\n\t});\n\treturn base;\n}\n\nfunction transactionPromise (api, tx, progress, f) {\n\tprogress({initialising: null});\n\tlet condition = tx.condition || null;\n\tPromise.all([api().eth.accounts(), api().eth.gasPrice()])\n\t\t.then(([a, p]) => {\n\t\t\tprogress({estimating: null});\n\t\t\ttx.from = tx.from || a[0];\n\t\t\ttx.gasPrice = tx.gasPrice || p;\n\t\t\treturn tx.gas || api().eth.estimateGas(tx);\n\t\t})\n\t\t.then(g => {\n\t\t\tprogress({estimated: g});\n\t\t\ttx.gas = tx.gas || g;\n\t\t\treturn api().parity.postTransaction(tx);\n\t\t})\n\t\t.then(signerRequestId => {\n\t\t\tprogress({requested: signerRequestId});\n\t\t\treturn api().pollMethod('parity_checkRequest', signerRequestId);\n\t\t})\n\t\t.then(transactionHash => {\n\t\t\tif (condition) {\n\t\t\t\tprogress(f({signed: transactionHash, scheduled: condition}));\n\t\t\t\treturn {signed: transactionHash, scheduled: condition};\n\t\t\t} else {\n\t\t\t\tprogress({signed: transactionHash});\n\t\t\t\treturn api()\n\t\t\t\t\t.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0))\n\t\t\t\t\t.then(receipt => {\n\t\t\t\t\t\tprogress(f({confirmed: receipt}));\n\t\t\t\t\t\treturn receipt;\n\t\t\t\t\t});\n\t\t\t}\n\t\t})\n\t\t.catch(error => {\n\t\t\tprogress({failed: error});\n\t\t});\n}\n\nclass DeployContract extends oo7.ReactivePromise {\n\tconstructor (initBond, abiBond, optionsBond, api) {\n\t\tsuper([initBond, abiBond, optionsBond, bonds.registry], [], ([init, abi, options, registry]) => {\n\t\t\toptions.data = init;\n\t\t\tdelete options.to;\n\t\t\tlet progress = this.trigger.bind(this);\n\t\t\ttransactionPromise(api, options, progress, status => {\n\t\t\t\tif (status.confirmed) {\n\t\t\t\t\tstatus.deployed = bonds.makeContract(status.confirmed.contractAddress, abi, options.extras || []);\n\t\t\t\t}\n\t\t\t\treturn status;\n\t\t\t});\n\t\t\t// TODO: consider allowing registry of the contract here.\n\t\t}, false);\n\t\tthis.then(_ => null);\n\t}\n\tisDone (s) {\n\t\treturn !!(s.failed || s.confirmed);\n\t}\n}\n\nclass Transaction extends oo7.ReactivePromise {\n\tconstructor (tx, api) {\n\t\tsuper([tx], [], ([tx]) => {\n\t\t\tlet progress = this.trigger.bind(this);\n\t\t\ttransactionPromise(api, tx, progress, _ => _);\n\t\t}, false);\n\t\tthis.then(_ => null);\n\t}\n\tisDone (s) {\n\t\treturn !!(s.failed || s.confirmed);\n\t}\n}\n\n/**\n * @param {{api: ParityApi}} Options object\n * @returns {Bonds}\n */\nfunction createBonds (options) {\n\tconst bonds = new Bonds();\n\n\t// We only ever use api() at call-time of this function; this allows the\n\t// options (particularly the transport option) to be changed dynamically\n\t// and the datastructure to be reused.\n\tconst api = () => options.api;\n\tconst util = ParityApi.util;\n\n\tclass TransformBond extends oo7.TransformBond {\n\t\tconstructor (f, a = [], d = [], outResolveDepth = 0, resolveDepth = 1, latched = true, mayBeNull = true) {\n\t\t\tsuper(f, a, d, outResolveDepth, resolveDepth, latched, mayBeNull, api());\n\t\t}\n\t\tmap (f, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond(f, [this], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tsub (name, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tstatic all (list) {\n\t\t\treturn new TransformBond((...args) => args, list);\n\t\t}\n\t}\n\n\tclass SubscriptionBond extends oo7.Bond {\n\t\tconstructor (module, rpcName, options = []) {\n\t\t\tsuper();\n\t\t\tthis.module = module;\n\t\t\tthis.rpcName = rpcName;\n\t\t\tthis.options = [(_, n) => this.trigger(n), ...options];\n\t\t}\n\t\tinitialise () {\n\t\t\t// promise instead of id because if a dependency triggers finalise() before id's promise is resolved the unsubscribing would call with undefined\n\t\t\tthis.subscription = api().pubsub[this.module][this.rpcName](...this.options);\n\t\t}\n\t\tfinalise () {\n\t\t\tthis.subscription.then(id => api().pubsub.unsubscribe([id]));\n\t\t}\n\t\tmap (f, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond(f, [this], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tsub (name, outResolveDepth = 0, resolveDepth = 1) {\n\t\t\treturn new TransformBond((r, n) => r[n], [this, name], [], outResolveDepth, resolveDepth);\n\t\t}\n\t\tstatic all (list) {\n\t\t\treturn new TransformBond((...args) => args, list);\n\t\t}\n\t}\n\n\tclass Signature extends oo7.ReactivePromise {\n\t\tconstructor (message, from) {\n\t\t\tsuper([message, from], [], ([message, from]) => {\n\t\t\t\tapi().parity.postSign(from, asciiToHex(message))\n\t\t\t\t\t.then(signerRequestId => {\n\t\t\t\t\t\tthis.trigger({requested: signerRequestId});\n\t\t\t\t\t\treturn api().pollMethod('parity_checkRequest', signerRequestId);\n\t\t\t\t\t})\n\t\t\t\t\t.then(signature => {\n\t\t\t\t\t\tthis.trigger({\n\t\t\t\t\t\t\tsigned: splitSignature(signature)\n\t\t\t\t\t\t});\n\t\t\t\t\t})\n\t\t\t\t\t.catch(error => {\n\t\t\t\t\t\tconsole.error(error);\n\t\t\t\t\t\tthis.trigger({failed: error});\n\t\t\t\t\t});\n\t\t\t}, false);\n\t\t\tthis.then(_ => null);\n\t\t}\n\t\tisDone (s) {\n\t\t\treturn !!s.failed || !!s.signed;\n\t\t}\n\t}\n\n\tfunction call (addr, method, args, options) {\n\t\tlet data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);\n\t\tlet decode = d => util.abiDecode(method.outputs.map(f => f.type), d);\n\t\treturn api().eth.call(overlay({to: addr, data: data}, options)).then(decode);\n\t}\n\n\tfunction post (addr, method, args, options) {\n\t\tlet toOptions = (addr, method, options, ...args) => {\n\t\t\treturn overlay({to: addr, data: util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);\n\t\t};\n\t\t// inResolveDepth is 2 to allow for Bonded `condition`values which are\n\t\t// object values in `options`.\n\t\treturn new Transaction(new TransformBond(toOptions, [addr, method, options, ...args], [], 0, 2), api);\n\t}\n\n\tfunction presub (f) {\n\t\treturn new Proxy(f, {\n\t\t\tget (receiver, name) {\n\t\t\t\tif (typeof (name) === 'string' || typeof (name) === 'number') {\n\t\t\t\t\treturn typeof (receiver[name]) !== 'undefined' ? receiver[name] : receiver(name);\n\t\t\t\t} else if (typeof (name) === 'symbol' && oo7.Bond.knowSymbol(name)) {\n\t\t\t\t\treturn receiver(oo7.Bond.fromSymbol(name));\n\t\t\t\t} else {\n\t\t\t\t\tthrow new Error(`Weird value type to be subscripted by: ${typeof (name)}: ${JSON.stringify(name)}`);\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n\n\tlet useSubs = false;\n\n\tbonds.time = new oo7.TimeBond();\n\n\tif (!useSubs) {\n\t\tbonds.height = new TransformBond(() => api().eth.blockNumber().then(_ => +_), [], [bonds.time]);\n\n\t\tlet onAccountsChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onHardwareAccountsChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onHeadChanged = bonds.height;\t// TODO: more accurate notification\n\t\t//\tlet onReorg = undefined;\t// TODO make more accurate.\n\t\tlet onSyncingChanged = bonds.time;\n\t\tlet onAuthoringDetailsChanged = bonds.time;\n\t\tlet onPeerNetChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onPendingChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onUnsignedChanged = bonds.time; // TODO: more accurate notification\n\t\tlet onAutoUpdateChanged = bonds.height;\n\n\t\t// eth_\n\t\tbonds.blockNumber = bonds.height;\n\t\tbonds.blockByNumber = x => new TransformBond(x => api().eth.getBlockByNumber(x), [x], []).subscriptable();// TODO: chain reorg that includes number x\n\t\tbonds.blockByHash = x => new TransformBond(x => api().eth.getBlockByHash(x), [x]).subscriptable();\n\t\tbonds.findBlock = hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)\n\t\t\t? api().eth.getBlockByNumber(hashOrNumber)\n\t\t\t: api().eth.getBlockByHash(hashOrNumber),\n\t\t[hashOrNumberBond], [/* onReorg */]).subscriptable();// TODO: chain reorg that includes number x, if x is a number\n\t\tbonds.blocks = presub(bonds.findBlock);\n\t\tbonds.block = bonds.blockByNumber(bonds.height);\t// TODO: DEPRECATE AND REMOVE\n\t\tbonds.head = new TransformBond(() => api().eth.getBlockByNumber('latest'), [], [onHeadChanged]).subscriptable();// TODO: chain reorgs\n\t\tbonds.author = new TransformBond(() => api().eth.coinbase(), [], [onAccountsChanged]);\n\t\tbonds.accounts = new TransformBond(a => a.map(util.toChecksumAddress), [new TransformBond(() => api().eth.accounts(), [], [onAccountsChanged])]).subscriptable();\n\t\tbonds.defaultAccount = bonds.accounts[0];\t// TODO: make this use its subscription\n\t\tbonds.me = bonds.accounts[0];\n\t\t// TODO [ToDr] document (Post & Sign)\n\t\tbonds.post = tx => new Transaction(tx, api);\n\t\tbonds.sign = (message, from = bonds.me) => new Signature(message, from);\n\n\t\tbonds.balance = x => new TransformBond(x => api().eth.getBalance(x), [x], [onHeadChanged]);\n\t\tbonds.code = x => new TransformBond(x => api().eth.getCode(x), [x], [onHeadChanged]);\n\t\tbonds.nonce = x => new TransformBond(x => api().eth.getTransactionCount(x).then(_ => +_), [x], [onHeadChanged]);\n\t\tbonds.storageAt = (x, y) => new TransformBond((x, y) => api().eth.getStorageAt(x, y), [x, y], [onHeadChanged]);\n\n\t\tbonds.syncing = new TransformBond(() => api().eth.syncing(), [], [onSyncingChanged]);\n\t\tbonds.hashrate = new TransformBond(() => api().eth.hashrate(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.authoring = new TransformBond(() => api().eth.mining(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.ethProtocolVersion = new TransformBond(() => api().eth.protocolVersion(), [], []);\n\t\tbonds.gasPrice = new TransformBond(() => api().eth.gasPrice(), [], [onHeadChanged]);\n\t\tbonds.estimateGas = x => new TransformBond(x => api().eth.estimateGas(x), [x], [onHeadChanged, onPendingChanged]);\n\n\t\tbonds.blockTransactionCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? api().eth.getBlockTransactionCountByNumber(hashOrNumber).then(_ => +_)\n\t\t\t\t: api().eth.getBlockTransactionCountByHash(hashOrNumber).then(_ => +_),\n\t\t\t[hashOrNumberBond], [/* onReorg */]);\n\t\tbonds.uncleCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? api().eth.getUncleCountByBlockNumber(hashOrNumber).then(_ => +_)\n\t\t\t\t: api().eth.getUncleCountByBlockHash(hashOrNumber).then(_ => +_),\n\t\t\t[hashOrNumberBond], [/* onReorg */]).subscriptable();\n\t\tbonds.uncle = (hashOrNumberBond, indexBond) => new TransformBond(\n\t\t\t(hashOrNumber, index) => isNumber(hashOrNumber)\n\t\t\t\t? api().eth.getUncleByBlockNumber(hashOrNumber, index)\n\t\t\t\t: api().eth.getUncleByBlockHash(hashOrNumber, index),\n\t\t\t[hashOrNumberBond, indexBond], [/* onReorg */]).subscriptable();\n\t\tbonds.transaction = (hashOrNumberBond, indexOrNullBond) => new TransformBond(\n\t\t\t(hashOrNumber, indexOrNull) =>\n\t\t\t\tindexOrNull === undefined || indexOrNull === null\n\t\t\t\t\t? api().eth.getTransactionByHash(hashOrNumber)\n\t\t\t\t\t: isNumber(hashOrNumber)\n\t\t\t\t\t\t? api().eth.getTransactionByBlockNumberAndIndex(hashOrNumber, indexOrNull)\n\t\t\t\t\t\t: api().eth.getTransactionByBlockHashAndIndex(hashOrNumber, indexOrNull),\n\t\t\t[hashOrNumberBond, indexOrNullBond], [/* onReorg */]).subscriptable();\n\t\tbonds.receipt = hashBond => new TransformBond(x => api().eth.getTransactionReceipt(x), [hashBond], []).subscriptable();\n\n\t\t// web3_\n\t\tbonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);\n\n\t\t// net_\n\t\tbonds.peerCount = new TransformBond(() => api().net.peerCount().then(_ => +_), [], [onPeerNetChanged]);\n\t\tbonds.listening = new TransformBond(() => api().net.listening(), [], [onPeerNetChanged]);\n\t\tbonds.chainId = new TransformBond(() => api().net.version(), [], []);\n\n\t\t// parity_\n\t\tbonds.hashContent = u => new TransformBond(x => api().parity.hashContent(x), [u], [], false);\n\t\tbonds.gasPriceHistogram = new TransformBond(() => api().parity.gasPriceHistogram(), [], [onHeadChanged]).subscriptable();\n\t\tbonds.accountsInfo = new TransformBond(() => api().parity.accountsInfo(), [], [onAccountsChanged]).subscriptable(2);\n\t\tbonds.allAccountsInfo = new TransformBond(() => api().parity.allAccountsInfo(), [], [onAccountsChanged]).subscriptable(2);\n\t\tbonds.hardwareAccountsInfo = new TransformBond(() => api().parity.hardwareAccountsInfo(), [], [onHardwareAccountsChanged]).subscriptable(2);\n\t\tbonds.mode = new TransformBond(() => api().parity.mode(), [], [bonds.height]);\n\n\t\t// ...authoring\n\t\tbonds.defaultExtraData = new TransformBond(() => api().parity.defaultExtraData(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.extraData = new TransformBond(() => api().parity.extraData(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.gasCeilTarget = new TransformBond(() => api().parity.gasCeilTarget(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.gasFloorTarget = new TransformBond(() => api().parity.gasFloorTarget(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.minGasPrice = new TransformBond(() => api().parity.minGasPrice(), [], [onAuthoringDetailsChanged]);\n\t\tbonds.transactionsLimit = new TransformBond(() => api().parity.transactionsLimit(), [], [onAuthoringDetailsChanged]);\n\n\t\t// ...chain info\n\t\tbonds.chainName = new TransformBond(() => api().parity.netChain(), [], []);\n\t\tbonds.chainStatus = new TransformBond(() => api().parity.chainStatus(), [], [onSyncingChanged]).subscriptable();\n\n\t\t// ...networking\n\t\tbonds.peers = new TransformBond(() => api().parity.netPeers(), [], [onPeerNetChanged]).subscriptable(2);\n\t\tbonds.enode = new TransformBond(() => api().parity.enode(), [], []);\n\t\tbonds.nodePort = new TransformBond(() => api().parity.netPort().then(_ => +_), [], []);\n\t\tbonds.nodeName = new TransformBond(() => api().parity.nodeName(), [], []);\n\t\tbonds.signerPort = new TransformBond(() => api().parity.signerPort().then(_ => +_), [], []);\n\t\tbonds.dappsPort = new TransformBond(() => api().parity.dappsPort().then(_ => +_), [], []);\n\t\tbonds.dappsInterface = new TransformBond(() => api().parity.dappsInterface(), [], []);\n\n\t\t// ...transaction queue\n\t\tbonds.nextNonce = new TransformBond(() => api().parity.nextNonce().then(_ => +_), [], [onPendingChanged]);\n\t\tbonds.pending = new TransformBond(() => api().parity.pendingTransactions(), [], [onPendingChanged]);\n\t\tbonds.local = new TransformBond(() => api().parity.localTransactions(), [], [onPendingChanged]).subscriptable(3);\n\t\tbonds.future = new TransformBond(() => api().parity.futureTransactions(), [], [onPendingChanged]).subscriptable(2);\n\t\tbonds.pendingStats = new TransformBond(() => api().parity.pendingTransactionsStats(), [], [onPendingChanged]).subscriptable(2);\n\t\tbonds.unsignedCount = new TransformBond(() => api().parity.parity_unsignedTransactionsCount().then(_ => +_), [], [onUnsignedChanged]);\n\n\t\t// ...auto-update\n\t\tbonds.releasesInfo = new TransformBond(() => api().parity.releasesInfo(), [], [onAutoUpdateChanged]).subscriptable();\n\t\tbonds.versionInfo = new TransformBond(() => api().parity.versionInfo(), [], [onAutoUpdateChanged]).subscriptable();\n\t\tbonds.consensusCapability = new TransformBond(() => api().parity.consensusCapability(), [], [onAutoUpdateChanged]);\n\t\tbonds.upgradeReady = new TransformBond(() => api().parity.upgradeReady(), [], [onAutoUpdateChanged]).subscriptable();\n\t} else {\n\t\tbonds.height = new TransformBond(_ => +_, [new SubscriptionBond('eth', 'blockNumber')]).subscriptable();\n\n\t\tlet onAutoUpdateChanged = bonds.height;\n\n\t\t// eth_\n\t\tbonds.blockNumber = bonds.height;\n\t\tbonds.blockByNumber = numberBond => new TransformBond(number => new SubscriptionBond('eth', 'getBlockByNumber', [number]), [numberBond]).subscriptable();\n\t\tbonds.blockByHash = x => new TransformBond(x => new SubscriptionBond('eth', 'getBlockByHash', [x]), [x]).subscriptable();\n\t\tbonds.findBlock = hashOrNumberBond => new TransformBond(hashOrNumber => isNumber(hashOrNumber)\n\t\t\t? new SubscriptionBond('eth', 'getBlockByNumber', [hashOrNumber])\n\t\t\t: new SubscriptionBond('eth', 'getBlockByHash', [hashOrNumber]),\n\t\t[hashOrNumberBond]).subscriptable();\n\t\tbonds.blocks = presub(bonds.findBlock);\n\t\tbonds.block = bonds.blockByNumber(bonds.height);\t// TODO: DEPRECATE AND REMOVE\n\t\tbonds.head = new SubscriptionBond('eth', 'getBlockByNumber', ['latest']).subscriptable();\n\t\tbonds.author = new SubscriptionBond('eth', 'coinbase');\n\t\tbonds.me = new SubscriptionBond('parity', 'defaultAccount');\n\t\tbonds.defaultAccount = bonds.me;\t// TODO: DEPRECATE\n\t\tbonds.accounts = new SubscriptionBond('eth', 'accounts').subscriptable();\n\t\tbonds.post = tx => new Transaction(tx, api);\n\t\tbonds.sign = (message, from = bonds.me) => new Signature(message, from);\n\n\t\tbonds.balance = x => new TransformBond(x => new SubscriptionBond('eth', 'getBalance', [x]), [x]);\n\t\tbonds.code = x => new TransformBond(x => new SubscriptionBond('eth', 'getCode', [x]), [x]);\n\t\tbonds.nonce = x => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionCount', [x]), [x]); // TODO: then(_ => +_) Depth 2 if second TransformBond or apply to result\n\t\tbonds.storageAt = (x, y) => new TransformBond((x, y) => new SubscriptionBond('eth', 'getStorageAt', [x, y]), [x, y]);\n\n\t\tbonds.syncing = new SubscriptionBond('eth', 'syncing');\n\t\tbonds.hashrate = new SubscriptionBond('eth', 'hashrate');\n\t\tbonds.authoring = new SubscriptionBond('eth', 'mining');\n\t\tbonds.ethProtocolVersion = new SubscriptionBond('eth', 'protocolVersion');\n\t\tbonds.gasPrice = new SubscriptionBond('eth', 'gasPrice');\n\t\tbonds.estimateGas = x => new TransformBond(x => new SubscriptionBond('eth', 'estimateGas', [x]), [x]);\n\n\t\tbonds.blockTransactionCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getBlockTransactionCountByNumber', [hashOrNumber])])\n\t\t\t\t: new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getBlockTransactionCountByHash', [hashOrNumber])]),\n\t\t\t[hashOrNumberBond]);\n\t\tbonds.uncleCount = hashOrNumberBond => new TransformBond(\n\t\t\thashOrNumber => isNumber(hashOrNumber)\n\t\t\t\t? new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getUncleCountByBlockNumber', [hashOrNumber])])\n\t\t\t\t: new TransformBond(_ => +_, [new SubscriptionBond('eth', 'getUncleCountByBlockHash', [hashOrNumber])]),\n\t\t\t[hashOrNumberBond]).subscriptable();\n\t\tbonds.uncle = (hashOrNumberBond, indexBond) => new TransformBond(\n\t\t\t(hashOrNumber, index) => isNumber(hashOrNumber)\n\t\t\t\t? new SubscriptionBond('eth', 'getUncleByBlockNumberAndIndex', [hashOrNumber, index])\n\t\t\t\t: new SubscriptionBond('eth', 'getUncleByBlockHashAndIndex', [hashOrNumber, index]),\n\t\t\t[hashOrNumberBond, indexBond]).subscriptable();\n\n\t\tbonds.transaction = (hashOrNumberBond, indexOrNullBond) => new TransformBond(\n\t\t\t(hashOrNumber, indexOrNull) =>\n\t\t\t\tindexOrNull === undefined || indexOrNull === null\n\t\t\t\t\t? new SubscriptionBond('eth', 'getTransactionByHash', [hashOrNumber])\n\t\t\t\t\t: isNumber(hashOrNumber)\n\t\t\t\t\t\t? new SubscriptionBond('eth', 'getTransactionByBlockNumberAndIndex', [hashOrNumber, indexOrNull])\n\t\t\t\t\t\t: new SubscriptionBond('eth', 'getTransactionByBlockHashAndIndex', [hashOrNumber, indexOrNull]),\n\t\t\t[hashOrNumberBond, indexOrNullBond]).subscriptable();\n\t\tbonds.receipt = hashBond => new TransformBond(x => new SubscriptionBond('eth', 'getTransactionReceipt', [x]), [hashBond]).subscriptable();\n\n\t\t// web3_\n\t\tbonds.clientVersion = new TransformBond(() => api().web3.clientVersion(), [], []);\n\n\t\t// net_\n\t\tbonds.peerCount = new TransformBond(_ => +_, [new SubscriptionBond('net', 'peerCount')]);\n\t\tbonds.listening = new SubscriptionBond('net', 'listening');\n\t\tbonds.chainId = new SubscriptionBond('net', 'version');\n\n\t\t// parity_\n\t\tbonds.hashContent = u => new TransformBond(x => api().parity.hashContent(x), [u], [], false);\n\t\tbonds.gasPriceHistogram = new SubscriptionBond('parity', 'gasPriceHistogram').subscriptable();\n\t\tbonds.mode = new SubscriptionBond('parity', 'mode');\n\t\tbonds.accountsInfo = new SubscriptionBond('parity', 'accountsInfo').subscriptable(2);\n\t\tbonds.allAccountsInfo = new SubscriptionBond('parity', 'allAccountsInfo').subscriptable(2);\n\t\tbonds.hardwareAccountsInfo = new SubscriptionBond('parity', 'hardwareAccountsInfo').subscriptable(2);\n\n\t\t// ...authoring\n\t\tbonds.defaultExtraData = new SubscriptionBond('parity', 'defaultExtraData');\n\t\tbonds.extraData = new SubscriptionBond('parity', 'extraData');\n\t\tbonds.gasCeilTarget = new SubscriptionBond('parity', 'gasCeilTarget');\n\t\tbonds.gasFloorTarget = new SubscriptionBond('parity', 'gasFloorTarget');\n\t\tbonds.minGasPrice = new SubscriptionBond('parity', 'minGasPrice');\n\t\tbonds.transactionsLimit = new SubscriptionBond('parity', 'transactionsLimit');\n\n\t\t// ...chain info\n\t\tbonds.chainName = new SubscriptionBond('parity', 'netChain');\n\t\tbonds.chainStatus = new SubscriptionBond('parity', 'chainStatus').subscriptable();\n\n\t\t// ...networking\n\t\tbonds.peers = new SubscriptionBond('parity', 'netPeers').subscriptable(2);\n\t\tbonds.enode = new SubscriptionBond('parity', 'enode');\n\t\tbonds.nodePort = new TransformBond(_ => +_, [new SubscriptionBond('parity', 'netPort')]);\n\t\tbonds.nodeName = new SubscriptionBond('parity', 'nodeName');\n\t\t// Where defined ?\n\t\tbonds.signerPort = new TransformBond(() => api().parity.signerPort().then(_ => +_), [], []);\n\t\tbonds.dappsPort = new TransformBond(() => api().parity.dappsPort().then(_ => +_), [], []);\n\t\tbonds.dappsInterface = new TransformBond(() => api().parity.dappsInterface(), [], []);\n\n\t\t// ...transaction queue\n\t\tbonds.nextNonce = new TransformBond(_ => +_, [new SubscriptionBond('parity', 'nextNonce')]);\n\t\tbonds.pending = new SubscriptionBond('parity', 'pendingTransactions').subscriptable();\n\t\tbonds.local = new SubscriptionBond('parity', 'localTransactions').subscriptable(3);\n\t\tbonds.future = new SubscriptionBond('parity', 'futureTransactions').subscriptable(2);\n\t\tbonds.pendingStats = new SubscriptionBond('parity', 'pendingTransactionsStats').subscriptable(2);\n\t\tbonds.unsignedCount = new TransformBond(_ => +_, [new SubscriptionBond('parity', 'unsignedTransactionsCount')]);\n\t\tbonds.requestsToConfirm = new SubscriptionBond('signer', 'requestsToConfirm');\n\n\t\t// ...auto-update\n\t\tbonds.releasesInfo = new SubscriptionBond('parity', 'releasesInfo').subscriptable();\n\t\tbonds.versionInfo = new SubscriptionBond('parity', 'versionInfo').subscriptable();\n\t\tbonds.consensusCapability = new SubscriptionBond('parity', 'consensusCapability').subscriptable();\n\t\tbonds.upgradeReady = new TransformBond(() => api().parity.upgradeReady(), [], [onAutoUpdateChanged]).subscriptable();\n\t}\n\n\t// trace TODO: Implement contract object with new trace_many feature\n\tbonds.replayTx = (x, whatTrace) => new TransformBond((x, whatTrace) => api().trace.replayTransaction(x, whatTrace), [x, whatTrace], []).subscriptable();\n\tbonds.callTx = (x, whatTrace, blockNumber) => new TransformBond((x, whatTrace, blockNumber) => api().trace.call(x, whatTrace, blockNumber), [x, whatTrace, blockNumber], []).subscriptable();\n\n\tfunction traceCall (addr, method, args, options) {\n\t\tlet data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);\n\t\tlet decode = d => util.abiDecode(method.outputs.map(f => f.type), d);\n\t\tlet traceMode = options.traceMode;\n\t\tdelete options.traceMode;\n\t\treturn api().trace.call(overlay({to: addr, data: data}, options), traceMode, 'latest').then(decode);\n\t}\n\n\tbonds.deployContract = function (init, abi, options = {}) {\n\t\treturn new DeployContract(init, abi, options, api);\n\t};\n\n\tbonds.makeContract = function (address, abi, extras = [], debug = false) {\n\t\tvar r = { address: address };\n\t\tlet unwrapIfOne = a => a.length === 1 ? a[0] : a;\n\t\tabi.forEach(i => {\n\t\t\tif (i.type === 'function' && i.constant) {\n\t\t\t\tlet f = function (...args) {\n\t\t\t\t\tvar options = args.length === i.inputs.length + 1 ? args.pop() : {};\n\t\t\t\t\tif (args.length !== i.inputs.length) {\n\t\t\t\t\t\tthrow new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}.`);\n\t\t\t\t\t}\n\t\t\t\t\tlet f = (addr, ...fargs) => debug\n\t\t\t\t\t\t? traceCall(address, i, args, options)\n\t\t\t\t\t\t: call(addr, i, fargs, options)\n\t\t\t\t\t\t\t.then(rets => rets.map((r, o) => cleanup(r, i.outputs[o].type, api)))\n\t\t\t\t\t\t\t.then(unwrapIfOne);\n\t\t\t\t\treturn new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();\t// TODO: should be subscription on contract events\n\t\t\t\t};\n\t\t\t\tr[i.name] = (i.inputs.length === 0) ? memoized(f) : (i.inputs.length === 1) ? presub(f) : f;\n\t\t\t\tr[i.name].args = i.inputs;\n\t\t\t}\n\t\t});\n\t\textras.forEach(i => {\n\t\t\tlet f = function (...args) {\n\t\t\t\tlet expectedInputs = (i.numInputs || i.args.length);\n\t\t\t\tvar options = args.length === expectedInputs + 1 ? args.pop() : {};\n\t\t\t\tif (args.length !== expectedInputs) {\n\t\t\t\t\tthrow new Error(`Invalid number of arguments to ${i.name}. Expected ${expectedInputs}, got ${args.length}. ${args}`);\n\t\t\t\t}\n\t\t\t\tlet c = abi.find(j => j.name === i.method);\n\t\t\t\tlet f = (addr, ...fargs) => {\n\t\t\t\t\tlet args = i.args.map((v, index) => v === null ? fargs[index] : typeof (v) === 'function' ? v(fargs[index]) : v);\n\t\t\t\t\treturn debug\n\t\t\t\t\t\t? traceCall(address, i, args, options)\n\t\t\t\t\t\t: call(addr, c, args, options).then(unwrapIfOne);\n\t\t\t\t};\n\t\t\t\treturn new TransformBond(f, [address, ...args], [bonds.height]).subscriptable();\t// TODO: should be subscription on contract events\n\t\t\t};\n\t\t\tr[i.name] = (i.args.length === 1) ? presub(f) : f;\n\t\t\tr[i.name].args = i.args;\n\t\t});\n\t\tabi.forEach(i => {\n\t\t\tif (i.type === 'function' && !i.constant) {\n\t\t\t\tr[i.name] = function (...args) {\n\t\t\t\t\tvar options = args.length === i.inputs.length + 1 ? args.pop() : {};\n\t\t\t\t\tif (args.length !== i.inputs.length) { throw new Error(`Invalid number of arguments to ${i.name}. Expected ${i.inputs.length}, got ${args.length}. ${args}`); }\n\t\t\t\t\treturn debug\n\t\t\t\t\t\t? traceCall(address, i, args, options)\n\t\t\t\t\t\t: post(address, i, args, options).subscriptable();\n\t\t\t\t};\n\t\t\t\tr[i.name].args = i.inputs;\n\t\t\t}\n\t\t});\n\t\tvar eventLookup = {};\n\t\tabi.filter(i => i.type === 'event').forEach(i => {\n\t\t\teventLookup[util.abiSignature(i.name, i.inputs.map(f => f.type))] = i.name;\n\t\t});\n\n\t\tfunction prepareIndexEncode (v, t, top = true) {\n\t\t\tif (v instanceof Array) {\n\t\t\t\tif (top) {\n\t\t\t\t\treturn v.map(x => prepareIndexEncode(x, t, false));\n\t\t\t\t} else {\n\t\t\t\t\tthrow new Error('Invalid type');\n\t\t\t\t}\n\t\t\t}\n\t\t\tvar val;\n\t\t\tif (t === 'string' || t === 'bytes') {\n\t\t\t\tval = util.sha3(v);\n\t\t\t} else {\n\t\t\t\tval = util.abiEncode(null, [t], [v]);\n\t\t\t}\n\t\t\tif (val.length !== 66) {\n\t\t\t\tthrow new Error('Invalid length');\n\t\t\t}\n\t\t\treturn val;\n\t\t}\n\n\t\tabi.forEach(i => {\n\t\t\tif (i.type === 'event') {\n\t\t\t\tr[i.name] = function (indexed = {}, params = {}) {\n\t\t\t\t\treturn new TransformBond((addr, indexed) => {\n\t\t\t\t\t\tvar topics = [util.abiSignature(i.name, i.inputs.map(f => f.type))];\n\t\t\t\t\t\ti.inputs.filter(f => f.indexed).forEach(f => {\n\t\t\t\t\t\t\ttry {\n\t\t\t\t\t\t\t\ttopics.push(indexed[f.name] ? prepareIndexEncode(indexed[f.name], f.type) : null);\n\t\t\t\t\t\t\t} catch (e) {\n\t\t\t\t\t\t\t\tthrow new Error(`Couldn't encode indexed parameter ${f.name} of type ${f.type} with value ${indexed[f.name]}`);\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t});\n\t\t\t\t\t\treturn api().eth.getLogs({\n\t\t\t\t\t\t\taddress: addr,\n\t\t\t\t\t\t\tfromBlock: params.fromBlock || 0,\n\t\t\t\t\t\t\ttoBlock: params.toBlock || 'pending',\n\t\t\t\t\t\t\tlimit: params.limit || 10,\n\t\t\t\t\t\t\ttopics: topics\n\t\t\t\t\t\t}).then(logs => logs.map(l => {\n\t\t\t\t\t\t\tl.blockNumber = +l.blockNumber;\n\t\t\t\t\t\t\tl.transactionIndex = +l.transactionIndex;\n\t\t\t\t\t\t\tl.logIndex = +l.logIndex;\n\t\t\t\t\t\t\tl.transactionLogIndex = +l.transactionLogIndex;\n\t\t\t\t\t\t\tvar e = {};\n\t\t\t\t\t\t\tlet unins = i.inputs.filter(f => !f.indexed);\n\t\t\t\t\t\t\tutil.abiDecode(unins.map(f => f.type), l.data).forEach((v, j) => {\n\t\t\t\t\t\t\t\tlet f = unins[j];\n\t\t\t\t\t\t\t\tif (v instanceof Array && !f.type.endsWith(']')) {\n\t\t\t\t\t\t\t\t\tv = util.bytesToHex(v);\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\tif (f.type.substr(0, 4) === 'uint' && +f.type.substr(4) <= 48) {\n\t\t\t\t\t\t\t\t\tv = +v;\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\te[f.name] = v;\n\t\t\t\t\t\t\t});\n\t\t\t\t\t\t\ti.inputs.filter(f => f.indexed).forEach((f, j) => {\n\t\t\t\t\t\t\t\tif (f.type === 'string' || f.type === 'bytes') {\n\t\t\t\t\t\t\t\t\te[f.name] = l.topics[1 + j];\n\t\t\t\t\t\t\t\t} else {\n\t\t\t\t\t\t\t\t\tvar v = util.abiDecode([f.type], l.topics[1 + j])[0];\n\t\t\t\t\t\t\t\t\tif (v instanceof Array) {\n\t\t\t\t\t\t\t\t\t\tv = util.bytesToHex(v);\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\tif (f.type.substr(0, 4) === 'uint' && +f.type.substr(4) <= 48) {\n\t\t\t\t\t\t\t\t\t\tv = +v;\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\te[f.name] = v;\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t});\n\t\t\t\t\t\t\te.event = eventLookup[l.topics[0]];\n\t\t\t\t\t\t\te.log = l;\n\t\t\t\t\t\t\treturn e;\n\t\t\t\t\t\t}));\n\t\t\t\t\t}, [address, indexed], [bonds.height]).subscriptable();\n\t\t\t\t};\n\t\t\t\tr[i.name].args = i.inputs;\n\t\t\t}\n\t\t});\n\t\treturn r;\n\t};\n\n\tif (useSubs) {\n\t\tbonds.registry = bonds.makeContract(new SubscriptionBond('parity', 'registryAddress'), RegistryABI, RegistryExtras);\n\t} else {\n\t\tbonds.registry = bonds.makeContract(new TransformBond(() => api().parity.registryAddress(), [], [bonds.time]), RegistryABI, RegistryExtras);\n\t}\n\n\tbonds.githubhint = bonds.makeContract(bonds.registry.lookupAddress('githubhint', 'A'), GitHubHintABI);\n\tbonds.operations = bonds.makeContract(bonds.registry.lookupAddress('operations', 'A'), OperationsABI);\n\tbonds.badgereg = bonds.makeContract(bonds.registry.lookupAddress('badgereg', 'A'), BadgeRegABI);\n\tbonds.tokenreg = bonds.makeContract(bonds.registry.lookupAddress('tokenreg', 'A'), TokenRegABI);\n\n\tbonds.badges = new TransformBond(n => {\n\t\tvar ret = [];\n\t\tfor (var i = 0; i < +n; ++i) {\n\t\t\tlet id = i;\n\t\t\tret.push(oo7.Bond.all([\n\t\t\t\tbonds.badgereg.badge(id),\n\t\t\t\tbonds.badgereg.meta(id, 'IMG'),\n\t\t\t\tbonds.badgereg.meta(id, 'CAPTION')\n\t\t\t]).map(([[addr, name, owner], img, caption]) => ({\n\t\t\t\tid,\n\t\t\t\tname,\n\t\t\t\timg,\n\t\t\t\tcaption,\n\t\t\t\tbadge: bonds.makeContract(addr, BadgeABI)\n\t\t\t}))\n\t\t\t);\n\t\t}\n\t\treturn ret;\n\t}, [bonds.badgereg.badgeCount()], [], 1);\n\n\tbonds.badgesOf = address => new TransformBond(\n\t\t(addr, bads) => bads.map(b => ({\n\t\t\tcertified: b.badge.certified(addr),\n\t\t\tbadge: b.badge,\n\t\t\tid: b.id,\n\t\t\timg: b.img,\n\t\t\tcaption: b.caption,\n\t\t\tname: b.name\n\t\t})),\n\t\t[address, bonds.badges], [], 2\n\t).map(all => all.filter(_ => _.certified));\n\n\tbonds.tokens = new TransformBond(n => {\n\t\tvar ret = [];\n\t\tfor (var i = 0; i < +n; ++i) {\n\t\t\tlet id = i;\n\t\t\tret.push(oo7.Bond.all([\n\t\t\t\tbonds.tokenreg.token(id),\n\t\t\t\tbonds.tokenreg.meta(id, 'IMG'),\n\t\t\t\tbonds.tokenreg.meta(id, 'CAPTION')\n\t\t\t]).map(([[addr, tla, base, name, owner], img, caption]) => ({\n\t\t\t\tid,\n\t\t\t\ttla,\n\t\t\t\tbase,\n\t\t\t\tname,\n\t\t\t\timg,\n\t\t\t\tcaption,\n\t\t\t\ttoken: bonds.makeContract(addr, TokenABI)\n\t\t\t}))\n\t\t\t);\n\t\t}\n\t\treturn ret;\n\t}, [bonds.tokenreg.tokenCount()], [], 1);\n\n\tbonds.tokensOf = address => new TransformBond(\n\t\t(addr, bads) => bads.map(b => ({\n\t\t\tbalance: b.token.balanceOf(addr),\n\t\t\ttoken: b.token,\n\t\t\tid: b.id,\n\t\t\tname: b.name,\n\t\t\ttla: b.tla,\n\t\t\tbase: b.base,\n\t\t\timg: b.img,\n\t\t\tcaption: b.caption\n\t\t})),\n\t\t[address, bonds.tokens], [], 2\n\t).map(all => all.filter(_ => _.balance.gt(0)));\n\n\tbonds.namesOf = address => new TransformBond((reg, addr, accs) => ({\n\t\towned: accs[addr] ? accs[addr].name : null,\n\t\tregistry: reg || null\n\t}), [bonds.registry.reverse(address), address, bonds.accountsInfo]);\n\n\tbonds.registry.names = oo7.Bond.mapAll([bonds.registry.ReverseConfirmed({}, {limit: 100}), bonds.accountsInfo],\n\t\t(reg, info) => {\n\t\t\tlet r = {};\n\t\t\tObject.keys(info).forEach(k => r[k] = info[k].name);\n\t\t\treg.forEach(a => r[a.reverse] = bonds.registry.reverse(a.reverse));\n\t\t\treturn r;\n\t\t}, 1);\n\n\treturn bonds;\n}\n\nconst t = defaultProvider();\nconst options = t ? { api: new ParityApi(t) } : null;\n/** @type {Bonds} */\nconst bonds = options ? createBonds(options) : null;\n\nconst isOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) !== -1);\nconst isNotOwned = addr => oo7.Bond.mapAll([addr, bonds.accounts], (a, as) => as.indexOf(a) === -1);\n\nmodule.exports = {\n\t// Bonds stuff\n\t// abiPolyfill,\n\toptions,\n\tbonds,\n\tBonds,\n\tcreateBonds,\n\n\t// Util functions\n\tisOwned,\n\tisNotOwned,\n\tasciiToHex,\n\tbytesToHex,\n\thexToAscii,\n\tisAddressValid,\n\ttoChecksumAddress,\n\tsha3,\n\tcapitalizeFirstLetter,\n\tsingleton,\n\tdenominations,\n\tdenominationMultiplier,\n\tinterpretRender,\n\tcombineValue,\n\tdefDenom,\n\tformatValue,\n\tformatValueNoDenom,\n\tformatToExponential,\n\tinterpretQuantity,\n\tsplitValue,\n\tformatBalance,\n\tformatBlockNumber,\n\tisNullData,\n\tsplitSignature,\n\tremoveSigningPrefix,\n\tcleanup,\n\n\t// ABIs\n\tabiPolyfill,\n\tRegistryABI,\n\tRegistryExtras,\n\tGitHubHintABI,\n\tOperationsABI,\n\tBadgeRegABI,\n\tTokenRegABI,\n\tBadgeABI,\n\tTokenABI\n};\n",
     "static": true,
     "longname": "/home/tomusdrw/workspace/oo7-new/packages/oo7-parity/src/index.js",
     "access": "public",
@@ -4135,7 +4135,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 60,
+    "lineNumber": 62,
     "undocument": true,
     "params": [],
     "return": {
@@ -4147,6 +4147,272 @@
   },
   {
     "__docId__": 212,
+    "kind": "function",
+    "name": "isNumber",
+    "memberof": "packages/oo7-parity/src/index.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "packages/oo7-parity/src/index.js~isNumber",
+    "access": "public",
+    "export": false,
+    "importPath": "./packages/oo7-parity/src/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 766,
+    "undocument": true,
+    "params": [
+      {
+        "name": "n",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 213,
+    "kind": "function",
+    "name": "memoized",
+    "memberof": "packages/oo7-parity/src/index.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "packages/oo7-parity/src/index.js~memoized",
+    "access": "public",
+    "export": false,
+    "importPath": "./packages/oo7-parity/src/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 770,
+    "undocument": true,
+    "params": [
+      {
+        "name": "f",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 214,
+    "kind": "function",
+    "name": "overlay",
+    "memberof": "packages/oo7-parity/src/index.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "packages/oo7-parity/src/index.js~overlay",
+    "access": "public",
+    "export": false,
+    "importPath": "./packages/oo7-parity/src/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 778,
+    "undocument": true,
+    "params": [
+      {
+        "name": "base",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "top",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 215,
+    "kind": "function",
+    "name": "transactionPromise",
+    "memberof": "packages/oo7-parity/src/index.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "packages/oo7-parity/src/index.js~transactionPromise",
+    "access": "public",
+    "export": false,
+    "importPath": "./packages/oo7-parity/src/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 785,
+    "undocument": true,
+    "params": [
+      {
+        "name": "api",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "tx",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "progress",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "f",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null,
+    "ignore": true
+  },
+  {
+    "__docId__": 216,
+    "kind": "class",
+    "name": "DeployContract",
+    "memberof": "packages/oo7-parity/src/index.js",
+    "static": true,
+    "longname": "packages/oo7-parity/src/index.js~DeployContract",
+    "access": "public",
+    "export": false,
+    "importPath": "./packages/oo7-parity/src/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 823,
+    "undocument": true,
+    "interface": false,
+    "extends": [
+      "oo7~oo7.ReactivePromise"
+    ],
+    "ignore": true
+  },
+  {
+    "__docId__": 217,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "packages/oo7-parity/src/index.js~DeployContract",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~DeployContract#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 824,
+    "undocument": true
+  },
+  {
+    "__docId__": 218,
+    "kind": "method",
+    "name": "isDone",
+    "memberof": "packages/oo7-parity/src/index.js~DeployContract",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~DeployContract#isDone",
+    "access": "public",
+    "description": null,
+    "lineNumber": 839,
+    "undocument": true,
+    "params": [
+      {
+        "name": "s",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 219,
+    "kind": "class",
+    "name": "Transaction",
+    "memberof": "packages/oo7-parity/src/index.js",
+    "static": true,
+    "longname": "packages/oo7-parity/src/index.js~Transaction",
+    "access": "public",
+    "export": false,
+    "importPath": "./packages/oo7-parity/src/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 844,
+    "undocument": true,
+    "interface": false,
+    "extends": [
+      "oo7~oo7.ReactivePromise"
+    ],
+    "ignore": true
+  },
+  {
+    "__docId__": 220,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "packages/oo7-parity/src/index.js~Transaction",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Transaction#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 845,
+    "undocument": true
+  },
+  {
+    "__docId__": 221,
+    "kind": "method",
+    "name": "isDone",
+    "memberof": "packages/oo7-parity/src/index.js~Transaction",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Transaction#isDone",
+    "access": "public",
+    "description": null,
+    "lineNumber": 852,
+    "undocument": true,
+    "params": [
+      {
+        "name": "s",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 222,
     "kind": "variable",
     "name": "t",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4157,7 +4423,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 785,
+    "lineNumber": 1452,
     "undocument": true,
     "type": {
       "types": [
@@ -4167,7 +4433,7 @@
     "ignore": true
   },
   {
-    "__docId__": 213,
+    "__docId__": 223,
     "kind": "variable",
     "name": "options",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4178,7 +4444,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": "{options}",
     "description": null,
-    "lineNumber": 786,
+    "lineNumber": 1453,
     "undocument": true,
     "type": {
       "types": [
@@ -4187,7 +4453,7 @@
     }
   },
   {
-    "__docId__": 214,
+    "__docId__": 224,
     "kind": "variable",
     "name": "bonds",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4198,7 +4464,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": "{bonds}",
     "description": null,
-    "lineNumber": 788,
+    "lineNumber": 1455,
     "type": {
       "nullable": null,
       "types": [
@@ -4209,7 +4475,7 @@
     }
   },
   {
-    "__docId__": 215,
+    "__docId__": 225,
     "kind": "class",
     "name": "Bonds",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4220,50 +4486,12 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": "{Bonds}",
     "description": null,
-    "lineNumber": 74,
+    "lineNumber": 76,
     "undocument": true,
     "interface": false
   },
   {
-    "__docId__": 216,
-    "kind": "member",
-    "name": "time",
-    "memberof": "packages/oo7-parity/src/index.js~Bonds",
-    "static": false,
-    "longname": "packages/oo7-parity/src/index.js~Bonds#time",
-    "access": "public",
-    "description": "",
-    "lineNumber": 79,
-    "type": {
-      "nullable": null,
-      "types": [
-        "TimeBond"
-      ],
-      "spread": false,
-      "description": null
-    }
-  },
-  {
-    "__docId__": 217,
-    "kind": "member",
-    "name": "height",
-    "memberof": "packages/oo7-parity/src/index.js~Bonds",
-    "static": false,
-    "longname": "packages/oo7-parity/src/index.js~Bonds#height",
-    "access": "public",
-    "description": "A {@link Bond} representing latest block number.",
-    "lineNumber": 86,
-    "type": {
-      "nullable": null,
-      "types": [
-        "Bond"
-      ],
-      "spread": false,
-      "description": null
-    }
-  },
-  {
-    "__docId__": 218,
+    "__docId__": 226,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "packages/oo7-parity/src/index.js~Bonds",
@@ -4272,8 +4500,8 @@
     "static": false,
     "longname": "packages/oo7-parity/src/index.js~Bonds#constructor",
     "access": "public",
-    "description": "Creates a new oo7-parity bonds aggregate object with given ethereum provider.",
-    "lineNumber": 95,
+    "description": "Creates a new oo7-parity bonds aggregate object with given ethereum provider.\n\nAdditional documentation can be found at https://wiki.parity.io/oo7-Parity-Reference.html",
+    "lineNumber": 85,
     "unknown": [
       {
         "tagName": "@returns",
@@ -4302,7 +4530,2175 @@
     }
   },
   {
-    "__docId__": 219,
+    "__docId__": 227,
+    "kind": "member",
+    "name": "time",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#time",
+    "access": "public",
+    "description": "\nA {@link Bond} representing latest time. Updated every second.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.time\n.tie(console.log) // prints time periodically"
+    ],
+    "lineNumber": 103,
+    "type": {
+      "nullable": null,
+      "types": [
+        "TimeBond"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 228,
+    "kind": "member",
+    "name": "height",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#height",
+    "access": "public",
+    "description": "A {@link Bond} representing latest block number.\nAlias for {@link Bonds.blockNumber}",
+    "lineNumber": 111,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Number>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 229,
+    "kind": "member",
+    "name": "blockNumber",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#blockNumber",
+    "access": "public",
+    "description": "A {@link Bond} representing latest block number.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.blockNumber\n.tie(console.log) // prints latest block number when it changes"
+    ],
+    "lineNumber": 125,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Number>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 230,
+    "kind": "member",
+    "name": "blockByNumber",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#blockByNumber",
+    "access": "public",
+    "description": "A function returning bond that represents given block content.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.blockByNumber(bonds.height)\n.tie(console.log) // prints latest block"
+    ],
+    "lineNumber": 140,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Block>} block bond"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "number",
+        "description": "block number"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Block>"
+      ],
+      "spread": false,
+      "description": "block bond"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 231,
+    "kind": "member",
+    "name": "blockByHash",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#blockByHash",
+    "access": "public",
+    "description": "A function returning bond that represents given block content.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.blockByHash('0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d')\n.tie(console.log) // prints block with given hash"
+    ],
+    "lineNumber": 155,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Block>} block bond"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "hash",
+        "description": "block hash"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Block>"
+      ],
+      "spread": false,
+      "description": "block bond"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 232,
+    "kind": "member",
+    "name": "findBlock",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#findBlock",
+    "access": "public",
+    "description": "Similar to {@link Bonds.blockByNumber} and {@link Bonds.blockByHash},\nbut accepts both hashes and numbers as arguments.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.findBlock('0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d')\n.tie(console.log) // prints block with given hash"
+    ],
+    "lineNumber": 171,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Block>} block bond"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "hashOrNumber",
+        "description": "block hash or block number"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Block>"
+      ],
+      "spread": false,
+      "description": "block bond"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 233,
+    "kind": "member",
+    "name": "blocks",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#blocks",
+    "access": "public",
+    "description": "A subscriptable version of {@link Bonds.findBlock}\n\nYou can retrieve bonds given block numbers or hashes or other Bonds.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.blocks['0x2b23d04567313fa141ca396f1e2620b62ab0c5d69f8c77157118f8d7671e1f4d']\n.tie(console.log) // prints block with given hash\n\nbonds\n.blocks[bonds.height]\n.tie(console.log) // prints latest block every time it changes"
+    ],
+    "lineNumber": 191,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Object.<string|number|Bond, Bond>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 234,
+    "kind": "member",
+    "name": "head",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#head",
+    "access": "public",
+    "description": "A {@link Bond} for latest block.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.head\n.tie(console.log) // prints latest block every time it changes"
+    ],
+    "lineNumber": 206,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Block>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 235,
+    "kind": "member",
+    "name": "author",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#author",
+    "access": "public",
+    "description": "A {@link Bond} for currently set block author.\nRepresents a result of `eth_coinbase` RPC call.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.author\n.tie(console.log) // prints currently set block author (coinbase/miner) every time it changes"
+    ],
+    "lineNumber": 222,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Address>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 236,
+    "kind": "member",
+    "name": "accounts",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#accounts",
+    "access": "public",
+    "description": "List of accounts managed by the node.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.accounts\n.tie(console.log) // prints accounts list every time it changes"
+    ],
+    "lineNumber": 237,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Address[]>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 237,
+    "kind": "member",
+    "name": "defaultAccount",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#defaultAccount",
+    "access": "public",
+    "description": "User-selected default account for this dapp.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.defaultAccount\n.tie(console.log) // prints default account every time it changes"
+    ],
+    "lineNumber": 252,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Address>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 238,
+    "kind": "member",
+    "name": "me",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#me",
+    "access": "public",
+    "description": "Alias for {@link Bonds.defaultAccount}",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.me\n.tie(console.log) // prints default account every time it changes"
+    ],
+    "lineNumber": 267,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Address>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 239,
+    "kind": "member",
+    "name": "post",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#post",
+    "access": "public",
+    "description": "Posts a transaction to the network.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.post({ to: bonds.me, value: 0  })\n.tie(console.log) // Reports transaction progress"
+    ],
+    "lineNumber": 280,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ReactivePromise.<TransactionStatus>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "TransactionRequest"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "tx",
+        "description": "Transaction details"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ReactivePromise.<TransactionStatus>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 240,
+    "kind": "member",
+    "name": "sign",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#sign",
+    "access": "public",
+    "description": "Returns a signature of given message",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.sign('0x2ea2e504d09c458dbadc703112125564d53ca03c27a5b28e7b3e2b5804289c45')\n.tie(console.log) // Reports signing progress"
+    ],
+    "lineNumber": 294,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ReactivePromise.<SignStatus>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Hash",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "hash",
+        "description": "Hash to sign"
+      },
+      {
+        "nullable": true,
+        "types": [
+          "Address",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "from",
+        "description": "Optional account that should be used for signing."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ReactivePromise.<SignStatus>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 241,
+    "kind": "member",
+    "name": "balance",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#balance",
+    "access": "public",
+    "description": "Returns balance of given address.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.balance(bonds.me)\n.tie(console.log) // prints default account balance every time any of them changes"
+    ],
+    "lineNumber": 310,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<BigNumber>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bond.<Address>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<BigNumber>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 242,
+    "kind": "member",
+    "name": "code",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#code",
+    "access": "public",
+    "description": "Returns code of given address.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.code(bonds.me)\n.tie(console.log) // prints default account code every time any of them changes"
+    ],
+    "lineNumber": 326,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Bytes>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bond.<Address>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Bytes>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 243,
+    "kind": "member",
+    "name": "nonce",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#nonce",
+    "access": "public",
+    "description": "Returns the nonce of given address.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.nonce(bonds.me)\n.tie(console.log) // prints default account nonce every time any of them changes"
+    ],
+    "lineNumber": 342,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<BigNumber>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bond.<Address>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<BigNumber>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 244,
+    "kind": "member",
+    "name": "storageAt",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#storageAt",
+    "access": "public",
+    "description": "Returns storage at given index of an address.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.storageAt(bonds.me, 0)\n.tie(console.log) // prints default account storage at position 0 every time any of them changes"
+    ],
+    "lineNumber": 359,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<BigNumber>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bond.<Address>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": "Contract address"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond.<H256>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "storageIdx",
+        "description": "Contract storage index"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<BigNumber>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 245,
+    "kind": "member",
+    "name": "syncing",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#syncing",
+    "access": "public",
+    "description": "Returns node's syncing status.\nIf the node is fully synced this will return `false`.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.syncing\n.tie(console.log) // prints sync status every time it changes"
+    ],
+    "lineNumber": 375,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<bool>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 246,
+    "kind": "member",
+    "name": "authoring",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#authoring",
+    "access": "public",
+    "description": "Returns node's authoring status.\nIf the node is not authoring blocks this will return `false`.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.authoring\n.tie(console.log) // prints authoring status every time it changes"
+    ],
+    "lineNumber": 390,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<bool>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 247,
+    "kind": "member",
+    "name": "hashrate",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#hashrate",
+    "access": "public",
+    "description": "Reported hashrate.\nIf there is an external miner connected to the node it will return reported values.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.hashrate\n.tie(console.log) // prints current average hashrate"
+    ],
+    "lineNumber": 405,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<BigNumber>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 248,
+    "kind": "member",
+    "name": "ethProtocolVersion",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#ethProtocolVersion",
+    "access": "public",
+    "description": null,
+    "lineNumber": 406,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 249,
+    "kind": "member",
+    "name": "gasPrice",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#gasPrice",
+    "access": "public",
+    "description": "Suggested gas price value. (Gas Price Oracle)\nThis returns a suggested gas price for next transaction. The estimation is based on statistics from last blocks.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.gasPrice\n.tie(console.log) // prints current gas price suggestion"
+    ],
+    "lineNumber": 421,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<BigNumber>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 250,
+    "kind": "member",
+    "name": "estimateGas",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#estimateGas",
+    "access": "public",
+    "description": "Estimates gas required to execute given transaction",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.estimateGas({ from: bonds.me, to: '0x00D6Cc1BA9cf89BD2e58009741f4F7325BAdc0ED' })\n.tie(console.log) // prints current gas estimate"
+    ],
+    "lineNumber": 436,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<BigNumber>} gas estimate"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "{ from: ?Address, to: ?Address, data: ?Bytes }"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "call",
+        "description": "Transaction request"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<BigNumber>"
+      ],
+      "spread": false,
+      "description": "gas estimate"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 251,
+    "kind": "member",
+    "name": "blockTransactionCount",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#blockTransactionCount",
+    "access": "public",
+    "description": "Returns block transaction count given block number or hash.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.blockTransactionCount(bonds.blockNumber)\n.tie(console.log) // prints number of transactions in latest block"
+    ],
+    "lineNumber": 452,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Number>} number of transactions in block"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "block",
+        "description": "block number or hash"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Number>"
+      ],
+      "spread": false,
+      "description": "number of transactions in block"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 252,
+    "kind": "member",
+    "name": "uncleCount",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#uncleCount",
+    "access": "public",
+    "description": "Returns uncle count given block number or hash.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.uncleCount(bonds.blockNumber)\n.tie(console.log) // prints number of uncles in latest block"
+    ],
+    "lineNumber": 467,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Number>} number of uncles in a block"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "block",
+        "description": "block number or hash"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Number>"
+      ],
+      "spread": false,
+      "description": "number of uncles in a block"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 253,
+    "kind": "member",
+    "name": "uncle",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#uncle",
+    "access": "public",
+    "description": "Returns uncle given block number or hash and uncle index",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.uncle(bonds.blockNumber, 0)\n.tie(console.log) // prints the first uncle in latest block"
+    ],
+    "lineNumber": 483,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Header>} uncle header at that index"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "block",
+        "description": "block number or hash"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "index",
+        "description": "index of an uncle within a block"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Header>"
+      ],
+      "spread": false,
+      "description": "uncle header at that index"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 254,
+    "kind": "member",
+    "name": "transaction",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#transaction",
+    "access": "public",
+    "description": "Returns transaction given block number or hash and transaction index",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.transaction(bonds.blockNumber, 0)\n.tie(console.log) // prints the first uncle in latest block"
+    ],
+    "lineNumber": 499,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Transaction>} transaction at that index"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "block",
+        "description": "block number or hash"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "index",
+        "description": "index of a transaction within a block"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Transaction>"
+      ],
+      "spread": false,
+      "description": "transaction at that index"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 255,
+    "kind": "member",
+    "name": "receipt",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#receipt",
+    "access": "public",
+    "description": "Returns receipt given transaction hash.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.receipt(bonds.transaction(bonds.height, 0).map(x => x ? x.hash : undefined))\n.tie(console.log) // prints receipt of first transaction in latest block"
+    ],
+    "lineNumber": 514,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<TransactionReceipt>} transaction at that index"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "hash",
+        "description": "transaction hash"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<TransactionReceipt>"
+      ],
+      "spread": false,
+      "description": "transaction at that index"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 256,
+    "kind": "member",
+    "name": "clientVersion",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#clientVersion",
+    "access": "public",
+    "description": "Returns client version string. (`web3_clientVersion`).",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.clientVersion\n.tie(console.log)"
+    ],
+    "lineNumber": 528,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<String>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 257,
+    "kind": "member",
+    "name": "peerCount",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#peerCount",
+    "access": "public",
+    "description": "Returns current peer count. (`net_peerCount`).",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.peerCount\n.tie(console.log)"
+    ],
+    "lineNumber": 542,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Number>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 258,
+    "kind": "member",
+    "name": "listening",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#listening",
+    "access": "public",
+    "description": "Returns true if the node is actively listening for network connections.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.listening\n.tie(console.log)"
+    ],
+    "lineNumber": 555,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<bool>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 259,
+    "kind": "member",
+    "name": "chainId",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#chainId",
+    "access": "public",
+    "description": "Returns chain id (used for chain replay protection).\nNOTE: It's _not_ network id.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.chainId\n.tie(console.log)"
+    ],
+    "lineNumber": 569,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<Number>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 260,
+    "kind": "member",
+    "name": "hashContent",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#hashContent",
+    "access": "public",
+    "description": "Returns a hash of content under given URL.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.hashContent('https://google.com')\n.tie(console.log)"
+    ],
+    "lineNumber": 584,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<string>} hash of the content"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "url",
+        "description": "URL of the content"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<string>"
+      ],
+      "spread": false,
+      "description": "hash of the content"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 261,
+    "kind": "member",
+    "name": "gasPriceHistogram",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#gasPriceHistogram",
+    "access": "public",
+    "description": null,
+    "lineNumber": 585,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 262,
+    "kind": "member",
+    "name": "accountsInfo",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#accountsInfo",
+    "access": "public",
+    "description": null,
+    "lineNumber": 586,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 263,
+    "kind": "member",
+    "name": "allAccontsInfo",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#allAccontsInfo",
+    "access": "public",
+    "description": null,
+    "lineNumber": 587,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 264,
+    "kind": "member",
+    "name": "hardwareAccountsInfo",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#hardwareAccountsInfo",
+    "access": "public",
+    "description": null,
+    "lineNumber": 588,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 265,
+    "kind": "member",
+    "name": "mode",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#mode",
+    "access": "public",
+    "description": null,
+    "lineNumber": 589,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 266,
+    "kind": "member",
+    "name": "defaultExtraData",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#defaultExtraData",
+    "access": "public",
+    "description": null,
+    "lineNumber": 591,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 267,
+    "kind": "member",
+    "name": "extraData",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#extraData",
+    "access": "public",
+    "description": null,
+    "lineNumber": 592,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 268,
+    "kind": "member",
+    "name": "gasCeilTarget",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#gasCeilTarget",
+    "access": "public",
+    "description": null,
+    "lineNumber": 593,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 269,
+    "kind": "member",
+    "name": "gasFloorTarget",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#gasFloorTarget",
+    "access": "public",
+    "description": null,
+    "lineNumber": 594,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 270,
+    "kind": "member",
+    "name": "minGasPrice",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#minGasPrice",
+    "access": "public",
+    "description": null,
+    "lineNumber": 595,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 271,
+    "kind": "member",
+    "name": "transactionsLimit",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#transactionsLimit",
+    "access": "public",
+    "description": null,
+    "lineNumber": 596,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 272,
+    "kind": "member",
+    "name": "chainName",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#chainName",
+    "access": "public",
+    "description": "Returns a string name of currently connected chain.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.chainName\n.tie(console.log)"
+    ],
+    "lineNumber": 608,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<string>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 273,
+    "kind": "member",
+    "name": "chainStatus",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#chainStatus",
+    "access": "public",
+    "description": "Returns a status of currently connected chain.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.chainStatus\n.tie(console.log)"
+    ],
+    "lineNumber": 620,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<object>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 274,
+    "kind": "member",
+    "name": "peers",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#peers",
+    "access": "public",
+    "description": null,
+    "lineNumber": 622,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 275,
+    "kind": "member",
+    "name": "enode",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#enode",
+    "access": "public",
+    "description": null,
+    "lineNumber": 623,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 276,
+    "kind": "member",
+    "name": "nodePort",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#nodePort",
+    "access": "public",
+    "description": null,
+    "lineNumber": 624,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 277,
+    "kind": "member",
+    "name": "nodeName",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#nodeName",
+    "access": "public",
+    "description": null,
+    "lineNumber": 625,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 278,
+    "kind": "member",
+    "name": "signerPort",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#signerPort",
+    "access": "public",
+    "description": null,
+    "lineNumber": 626,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 279,
+    "kind": "member",
+    "name": "dappsPort",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#dappsPort",
+    "access": "public",
+    "description": null,
+    "lineNumber": 627,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 280,
+    "kind": "member",
+    "name": "dappsInterface",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#dappsInterface",
+    "access": "public",
+    "description": null,
+    "lineNumber": 628,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 281,
+    "kind": "member",
+    "name": "nextNonce",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#nextNonce",
+    "access": "public",
+    "description": null,
+    "lineNumber": 630,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 282,
+    "kind": "member",
+    "name": "pending",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#pending",
+    "access": "public",
+    "description": null,
+    "lineNumber": 631,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 283,
+    "kind": "member",
+    "name": "local",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#local",
+    "access": "public",
+    "description": null,
+    "lineNumber": 632,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 284,
+    "kind": "member",
+    "name": "future",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#future",
+    "access": "public",
+    "description": null,
+    "lineNumber": 633,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 285,
+    "kind": "member",
+    "name": "pendingStats",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#pendingStats",
+    "access": "public",
+    "description": null,
+    "lineNumber": 634,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 286,
+    "kind": "member",
+    "name": "unsignedCount",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#unsignedCount",
+    "access": "public",
+    "description": null,
+    "lineNumber": 635,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 287,
+    "kind": "member",
+    "name": "releaseInfo",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#releaseInfo",
+    "access": "public",
+    "description": null,
+    "lineNumber": 637,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 288,
+    "kind": "member",
+    "name": "versionInfo",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#versionInfo",
+    "access": "public",
+    "description": null,
+    "lineNumber": 638,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 289,
+    "kind": "member",
+    "name": "consensusCapability",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#consensusCapability",
+    "access": "public",
+    "description": null,
+    "lineNumber": 639,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 290,
+    "kind": "member",
+    "name": "upgradeReady",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#upgradeReady",
+    "access": "public",
+    "description": null,
+    "lineNumber": 640,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 291,
+    "kind": "member",
+    "name": "replayTx",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#replayTx",
+    "access": "public",
+    "description": "Replays (re-executes) a transaction. Returns requested traces of execution.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.replayTx('0x2ea2e504d09c458dbadc703112125564d53ca03c27a5b28e7b3e2b5804289c45', ['trace'])\n.tie(console.log)"
+    ],
+    "lineNumber": 655,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<object>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "hash",
+        "description": "Transaction hash"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "String[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "traces",
+        "description": "Any subset of `trace`,`vmTrace`,`stateDiff`."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<object>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 292,
+    "kind": "member",
+    "name": "callTx",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#callTx",
+    "access": "public",
+    "description": "Executs a transaction and collects traces.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.callTx({\n\tfrom: bonds.me,\n\tto: bonds.registry.address\n}, ['trace'], 'latest')\n.tie(console.log)"
+    ],
+    "lineNumber": 673,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<object>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "TransactionRequest"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "transaction",
+        "description": "Transaction request"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "String[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "traces",
+        "description": "Any subset of `trace`,`vmTrace`,`stateDiff`."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "number",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "block",
+        "description": "Block number or hash"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<object>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 293,
+    "kind": "member",
+    "name": "deployContract",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#deployContract",
+    "access": "public",
+    "description": "Deploys a new contract",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.deployContract('0x1234', abi, {})\n.tie(console.log) // Reports deployment progress"
+    ],
+    "lineNumber": 689,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ReactivePromise.<DeployStatus>}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bytes"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "init",
+        "description": "Initialization bytecode"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "ABI"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "abi",
+        "description": "Contract ABI"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "{from: ?Address, gas: ?BigNumber, gasPrice: ?BigNumber, nonce: ?BigNumber}"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options",
+        "description": "Deployment options"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ReactivePromise.<DeployStatus>"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 294,
+    "kind": "member",
+    "name": "makeContract",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#makeContract",
+    "access": "public",
+    "description": "Creates bond-enabled contract object for existing contract.",
+    "examples": [
+      "const { bonds } = require('oo7-parity')\n\nbonds\n.makeContract(bonds.me, abi)\n.someMethod()\n.tie(console.log) // returns a result of someMethod call"
+    ],
+    "lineNumber": 705,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Contract}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "Bond"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": "Contract address"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "ABI"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "abi",
+        "description": "Contract ABI"
+      },
+      {
+        "nullable": true,
+        "types": [
+          "ABI"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "extras",
+        "description": "Additional methods not defined in the ABI."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Contract"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 295,
+    "kind": "member",
+    "name": "registry",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#registry",
+    "access": "public",
+    "description": "Parity registry contract instance.",
+    "lineNumber": 711,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Contract.<Registry>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 296,
+    "kind": "member",
+    "name": "githubhint",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#githubhint",
+    "access": "public",
+    "description": "Parity registry contract instance.",
+    "lineNumber": 717,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Contract.<GithubHint>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 297,
+    "kind": "member",
+    "name": "operations",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#operations",
+    "access": "public",
+    "description": "Parity registry contract instance.",
+    "lineNumber": 722,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Contract.<Operations>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 298,
+    "kind": "member",
+    "name": "badgereg",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#badgereg",
+    "access": "public",
+    "description": "Parity registry contract instance.",
+    "lineNumber": 727,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Contract.<BadgeReg>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 299,
+    "kind": "member",
+    "name": "tokenreg",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#tokenreg",
+    "access": "public",
+    "description": "Parity registry contract instance.",
+    "lineNumber": 732,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Contract.<TokenReg>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 300,
+    "kind": "member",
+    "name": "badges",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#badges",
+    "access": "public",
+    "description": "A {@link Bond} representing all currently registered badges from BadgeReg.",
+    "lineNumber": 739,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<{id:string,name:string,img:string,caption:string,badge:Contract}[]>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 301,
+    "kind": "member",
+    "name": "badgesOf",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#badgesOf",
+    "access": "public",
+    "description": "Returns a list of badges for given address.",
+    "lineNumber": 746,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Badge[]>} see {@link Bonds.badges}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Address"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Badge[]>"
+      ],
+      "spread": false,
+      "description": "see {@link Bonds.badges}"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 302,
+    "kind": "member",
+    "name": "tokens",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#tokens",
+    "access": "public",
+    "description": "A {@link Bond} representing all currently registered tokens from TokenReg.",
+    "lineNumber": 753,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Bond.<{id:string,tla:string,base:string,name:string,owner:address,img:string,caption:string}[]>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 303,
+    "kind": "member",
+    "name": "tokensOf",
+    "memberof": "packages/oo7-parity/src/index.js~Bonds",
+    "static": false,
+    "longname": "packages/oo7-parity/src/index.js~Bonds#tokensOf",
+    "access": "public",
+    "description": "Returns a list of tokens with a non-empty balance for given address.",
+    "lineNumber": 760,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Bond.<Token[]>} see {@link Bonds.tokens}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Address"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "address",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Bond.<Token[]>"
+      ],
+      "spread": false,
+      "description": "see {@link Bonds.tokens}"
+    },
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 304,
     "kind": "function",
     "name": "createBonds",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4315,7 +6711,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": "{createBonds}",
     "description": "",
-    "lineNumber": 106,
+    "lineNumber": 861,
     "unknown": [
       {
         "tagName": "@returns",
@@ -4344,7 +6740,7 @@
     }
   },
   {
-    "__docId__": 220,
+    "__docId__": 305,
     "kind": "function",
     "name": "isOwned",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4357,7 +6753,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": "{isOwned}",
     "description": null,
-    "lineNumber": 790,
+    "lineNumber": 1457,
     "undocument": true,
     "params": [
       {
@@ -4370,7 +6766,7 @@
     "return": null
   },
   {
-    "__docId__": 221,
+    "__docId__": 306,
     "kind": "function",
     "name": "isNotOwned",
     "memberof": "packages/oo7-parity/src/index.js",
@@ -4383,7 +6779,7 @@
     "importPath": "./packages/oo7-parity/src/index.js",
     "importStyle": "{isNotOwned}",
     "description": null,
-    "lineNumber": 791,
+    "lineNumber": 1458,
     "undocument": true,
     "params": [
       {
@@ -4396,10 +6792,10 @@
     "return": null
   },
   {
-    "__docId__": 222,
+    "__docId__": 307,
     "kind": "file",
     "name": "packages/oo7-parity/src/utils/index.js",
-    "content": "// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//         http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\n/* global parity */\nconst BigNumber = require('bignumber.js');\nconst oo7 = require('oo7');\nconst ParityApi = require('@parity/api');\n\nconst asciiToHex = ParityApi.util.asciiToHex;\nconst bytesToHex = ParityApi.util.bytesToHex;\nconst hexToAscii = ParityApi.util.hexToAscii;\nconst isAddressValid = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.isAddressValid) : ParityApi.util.isAddressValid(h);\nconst toChecksumAddress = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.toChecksumAddress) : ParityApi.util.toChecksumAddress(h);\nconst sha3 = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.sha3) : ParityApi.util.sha3(h);\n\nconst denominations = [ 'wei', 'Kwei', 'Mwei', 'Gwei', 'szabo', 'finney', 'ether', 'grand', 'Mether', 'Gether', 'Tether', 'Pether', 'Eether', 'Zether', 'Yether', 'Nether', 'Dether', 'Vether', 'Uether' ];\n\n/// /\n// Parity Utilities\n\n// TODO: move to parity.js, repackage or repot.\n\nfunction capitalizeFirstLetter (s) {\n\treturn s.charAt(0).toUpperCase() + s.slice(1);\n}\n\nfunction singleton (f) {\n\tvar instance = null;\n\treturn function () {\n\t\tif (instance === null) { instance = f(); }\n\t\treturn instance;\n\t};\n}\n\nfunction denominationMultiplier (s) {\n\tlet i = denominations.indexOf(s);\n\tif (i < 0) { throw new Error('Invalid denomination'); }\n\treturn (new BigNumber(1000)).pow(i);\n}\n\nfunction interpretRender (s, defaultDenom = 6) {\n\ttry {\n\t\tlet m = s.toLowerCase().match(/([0-9,]+)(\\.([0-9]*))? *([a-zA-Z]+)?/);\n\t\tlet di = m[4] ? denominations.indexOf(m[4]) : defaultDenom;\n\t\tif (di === -1) {\n\t\t\treturn null;\n\t\t}\n\t\tlet n = (m[1].replace(',', '').replace(/^0*/, '')) || '0';\n\t\tlet d = (m[3] || '').replace(/0*$/, '');\n\t\treturn { denom: di, units: n, decimals: d, origNum: m[1] + (m[2] || ''), origDenom: m[4] || '' };\n\t} catch (e) {\n\t\treturn null;\n\t}\n}\n\nfunction combineValue (v) {\n\tlet d = (new BigNumber(1000)).pow(v.denom);\n\tlet n = v.units;\n\tif (v.decimals) {\n\t\tn += v.decimals;\n\t\td = d.div((new BigNumber(10)).pow(v.decimals.length));\n\t}\n\treturn new BigNumber(n).mul(d);\n}\n\nfunction defDenom (v, d) {\n\tif (v.denom === null) {\n\t\tv.denom = d;\n\t}\n\treturn v;\n}\n\nfunction formatValue (n) {\n\treturn `${formatValueNoDenom(n)} ${denominations[n.denom]}`;\n}\n\nfunction formatValueNoDenom (n) {\n\treturn `${n.units.toString().replace(/(\\d)(?=(\\d{3})+$)/g, '$1,')}${n.decimals ? '.' + n.decimals : ''}`;\n}\n\nfunction formatToExponential (v, n) {\n\treturn new BigNumber(v).toExponential(4);\n}\n\nfunction interpretQuantity (s) {\n\ttry {\n\t\tlet m = s.toLowerCase().match(/([0-9,]+)(\\.([0-9]*))? *([a-zA-Z]+)?/);\n\t\tlet d = denominationMultiplier(m[4] || 'ether');\n\t\tlet n = +m[1].replace(',', '');\n\t\tif (m[2]) {\n\t\t\tn += m[3];\n\t\t\tfor (let i = 0; i < m[3].length; ++i) {\n\t\t\t\td = d.div(10);\n\t\t\t}\n\t\t}\n\t\treturn new BigNumber(n).mul(d);\n\t} catch (e) {\n\t\treturn null;\n\t}\n}\n\nfunction splitValue (a) {\n\tvar i = 0;\n\ta = new BigNumber('' + a);\n\tif (a.gte(new BigNumber('10000000000000000')) && a.lt(new BigNumber('100000000000000000000000'))) {\n\t\ti = 6;\n\t} else {\n\t\tfor (var aa = a; aa.gte(1000) && i < denominations.length - 1; aa = aa.div(1000)) { i++; }\n\t}\n\n\tfor (var j = 0; j < i; ++j) { a = a.div(1000); }\n\n\treturn {base: a, denom: i};\n}\n\nfunction formatBalance (n) {\n\tlet a = splitValue(n);\n\t//\tlet b = Math.floor(a.base * 1000) / 1000;\n\treturn `${a.base} ${denominations[a.denom]}`;\n}\n\nfunction formatBlockNumber (n) {\n\treturn '#' + ('' + n).replace(/(\\d)(?=(\\d{3})+$)/g, '$1,');\n}\n\nfunction isNullData (a) {\n\treturn !a || typeof (a) !== 'string' || a.match(/^(0x)?0+$/) !== null;\n}\n\nfunction splitSignature (sig) {\n\tif ((sig.substr(2, 2) === '1b' || sig.substr(2, 2) === '1c') && (sig.substr(66, 2) !== '1b' && sig.substr(66, 2) !== '1c')) {\n\t\t// vrs\n\t\treturn [sig.substr(0, 4), `0x${sig.substr(4, 64)}`, `0x${sig.substr(68, 64)}`];\n\t} else {\n\t\t// rsv\n\t\treturn [`0x${sig.substr(130, 2)}`, `0x${sig.substr(2, 64)}`, `0x${sig.substr(66, 64)}`];\n\t}\n}\n\nfunction removeSigningPrefix (message) {\n\tif (!message.startsWith('\\x19Ethereum Signed Message:\\n')) {\n\t\tthrow new Error('Invalid message - doesn\\'t contain security prefix');\n\t}\n\tfor (var i = 1; i < 6; ++i) {\n\t\tif (message.length === 26 + i + +message.substr(26, i)) {\n\t\t\treturn message.substr(26 + i);\n\t\t}\n\t}\n\tthrow new Error('Invalid message - invalid security prefix');\n}\n\nfunction cleanup (value, type = 'bytes32', api = parity.api) {\n\t// TODO: make work with arbitrary depth arrays\n\tif (value instanceof Array && type.match(/bytes[0-9]+/)) {\n\t\t// figure out if it's an ASCII string hiding in there:\n\t\tvar ascii = '';\n\t\tfor (var i = 0, ended = false; i < value.length && ascii !== null; ++i) {\n\t\t\tif (value[i] === 0) {\n\t\t\t\tended = true;\n\t\t\t} else {\n\t\t\t\tascii += String.fromCharCode(value[i]);\n\t\t\t}\n\t\t\tif ((ended && value[i] !== 0) || (!ended && (value[i] < 32 || value[i] >= 128))) {\n\t\t\t\tascii = null;\n\t\t\t}\n\t\t}\n\t\tvalue = ascii === null ? '0x' + value.map(n => ('0' + n.toString(16)).slice(-2)).join('') : ascii;\n\t}\n\tif (type.substr(0, 4) === 'uint' && +type.substr(4) <= 48) {\n\t\tvalue = +value;\n\t}\n\treturn value;\n}\n\nmodule.exports = {\n\tasciiToHex,\n\tbytesToHex,\n\thexToAscii,\n\tisAddressValid,\n\ttoChecksumAddress,\n\tsha3,\n\tcapitalizeFirstLetter,\n\tsingleton,\n\tdenominations,\n\tdenominationMultiplier,\n\tinterpretRender,\n\tcombineValue,\n\tdefDenom,\n\tformatValue,\n\tformatValueNoDenom,\n\tformatToExponential,\n\tinterpretQuantity,\n\tsplitValue,\n\tformatBalance,\n\tformatBlockNumber,\n\tisNullData,\n\tsplitSignature,\n\tremoveSigningPrefix,\n\tcleanup\n};\n",
+    "content": "// (C) Copyright 2016-2017 Parity Technologies (UK) Ltd.\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//         http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\n/* global parity */\nconst BigNumber = require('bignumber.js');\nconst oo7 = require('oo7');\nconst ParityApi = require('@parity/api');\n\nconst asciiToHex = ParityApi.util.asciiToHex;\nconst bytesToHex = ParityApi.util.bytesToHex;\nconst hexToAscii = ParityApi.util.hexToAscii;\nconst isAddressValid = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.isAddressValid) : ParityApi.util.isAddressValid(h);\nconst toChecksumAddress = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.toChecksumAddress) : ParityApi.util.toChecksumAddress(h);\nconst sha3 = h => oo7.Bond.instanceOf(h) ? h.map(ParityApi.util.sha3) : ParityApi.util.sha3(h);\n\nconst denominations = [ 'wei', 'Kwei', 'Mwei', 'Gwei', 'szabo', 'finney', 'ether', 'grand', 'Mether', 'Gether', 'Tether', 'Pether', 'Eether', 'Zether', 'Yether', 'Nether', 'Dether', 'Vether', 'Uether' ];\n\n// Parity Utilities\n// TODO: move to parity.js, repackage or repot.\n\n/**\n * Capitalizes the first letter of a string\n *\n * @param {string} s\n * @returns {string}\n */\nfunction capitalizeFirstLetter (s) {\n\treturn s.charAt(0).toUpperCase() + s.slice(1);\n}\n\n/**\n * Wrap `f` in a function that ensures it's called at most once.\n * The value returned from `f` is memoized and returned for all subsequent calls.\n *\n * @param {F} f\n * @returns {function(): F}\n */\nfunction singleton (f) {\n\tvar instance = null;\n\treturn function () {\n\t\tif (instance === null) { instance = f(); }\n\t\treturn instance;\n\t};\n}\n\n/**\n * Returns a {@link BigNumber} multiplier for give string denominator\n *\n * @param {string} denominator denominator (wei, eth, finney, Gwei, etc)\n * @returns {BigNumber} multiplier\n */\nfunction denominationMultiplier (s) {\n\tlet i = denominations.indexOf(s);\n\tif (i < 0) { throw new Error('Invalid denomination'); }\n\treturn (new BigNumber(1000)).pow(i);\n}\n\nfunction interpretRender (s, defaultDenom = 6) {\n\ttry {\n\t\tlet m = s.toLowerCase().match(/([0-9,]+)(\\.([0-9]*))? *([a-zA-Z]+)?/);\n\t\tlet di = m[4] ? denominations.indexOf(m[4]) : defaultDenom;\n\t\tif (di === -1) {\n\t\t\treturn null;\n\t\t}\n\t\tlet n = (m[1].replace(',', '').replace(/^0*/, '')) || '0';\n\t\tlet d = (m[3] || '').replace(/0*$/, '');\n\t\treturn { denom: di, units: n, decimals: d, origNum: m[1] + (m[2] || ''), origDenom: m[4] || '' };\n\t} catch (e) {\n\t\treturn null;\n\t}\n}\n\nfunction combineValue (v) {\n\tlet d = (new BigNumber(1000)).pow(v.denom);\n\tlet n = v.units;\n\tif (v.decimals) {\n\t\tn += v.decimals;\n\t\td = d.div((new BigNumber(10)).pow(v.decimals.length));\n\t}\n\treturn new BigNumber(n).mul(d);\n}\n\n/**\n * Add missing denominator to the value\n *\n * @param {BigNumber} v value\n * @param {string} d denominator\n * @returns {Value}\n */\nfunction defDenom (v, d) {\n\tif (v.denom === null) {\n\t\tv.denom = d;\n\t}\n\treturn v;\n}\n\n/**\n * Formats a value with denominator\n *\n * @param {Value} n value with denominator\n * @returns {string}\n */\nfunction formatValue (n) {\n\treturn `${formatValueNoDenom(n)} ${denominations[n.denom]}`;\n}\n\n/**\n * Format value without denominator\n * @param {Value} v\n * @returns {string}\n */\nfunction formatValueNoDenom (n) {\n\treturn `${n.units.toString().replace(/(\\d)(?=(\\d{3})+$)/g, '$1,')}${n.decimals ? '.' + n.decimals : ''}`;\n}\n\n/**\n * Format value without denominator\n *\n * @param {number|BigNumber} v\n * @param {number| exponent\n * @returns {string}\n */\nfunction formatToExponential (v, n = 4) {\n\treturn new BigNumber(v).toExponential(n);\n}\n\nfunction interpretQuantity (s) {\n\ttry {\n\t\tlet m = s.toLowerCase().match(/([0-9,]+)(\\.([0-9]*))? *([a-zA-Z]+)?/);\n\t\tlet d = denominationMultiplier(m[4] || 'ether');\n\t\tlet n = +m[1].replace(',', '');\n\t\tif (m[2]) {\n\t\t\tn += m[3];\n\t\t\tfor (let i = 0; i < m[3].length; ++i) {\n\t\t\t\td = d.div(10);\n\t\t\t}\n\t\t}\n\t\treturn new BigNumber(n).mul(d);\n\t} catch (e) {\n\t\treturn null;\n\t}\n}\n\n/**\n * Split value into base and denominator\n *\n * @param {number|BigNumber} a\n * @returns {Value}\n */\nfunction splitValue (a) {\n\tvar i = 0;\n\ta = new BigNumber('' + a);\n\tif (a.gte(new BigNumber('10000000000000000')) && a.lt(new BigNumber('100000000000000000000000'))) {\n\t\ti = 6;\n\t} else {\n\t\tfor (var aa = a; aa.gte(1000) && i < denominations.length - 1; aa = aa.div(1000)) { i++; }\n\t}\n\n\tfor (var j = 0; j < i; ++j) { a = a.div(1000); }\n\n\treturn {base: a, denom: i};\n}\n\n/**\n * Display balance into human-readable format with denomnator\n *\n * @param {string|BigNumber} balance\n * @returns {string}\n */\nfunction formatBalance (n) {\n\tlet a = splitValue(n);\n\t//\tlet b = Math.floor(a.base * 1000) / 1000;\n\treturn `${a.base} ${denominations[a.denom]}`;\n}\n\n/**\n * Format block number into human-readable representation.\n * @param {string|number|BigNumber} blockNumber\n * @returns {string}\n */\nfunction formatBlockNumber (n) {\n\treturn '#' + ('' + n).replace(/(\\d)(?=(\\d{3})+$)/g, '$1,');\n}\n\nfunction isNullData (a) {\n\treturn !a || typeof (a) !== 'string' || a.match(/^(0x)?0+$/) !== null;\n}\n\nfunction splitSignature (sig) {\n\tif ((sig.substr(2, 2) === '1b' || sig.substr(2, 2) === '1c') && (sig.substr(66, 2) !== '1b' && sig.substr(66, 2) !== '1c')) {\n\t\t// vrs\n\t\treturn [sig.substr(0, 4), `0x${sig.substr(4, 64)}`, `0x${sig.substr(68, 64)}`];\n\t} else {\n\t\t// rsv\n\t\treturn [`0x${sig.substr(130, 2)}`, `0x${sig.substr(2, 64)}`, `0x${sig.substr(66, 64)}`];\n\t}\n}\n\nfunction removeSigningPrefix (message) {\n\tif (!message.startsWith('\\x19Ethereum Signed Message:\\n')) {\n\t\tthrow new Error('Invalid message - doesn\\'t contain security prefix');\n\t}\n\tfor (var i = 1; i < 6; ++i) {\n\t\tif (message.length === 26 + i + +message.substr(26, i)) {\n\t\t\treturn message.substr(26 + i);\n\t\t}\n\t}\n\tthrow new Error('Invalid message - invalid security prefix');\n}\n\nfunction cleanup (value, type = 'bytes32', api = parity.api) {\n\t// TODO: make work with arbitrary depth arrays\n\tif (value instanceof Array && type.match(/bytes[0-9]+/)) {\n\t\t// figure out if it's an ASCII string hiding in there:\n\t\tvar ascii = '';\n\t\tfor (var i = 0, ended = false; i < value.length && ascii !== null; ++i) {\n\t\t\tif (value[i] === 0) {\n\t\t\t\tended = true;\n\t\t\t} else {\n\t\t\t\tascii += String.fromCharCode(value[i]);\n\t\t\t}\n\t\t\tif ((ended && value[i] !== 0) || (!ended && (value[i] < 32 || value[i] >= 128))) {\n\t\t\t\tascii = null;\n\t\t\t}\n\t\t}\n\t\tvalue = ascii === null ? '0x' + value.map(n => ('0' + n.toString(16)).slice(-2)).join('') : ascii;\n\t}\n\tif (type.substr(0, 4) === 'uint' && +type.substr(4) <= 48) {\n\t\tvalue = +value;\n\t}\n\treturn value;\n}\n\nmodule.exports = {\n\tasciiToHex,\n\tbytesToHex,\n\thexToAscii,\n\tisAddressValid,\n\ttoChecksumAddress,\n\tsha3,\n\tcapitalizeFirstLetter,\n\tsingleton,\n\tdenominations,\n\tdenominationMultiplier,\n\tinterpretRender,\n\tcombineValue,\n\tdefDenom,\n\tformatValue,\n\tformatValueNoDenom,\n\tformatToExponential,\n\tinterpretQuantity,\n\tsplitValue,\n\tformatBalance,\n\tformatBlockNumber,\n\tisNullData,\n\tsplitSignature,\n\tremoveSigningPrefix,\n\tcleanup\n};\n",
     "static": true,
     "longname": "/home/tomusdrw/workspace/oo7-new/packages/oo7-parity/src/utils/index.js",
     "access": "public",
@@ -4407,7 +6803,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 223,
+    "__docId__": 308,
     "kind": "variable",
     "name": "asciiToHex",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4427,7 +6823,7 @@
     }
   },
   {
-    "__docId__": 224,
+    "__docId__": 309,
     "kind": "variable",
     "name": "bytesToHex",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4447,7 +6843,7 @@
     }
   },
   {
-    "__docId__": 225,
+    "__docId__": 310,
     "kind": "variable",
     "name": "hexToAscii",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4467,7 +6863,7 @@
     }
   },
   {
-    "__docId__": 226,
+    "__docId__": 311,
     "kind": "function",
     "name": "isAddressValid",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4493,7 +6889,7 @@
     "return": null
   },
   {
-    "__docId__": 227,
+    "__docId__": 312,
     "kind": "function",
     "name": "toChecksumAddress",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4519,7 +6915,7 @@
     "return": null
   },
   {
-    "__docId__": 228,
+    "__docId__": 313,
     "kind": "function",
     "name": "sha3",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4545,7 +6941,7 @@
     "return": null
   },
   {
-    "__docId__": 229,
+    "__docId__": 314,
     "kind": "function",
     "name": "capitalizeFirstLetter",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4557,25 +6953,37 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{capitalizeFirstLetter}",
-    "description": null,
-    "lineNumber": 34,
-    "undocument": true,
+    "description": "Capitalizes the first letter of a string",
+    "lineNumber": 38,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{string}"
+      }
+    ],
     "params": [
       {
-        "name": "s",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "s",
+        "description": ""
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "string"
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 230,
+    "__docId__": 315,
     "kind": "function",
     "name": "singleton",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4587,25 +6995,37 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{singleton}",
-    "description": null,
-    "lineNumber": 38,
-    "undocument": true,
+    "description": "Wrap `f` in a function that ensures it's called at most once.\nThe value returned from `f` is memoized and returned for all subsequent calls.",
+    "lineNumber": 49,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{function(): F}"
+      }
+    ],
     "params": [
       {
-        "name": "f",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "F"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "f",
+        "description": ""
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "function(): F"
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 231,
+    "__docId__": 316,
     "kind": "variable",
     "name": "denominations",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4625,7 +7045,7 @@
     }
   },
   {
-    "__docId__": 232,
+    "__docId__": 317,
     "kind": "function",
     "name": "denominationMultiplier",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4637,25 +7057,37 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{denominationMultiplier}",
-    "description": null,
-    "lineNumber": 46,
-    "undocument": true,
+    "description": "Returns a {@link BigNumber} multiplier for give string denominator",
+    "lineNumber": 63,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{BigNumber} multiplier"
+      }
+    ],
     "params": [
       {
-        "name": "s",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "denominator",
+        "description": "denominator (wei, eth, finney, Gwei, etc)"
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "BigNumber"
+      ],
+      "spread": false,
+      "description": "multiplier"
     }
   },
   {
-    "__docId__": 233,
+    "__docId__": 318,
     "kind": "function",
     "name": "interpretRender",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4668,7 +7100,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{interpretRender}",
     "description": null,
-    "lineNumber": 52,
+    "lineNumber": 69,
     "undocument": true,
     "params": [
       {
@@ -4694,7 +7126,7 @@
     }
   },
   {
-    "__docId__": 234,
+    "__docId__": 319,
     "kind": "function",
     "name": "combineValue",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4707,7 +7139,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{combineValue}",
     "description": null,
-    "lineNumber": 67,
+    "lineNumber": 84,
     "undocument": true,
     "params": [
       {
@@ -4724,7 +7156,7 @@
     }
   },
   {
-    "__docId__": 235,
+    "__docId__": 320,
     "kind": "function",
     "name": "defDenom",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4736,31 +7168,47 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{defDenom}",
-    "description": null,
-    "lineNumber": 77,
-    "undocument": true,
+    "description": "Add missing denominator to the value",
+    "lineNumber": 101,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Value}"
+      }
+    ],
     "params": [
       {
-        "name": "v",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "BigNumber"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "v",
+        "description": "value"
       },
       {
-        "name": "d",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "d",
+        "description": "denominator"
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "Value"
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 236,
+    "__docId__": 321,
     "kind": "function",
     "name": "formatValue",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4772,25 +7220,37 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{formatValue}",
-    "description": null,
-    "lineNumber": 84,
-    "undocument": true,
+    "description": "Formats a value with denominator",
+    "lineNumber": 114,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{string}"
+      }
+    ],
     "params": [
       {
-        "name": "n",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Value"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "n",
+        "description": "value with denominator"
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
         "string"
-      ]
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 237,
+    "__docId__": 322,
     "kind": "function",
     "name": "formatValueNoDenom",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4802,25 +7262,37 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{formatValueNoDenom}",
-    "description": null,
-    "lineNumber": 88,
-    "undocument": true,
+    "description": "Format value without denominator",
+    "lineNumber": 123,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{string}"
+      }
+    ],
     "params": [
       {
-        "name": "n",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Value"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "v",
+        "description": ""
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
         "string"
-      ]
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 238,
+    "__docId__": 323,
     "kind": "function",
     "name": "formatToExponential",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4832,31 +7304,48 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{formatToExponential}",
-    "description": null,
-    "lineNumber": 92,
-    "undocument": true,
+    "description": "Format value without denominator",
+    "lineNumber": 134,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{string}"
+      }
+    ],
     "params": [
       {
-        "name": "v",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "number",
+          "BigNumber"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "v",
+        "description": ""
       },
       {
-        "name": "n",
+        "nullable": null,
         "types": [
           "*"
-        ]
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "{number|",
+        "description": "exponent"
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "string"
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 239,
+    "__docId__": 324,
     "kind": "function",
     "name": "interpretQuantity",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4869,7 +7358,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{interpretQuantity}",
     "description": null,
-    "lineNumber": 96,
+    "lineNumber": 138,
     "undocument": true,
     "params": [
       {
@@ -4886,7 +7375,7 @@
     }
   },
   {
-    "__docId__": 240,
+    "__docId__": 325,
     "kind": "function",
     "name": "splitValue",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4898,25 +7387,38 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{splitValue}",
-    "description": null,
-    "lineNumber": 113,
-    "undocument": true,
+    "description": "Split value into base and denominator",
+    "lineNumber": 161,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Value}"
+      }
+    ],
     "params": [
       {
-        "name": "a",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "number",
+          "BigNumber"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "a",
+        "description": ""
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "{\"base\": *, \"denom\": *}"
-      ]
+        "Value"
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 241,
+    "__docId__": 326,
     "kind": "function",
     "name": "formatBalance",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4928,25 +7430,38 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{formatBalance}",
-    "description": null,
-    "lineNumber": 127,
-    "undocument": true,
+    "description": "Display balance into human-readable format with denomnator",
+    "lineNumber": 181,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{string}"
+      }
+    ],
     "params": [
       {
-        "name": "n",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "string",
+          "BigNumber"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "balance",
+        "description": ""
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
         "string"
-      ]
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 242,
+    "__docId__": 327,
     "kind": "function",
     "name": "formatBlockNumber",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4958,25 +7473,39 @@
     "export": true,
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{formatBlockNumber}",
-    "description": null,
-    "lineNumber": 133,
-    "undocument": true,
+    "description": "Format block number into human-readable representation.",
+    "lineNumber": 192,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{string}"
+      }
+    ],
     "params": [
       {
-        "name": "n",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "string",
+          "number",
+          "BigNumber"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "blockNumber",
+        "description": ""
       }
     ],
     "return": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "string"
+      ],
+      "spread": false,
+      "description": ""
     }
   },
   {
-    "__docId__": 243,
+    "__docId__": 328,
     "kind": "function",
     "name": "isNullData",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -4989,7 +7518,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{isNullData}",
     "description": null,
-    "lineNumber": 137,
+    "lineNumber": 196,
     "undocument": true,
     "params": [
       {
@@ -5006,7 +7535,7 @@
     }
   },
   {
-    "__docId__": 244,
+    "__docId__": 329,
     "kind": "function",
     "name": "splitSignature",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -5019,7 +7548,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{splitSignature}",
     "description": null,
-    "lineNumber": 141,
+    "lineNumber": 200,
     "undocument": true,
     "params": [
       {
@@ -5036,7 +7565,7 @@
     }
   },
   {
-    "__docId__": 245,
+    "__docId__": 330,
     "kind": "function",
     "name": "removeSigningPrefix",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -5049,7 +7578,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{removeSigningPrefix}",
     "description": null,
-    "lineNumber": 151,
+    "lineNumber": 210,
     "undocument": true,
     "params": [
       {
@@ -5066,7 +7595,7 @@
     }
   },
   {
-    "__docId__": 246,
+    "__docId__": 331,
     "kind": "function",
     "name": "cleanup",
     "memberof": "packages/oo7-parity/src/utils/index.js",
@@ -5079,7 +7608,7 @@
     "importPath": "./packages/oo7-parity/src/utils/index.js",
     "importStyle": "{cleanup}",
     "description": null,
-    "lineNumber": 163,
+    "lineNumber": 222,
     "undocument": true,
     "params": [
       {
@@ -5113,7 +7642,7 @@
   },
   {
     "kind": "index",
-    "content": "# oo7 suite\n",
+    "content": "# oo7 Suite\n\n![Travis](https://img.shields.io/travis/tomusdrw/oo7.svg)\n\n\n![npm:oo7](https://img.shields.io/npm/v/oo7.svg)\n![npm:oo7-parity](https://img.shields.io/npm/v/oo7-parity.svg)\n![npm:oo7-react](https://img.shields.io/npm/v/oo7-react.svg)\n\n\nThe `oo7` suite consists of three independent packages:\n\n- [oo7](./packages/oo7/) - Reactive Bonds\n- [oo7-parity](./packages/oo7-parity) - Bonds bindings for Ethereum objects\n- [oo7-react](./packages/oo7-react) - React components to display Bonds\n\n# Documentation\n\n[Documentation](https://tomusdrw.github.io/oo7/class/packages/oo7-parity/src/index.js~Bonds.html#instance-member-accounts) to all three packages can be found [here](https://tomusdrw.github.io/oo7/)\n\n# Examples\n\n### oo7\n```js\n// npm i oo7\nimport {TimeBond} from 'oo7'\n\n\n// Initialize the bond\nconst bond = new TimeBond()\nbond\n    .map(t => new Date(t))\n    .tie(date => console.log(`${date}`))\n    // Wed Oct 11 2017 12:14:56 GMT+0200 (CEST)\n\n```\n\n### oo7-parity\n```js\n// npm i oo7-parity\nimport {Bonds, formatBalance} from 'oo7-parity'\n\nconst bonds = Bonds()\n\nbonds.balance(bonds.me)\n    .map(formatBalance)\n    .tie(console.log) // 4.45 ETH\n```\n\n### oo7-react\n```js\nimport ReactDOM from 'react-dom'\nimport React, { Component } from 'react'\n\n// Import reactive element\nimport {Rspan} from 'oo7-react'\nimport {Bonds, formatBalance} from 'oo7-parity'\n\nconst bonds = new Bonds()\n\nclass App extends Component {\n  render() {\n    // Simply render bonds\n    return (\n      <div>\n          <Rspan>\n            {bonds.me} has \n            {bonds.balance(bonds.me).map(formatBalance)}\n          </Rspan>\n      </div>\n    );\n  }\n}\n\nReactDOM.render(<App />, document.querySelector('body'))\n```\n",
     "longname": "/home/tomusdrw/workspace/oo7-new/README.md",
     "name": "./README.md",
     "static": true,
@@ -5121,7 +7650,7 @@
   },
   {
     "kind": "packageJSON",
-    "content": "{\n\t\"scripts\": {\n\t\t\"bootstrap\": \"lerna bootstrap\",\n\t\t\"publish\": \"lerna publish\",\n\t\t\"lint\": \"lerna run lint\",\n\t\t\"test\": \"lerna run test\",\n\t\t\"lerna\": \"lerna\",\n\t\t\"esdoc\": \"esdoc\"\n\t},\n\t\"devDependencies\": {\n\t\t\"lerna\": \"^2.9.1\",\n\t\t\"esdoc\": \"^1.0.4\",\n\t\t\"esdoc-node\": \"^1.0.3\",\n\t\t\"esdoc-standard-plugin\": \"^1.0.0\",\n\t\t\"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\"\n\t}\n}\n",
+    "content": "{\n\t\"scripts\": {\n\t\t\"postinstall\": \"lerna bootstrap\",\n\t\t\"bootstrap\": \"lerna bootstrap\",\n\t\t\"publish\": \"lerna publish\",\n\t\t\"lint\": \"lerna run lint\",\n\t\t\"test\": \"lerna run test\",\n\t\t\"lerna\": \"lerna\",\n\t\t\"esdoc\": \"esdoc\"\n\t},\n\t\"devDependencies\": {\n\t\t\"lerna\": \"^2.9.1\",\n\t\t\"esdoc\": \"^1.0.4\",\n\t\t\"esdoc-node\": \"^1.0.3\",\n\t\t\"esdoc-standard-plugin\": \"^1.0.0\"\n\t}\n}\n",
     "longname": "/home/tomusdrw/workspace/oo7-new/package.json",
     "name": "package.json",
     "static": true,

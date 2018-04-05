@@ -80,7 +80,63 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="oo7-suite">oo7 suite</h1></div>
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="oo7-suite">oo7 Suite</h1><p><img src="https://img.shields.io/travis/tomusdrw/oo7.svg" alt="Travis"></p>
+<p><img src="https://img.shields.io/npm/v/oo7.svg" alt="npm:oo7">
+<img src="https://img.shields.io/npm/v/oo7-parity.svg" alt="npm:oo7-parity">
+<img src="https://img.shields.io/npm/v/oo7-react.svg" alt="npm:oo7-react"></p>
+<p>The <code>oo7</code> suite consists of three independent packages:</p>
+<ul>
+<li><a href="./packages/oo7/">oo7</a> - Reactive Bonds</li>
+<li><a href="./packages/oo7-parity">oo7-parity</a> - Bonds bindings for Ethereum objects</li>
+<li><a href="./packages/oo7-react">oo7-react</a> - React components to display Bonds</li>
+</ul>
+<h1 id="documentation">Documentation</h1><p><a href="https://tomusdrw.github.io/oo7/class/packages/oo7-parity/src/index.js~Bonds.html#instance-member-accounts">Documentation</a> to all three packages can be found <a href="https://tomusdrw.github.io/oo7/">here</a></p>
+<h1 id="examples">Examples</h1><h3 id="oo7">oo7</h3><pre><code class="lang-js"><code class="source-code prettyprint">// npm i oo7
+import {TimeBond} from &apos;oo7&apos;
+
+
+// Initialize the bond
+const bond = new TimeBond()
+bond
+    .map(t =&gt; new Date(t))
+    .tie(date =&gt; console.log(`${date}`))
+    // Wed Oct 11 2017 12:14:56 GMT+0200 (CEST)</code>
+</code></pre>
+<h3 id="oo7-parity">oo7-parity</h3><pre><code class="lang-js"><code class="source-code prettyprint">// npm i oo7-parity
+import {Bonds, formatBalance} from &apos;oo7-parity&apos;
+
+const bonds = Bonds()
+
+bonds.balance(bonds.me)
+    .map(formatBalance)
+    .tie(console.log) // 4.45 ETH</code>
+</code></pre>
+<h3 id="oo7-react">oo7-react</h3><pre><code class="lang-js"><code class="source-code prettyprint">import ReactDOM from &apos;react-dom&apos;
+import React, { Component } from &apos;react&apos;
+
+// Import reactive element
+import {Rspan} from &apos;oo7-react&apos;
+import {Bonds, formatBalance} from &apos;oo7-parity&apos;
+
+const bonds = new Bonds()
+
+class App extends Component {
+  render() {
+    // Simply render bonds
+    return (
+      &lt;div&gt;
+          &lt;Rspan&gt;
+            {bonds.me} has 
+            {bonds.balance(bonds.me).map(formatBalance)}
+          &lt;/Rspan&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+
+ReactDOM.render(&lt;App /&gt;, document.querySelector(&apos;body&apos;))</code>
+</code></pre>
+</div>
 </div>
 
 <footer class="footer">
