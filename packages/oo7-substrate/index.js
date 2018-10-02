@@ -284,7 +284,7 @@ const numberWithCommas = n => {
 	}
 }
 
-function pretty(expr) {
+function pretty(expr, token = 'XXX', mtoken = 'mXXX', base = 'xxx', denom = 1000000000000000) {
 	if (expr === null) {
 		return 'null';
 	}
@@ -295,25 +295,24 @@ function pretty(expr) {
 		return 'SlashPreference{unstake_threshold=' + expr + '}';
 	}
 	if (expr instanceof Balance) {
-		let dotDenom = 1000000000000000;
 		return (
-			expr == 0 || expr > dotDenom * 3000
-			? numberWithCommas(Math.round(expr / dotDenom)) + ' DOT'
-			: expr > dotDenom * 300
-			? numberWithCommas(Math.round(expr / (dotDenom / 10)) / 10) + ' DOT'
-			: expr > dotDenom * 30
-			? numberWithCommas(Math.round(expr / (dotDenom / 100)) / 100) + ' DOT'
-			: expr > dotDenom * 3
-			? numberWithCommas(Math.round(expr / (dotDenom / 1000)) / 1000) + ' DOT'
-			: expr > dotDenom / 3
-			? numberWithCommas(Math.round(expr / (dotDenom / 10000)) / 10000) + ' DOT'
-			: expr > dotDenom / 30
-			? numberWithCommas(Math.round(expr * 1000 / (dotDenom / 100)) / 100) + ' point'
-			: expr > dotDenom / 300
-			? numberWithCommas(Math.round(expr * 1000 / (dotDenom / 1000)) / 1000) + ' point'
-			: expr > dotDenom / 3000
-			? numberWithCommas(Math.round(expr * 1000 / (dotDenom / 10000)) / 10000) + ' point'
-			: numberWithCommas(expr) + ' planck'
+			expr == 0 || expr > denom * 3000
+			? numberWithCommas(Math.round(expr / denom)) + ' ' + token
+			: expr > denom * 300
+			? numberWithCommas(Math.round(expr / (denom / 10)) / 10) + ' ' + token
+			: expr > denom * 30
+			? numberWithCommas(Math.round(expr / (denom / 100)) / 100) + ' ' + token
+			: expr > denom * 3
+			? numberWithCommas(Math.round(expr / (denom / 1000)) / 1000) + ' ' + token
+			: expr > denom / 3
+			? numberWithCommas(Math.round(expr / (denom / 10000)) / 10000) + ' ' + token
+			: expr > denom / 30
+			? numberWithCommas(Math.round(expr * 1000 / (denom / 100)) / 100) + ' ' + mtoken
+			: expr > denom / 300
+			? numberWithCommas(Math.round(expr * 1000 / (denom / 1000)) / 1000) + ' ' + mtoken
+			: expr > denom / 3000
+			? numberWithCommas(Math.round(expr * 1000 / (denom / 10000)) / 10000) + ' ' + mtoken
+			: numberWithCommas(expr) + ' ' + base
 		);
 	}
 	if (expr instanceof BlockNumber) {
@@ -545,7 +544,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 //   index?
 // }
 function post(tx) {
-	return new LatchBond(Bond.all([tx, polkadot().chain.height]).map(([o, height]) => {
+	return new LatchBond(Bond.all([tx, substrate().chain.height]).map(([o, height]) => {
 		let {sender, call, index, longevity} = o
 		if (typeof sender == 'number') {
 			// TODO: accept integer senders
@@ -559,8 +558,8 @@ function post(tx) {
 			sender,
 			call,
 			era: new Uint8Array([0]),
-			eraHash: polkadot().genesisHash,
-			index: index || polkadot().runtime.system.accountNonce(sender),
+			eraHash: substrate().genesisHash,
+			index: index || substrate().runtime.system.accountNonce(sender),
 			senderAccount: sender
 		}
 	}, 2), null).map(o => {
@@ -961,16 +960,16 @@ function encoded(value, type = null) {
 	throw `Value cannot be encoded as type: ${value}, ${type}`
 }
 
-let s_polkadot = null
+let s_substrate = null
 
-function polkadot() {
-	if (!s_polkadot) {
-		s_polkadot = new Polkadot
+function substrate() {
+	if (!s_substrate) {
+		s_substrate = new Substrate
 	}
-	return s_polkadot
+	return s_substrate
 }
 
-class Polkadot {
+class Substrate {
 	initialiseFromMetadata(m) {
 		this.metadata = m
 		this.runtime = {}
@@ -1188,7 +1187,7 @@ class Polkadot {
 
 	constructor () {
 		let that = this;
-		s_polkadot = this;
+		s_substrate = this;
 		
 		this.chain = {
 			head: new SubscriptionBond('chain_newHead').subscriptable()
@@ -1260,8 +1259,9 @@ if (typeof window !== 'undefined') {
 }
 
 
-
-const denominations = [ 'planck', 'Kpl', 'Mpl', 'µdot', 'point', 'dot', 'blob', 'megadot' ];
+// TODO: make all denomination stuff be external.
+//const denominations = [ 'planck', 'Kpl', 'Mpl', 'µdot', 'point', 'dot', 'blob', 'megadot' ];
+const denominations = [ 'xxx', 'Kxxx', 'Mxxx', 'µXXX', 'mXXX', 'XXX', 'KXXX', 'MXXX' ];
 
 function interpretRender(s, defaultDenom = 4) {
 	try {
@@ -1303,7 +1303,7 @@ function defDenom(v, d) {
 
 module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes,
 	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE,
-	leToNumber, Polkadot, reviver, AccountId, Hash, VoteThreshold, Moment, Balance,
-	BlockNumber, Tuple, TransactionBond, secretStore, polkadot, post,
+	leToNumber, Substrate, reviver, AccountId, Hash, VoteThreshold, Moment, Balance,
+	BlockNumber, Tuple, TransactionBond, secretStore, substrate, post,
 	denominations, interpretRender, formatValueNoDenom, combineValue, defDenom
 }
