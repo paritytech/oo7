@@ -1,6 +1,6 @@
 {
   "name": "oo7-parity",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "description": "The Parity Bond API",
   "main": "src/index.js",
   "jsnext:main": "src/index.js",
@@ -29,7 +29,7 @@
   "dependencies": {
     "@parity/api": "^2",
     "bignumber.js": "^4.0.0",
-    "oo7": "^0.5.9"
+    "oo7": "^0.6.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
