@@ -1,2 +1,2 @@
-# oo7-polkadot
+# oo7-substrate
 Polkadot Bonds library

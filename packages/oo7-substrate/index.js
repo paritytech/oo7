@@ -962,9 +962,12 @@ function encoded(value, type = null) {
 
 let s_substrate = null
 
-function substrate() {
+function substrate(di) {
 	if (!s_substrate) {
 		s_substrate = new Substrate
+	}
+	if (di) {
+		s_substrate.initialiseDenominations(di)
 	}
 	return s_substrate
 }
@@ -1185,10 +1188,33 @@ class Substrate {
 			]).map(([sl, sr, br]) => br + sl * sr);
 	}
 
-	constructor () {
+	denominationInfo () { 
+		return this._denominationInfo;
+	}
+	denominations () {
+		return this._denominations;
+	}
+
+	initialiseDenominations (di) {
+		let name = di.unit
+		let denom = 0
+		let ds = []
+		for (let i = 0; i <= di.denominations[di.primary] + 6; i += 3) {
+			let n = Object.keys(di.denominations).find(|k| di.denomations[k] == i)
+			if (n) {
+				name = n
+				denom = i
+			}
+			ds.push(siPrefix(i - denom) + name)
+		}
+		this._denominations = ds
+		this._denominationInfo = di;
+	}
+
+	constructor (denominationInfo) {
 		let that = this;
 		s_substrate = this;
-		
+
 		this.chain = {
 			head: new SubscriptionBond('chain_newHead').subscriptable()
 		}
@@ -1258,48 +1284,27 @@ if (typeof window !== 'undefined') {
 	window.Bond = Bond;
 }
 
-
-// TODO: make all denomination stuff be external.
-//const denominations = [ 'planck', 'Kpl', 'Mpl', 'µdot', 'point', 'dot', 'blob', 'megadot' ];
-const denominations = [ 'xxx', 'Kxxx', 'Mxxx', 'µXXX', 'mXXX', 'XXX', 'KXXX', 'MXXX' ];
-
-function interpretRender(s, defaultDenom = 4) {
-	try {
-	let m = s.toLowerCase().match(/([0-9,]+)(\.([0-9]*))? *([a-zA-Z]+)?/);
-		let di = m[4] ? denominations.indexOf(m[4]) : defaultDenom;
-		if (di === -1) {
-			return null;
-		}
-		let n = (m[1].replace(',', '').replace(/^0*/, '')) || '0';
-		let d = (m[3] || '').replace(/0*$/, '');
-		return { denom: di, units: n, decimals: d, origNum: m[1] + (m[2] || ''), origDenom: m[4] || '' };
-	}
-	catch (e) {
-		return null;
+function siPrefix(pot) {
+	switch (pot) {
+		case -24: return 'y'
+		case -21: return 'z'
+		case -18: return 'a'
+		case -15: return 'f'
+		case -12: return 'p'
+		case -9: return 'n'
+		case -6: return 'µ'
+		case -3: return 'm'
+		case 0: return ''
+		case 3: return 'k'
+		case 6: return 'M'
+		case 9: return 'G'
+		case 12: return 'T'
+		case 15: return 'P'
+		case 18: return 'E'
+		case 21: return 'Z'
+		case 24: return 'Y'
 	}
 }
-
-function formatValueNoDenom(n) {
-	return `${n.units.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}${n.decimals ? '.' + n.decimals : ''}`;
-}
-
-function combineValue(v) {
-	let d = Math.pow(1000, v.denom);
-	let n = v.units;
-	if (v.decimals) {
-		n += v.decimals;
-		d /= Math.pow(10, v.decimals.length);
-	}
-	return n * d;
-}
-
-function defDenom(v, d) {
-	if (v.denom === null) {
-		v.denom = d;
-	}
-	return v;
-}
-
 
 module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes,
 	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE,
