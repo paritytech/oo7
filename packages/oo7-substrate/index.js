@@ -284,7 +284,7 @@ const numberWithCommas = n => {
 	}
 }
 
-function pretty(expr, token = 'XXX', mtoken = 'mXXX', base = 'xxx', denom = 1000000000000000) {
+function pretty(expr) {
 	if (expr === null) {
 		return 'null';
 	}
@@ -295,25 +295,41 @@ function pretty(expr, token = 'XXX', mtoken = 'mXXX', base = 'xxx', denom = 1000
 		return 'SlashPreference{unstake_threshold=' + expr + '}';
 	}
 	if (expr instanceof Balance) {
-		return (
-			expr == 0 || expr > denom * 3000
-			? numberWithCommas(Math.round(expr / denom)) + ' ' + token
-			: expr > denom * 300
-			? numberWithCommas(Math.round(expr / (denom / 10)) / 10) + ' ' + token
-			: expr > denom * 30
-			? numberWithCommas(Math.round(expr / (denom / 100)) / 100) + ' ' + token
-			: expr > denom * 3
-			? numberWithCommas(Math.round(expr / (denom / 1000)) / 1000) + ' ' + token
-			: expr > denom / 3
-			? numberWithCommas(Math.round(expr / (denom / 10000)) / 10000) + ' ' + token
-			: expr > denom / 30
-			? numberWithCommas(Math.round(expr * 1000 / (denom / 100)) / 100) + ' ' + mtoken
-			: expr > denom / 300
-			? numberWithCommas(Math.round(expr * 1000 / (denom / 1000)) / 1000) + ' ' + mtoken
-			: expr > denom / 3000
-			? numberWithCommas(Math.round(expr * 1000 / (denom / 10000)) / 10000) + ' ' + mtoken
-			: numberWithCommas(expr) + ' ' + base
-		);
+		if (s_substrate && s_substrate.denominationInfo) {
+			let di = s_substrate.denominationInfo
+
+			let denomincationSearch = [di.primary, Object.keys(di.denomincations)]
+			let unit = null
+			let dp = 0
+			for (i in denomincationSearch) {
+				let denom = di.denominations[i]
+				let lower = denom / 30
+				let upper = denom * 30000
+				if (expr > lower && expr < upper) {
+					unit = i
+					divisor = Math.pow(10, denom)
+					expr /= Math.pow(10, divisor)
+					let dp = 0
+					for (; expr > 3000 / Math.pow(10, dp); dp++) {}
+					break;
+				}
+			}
+
+			if (unit === null) {
+				// default
+				if (expr < di.denominations[di.primary] / 30 && expr !== 0) {
+					unit = di.unit
+				} else {
+					unit = di.primary
+					expr /= Math.pow(10, di.denominations[unit])
+					expr = Math.round(expr)
+				}
+			}
+
+			return numberWithCommas(Math.round(expr * Math.pow(10, dp)) / Math.pow(10, dp)) + ' ' + unit
+		} else {
+			return numberWithCommas(expr)
+		}
 	}
 	if (expr instanceof BlockNumber) {
 		return numberWithCommas(expr);
