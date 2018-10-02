@@ -1,0 +1,33 @@
+{
+  "name": "oo7-polkadot",
+  "version": "1.0.15",
+  "description": "Polkadot Bonds library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polkadot-js/oo7-polkadot.git"
+  },
+  "keywords": [
+    "polkadot",
+    "substrate",
+    "bonds",
+    "oo7"
+  ],
+  "author": "Parity Technologies <admin@parity.io>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/polkadot-js/oo7-polkadot/issues"
+  },
+  "homepage": "https://github.com/polkadot-js/oo7-polkadot#readme",
+  "dependencies": {
+    "change-case": "^3.0.2",
+    "isomorphic-fetch": "^2.2.1",
+    "oo7": "^0.6.0",
+    "ss58": "^1.0.2",
+    "tweetnacl": "^1.0.0",
+    "xxhashjs": "^0.2.2"
+  }
+}

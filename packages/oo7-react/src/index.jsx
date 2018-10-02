@@ -199,6 +199,29 @@ class ReactiveComponent extends React.Component {
 }
 
 /**
+ * Simple coditional to output one item over another dependent on some condition.
+ * 
+ * @example
+ * class Clock extends React.Component {
+ *   constructor (someBond) { this._someBond = someBond }
+ *   render () {
+ *     return <If condition={this.someBond.ready()}
+ *       then={<Rspan>{this.someBond}</Rspan>}
+ *       else='Not ready'
+ *     />
+ *   }
+ * }
+ */
+export class If extends ReactiveComponent {
+	constructor () { super (['condition']) }
+	render () {
+		return this.state.condition ?
+			this.props.then :
+			this.props.else || (<span/>)
+	}
+}
+
+/**
  * {@link Bond}-aware, variant of `span` component.
  *
  * `className` and `style` props, and the child, behave as expected but are

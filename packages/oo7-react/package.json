@@ -1,6 +1,6 @@
 {
   "name": "oo7-react",
-  "version": "0.4.9",
+  "version": "0.5.0",
   "description": "The Reactive Bond API",
   "main": "lib/index.js",
   "files": [
@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/paritytech/oo7-react#readme",
   "dependencies": {
-    "oo7": "^0.5.9",
+    "oo7": "^0.6.0",
     "react": "^15.4.2"
   },
   "devDependencies": {
