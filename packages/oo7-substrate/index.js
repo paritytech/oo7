@@ -28,6 +28,7 @@ class Balance extends Number {
 	sub(b) { return new Balance(this - b) }
 }
 class BlockNumber extends Number { toJSON() { return { _type: 'BlockNumber', data: this+0 } }}
+class AccountIndex extends Number { toJSON() { return { _type: 'AccountIndex', data: this+0 } }}
 class Tuple extends Array { toJSON() { return { _type: 'Tuple', data: Array.from(this) } }}
 
 function reviver(key, bland) {
@@ -42,6 +43,7 @@ function reviver(key, bland) {
 			case 'Tuple': return new Tuple(bland.data);
 			case 'Balance': return new Balance(bland.data);
 			case 'BlockNumber': return new BlockNumber(bland.data);
+			case 'AccountIndex': return new AccountIndex(bland.data);
 		}
 	}
 	return bland;
@@ -62,7 +64,12 @@ let transforms = {
 	FunctionMetadata: { id: 'u16', name: 'String', arguments: 'Vec<FunctionArgumentMetadata>', documentation: 'Vec<String>' },
 	FunctionArgumentMetadata: { name: 'String', type: 'Type' },
 
-	Transaction: { version: 'u8', sender: 'Address', signature: 'Signature', index: 'Index', era: 'TransactionEra', call: 'Call' }
+	NewAccountOutcome: { _enum: [ 'NoHint', 'GoodHint', 'BadHint' ] },
+	UpdateBalanceOutcome: { _enum: [ 'Updated', 'AccountKilled' ] },
+
+	Transaction: { version: 'u8', sender: 'Address', signature: 'Signature', index: 'Index', era: 'TransactionEra', call: 'Call' },
+	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
+	EventRecord: { phase: 'Phase', event: 'Event' }
 };
 
 var decodePrefix = 0;
@@ -77,6 +84,10 @@ function decode(input, type) {
 	while (type.startsWith('T::')) {
 		type = type.slice(3);
 	}
+	if (type == 'EventRecord<Event>') {
+		type = 'EventRecord'
+	}
+	
 	let dataHex = bytesToHex(input.data.slice(0, 50));
 //	console.log(decodePrefix + 'des >>>', type, dataHex);
 //	decodePrefix +=  "   ";
@@ -106,7 +117,7 @@ function decode(input, type) {
 				let n = input.data[0];
 				input.data = input.data.slice(1);
 				let option = Object.keys(transform._enum)[n];
-				res = { option, value: decode(input, transform._enum[option]) };
+				res = { option, value: typeof transform._enum[option] === 'undefined' ? undefined : decode(input, transform._enum[option]) };
 			}
 		}
 		res._type = type;
@@ -123,6 +134,17 @@ function decode(input, type) {
 				res.params = c.params.map(p => ({ name: p.name, type: p.type, value: decode(input, p.type) }));
 				break;
 			}*/
+			case 'Event': {
+				let events = substrate().metadata.outerEvent.events
+				let moduleIndex = decode(input, 'u8')
+				console.log('Event:', moduleIndex, events, bytesToHex(input.data))
+				let module = events[moduleIndex][0]
+				let eventIndex = decode(input, 'u8')
+				let name = events[moduleIndex][1][eventIndex].name
+				let args = decode(input, events[moduleIndex][1][eventIndex].arguments)
+				res = { _type: 'Event', module, name, args }
+				break
+			}
 			case 'AccountId': {
 				res = new AccountId(input.data.slice(0, 32));
 				input.data = input.data.slice(32);
@@ -143,6 +165,12 @@ function decode(input, type) {
 				res = leToNumber(input.data.slice(0, 8));
 				input.data = input.data.slice(8);
 				res = new BlockNumber(res);
+				break;
+			}
+			case 'AccountIndex': {
+				res = leToNumber(input.data.slice(0, 4));
+				input.data = input.data.slice(4);
+				res = new AccountIndex(res);
 				break;
 			}
 			case 'Moment': {
@@ -317,7 +345,7 @@ function pretty(expr) {
 
 			if (unit === null) {
 				// default
-				if (expr < di.denominations[di.primary] / 30 && expr !== 0) {
+				if (expr < Math.pow(10, di.denominations[di.primary]) / 30 && expr !== 0) {
 					unit = di.unit
 				} else {
 					unit = di.primary
@@ -947,7 +975,8 @@ function encoded(value, type = null) {
 				return toLE(value, 16)
 			case 'Index':
 			case 'u64':
-				return toLE(value, 8)
+			return toLE(value, 8)
+			case 'AccountIndex':
 			case 'u32':
 				return toLE(value, 4)
 			case 'u16':
@@ -1126,6 +1155,18 @@ class Substrate {
 			.all([balances.freeBalance(who), balances.reservedBalance(who)])
 			.map(([f, r]) => new Balance(f + r));
 		balances.totalBalance = balances.balance;
+
+		balances.accounts = balances.nextEnumSet.map(last =>
+			[...new Array(last + 1)].map((_, i) => balances.enumSet(i))
+		).map(sets => {
+			let res = {}
+			sets.forEach((items, i) => 
+				items.forEach((item, j) =>
+					res[ss58_encode(item)] = i * 64 + j
+				)
+			)
+			return res
+		})
 	}
 
 	addExtraDemocracy () {
