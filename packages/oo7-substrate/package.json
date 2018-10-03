@@ -25,7 +25,7 @@
   "dependencies": {
     "change-case": "^3.0.2",
     "isomorphic-fetch": "^2.2.1",
-    "oo7": "^0.5.9",
+    "oo7": "^0.6.0",
     "ss58": "^1.0.2",
     "tweetnacl": "^1.0.0",
     "xxhashjs": "^0.2.2"

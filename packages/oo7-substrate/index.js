@@ -454,14 +454,14 @@ class NodeService {
 			return doSend()
 		}
 	}
-	subscribe (what, params, callback) {
+	subscribe (what, params, callback, errorHandler) {
 		let that = this
 		return this.request(subscriptionKey[what].subscribe, params).then(id => {
 			let notification = subscriptionKey[what].notification;
 			that.subscriptions[notification] = that.subscriptions[notification] || {}
 			that.subscriptions[notification][id] = callback
 			return { what, id }
-		})
+		}).catch(errorHandler)
 	}
 	unsubscribe ({what, id}) {
 		let that = this
@@ -504,11 +504,16 @@ class SubscriptionBond extends Bond {
 			that.trigger(result);
 		};
 		// promise instead of id because if a dependency triggers finalise() before id's promise is resolved the unsubscribing would call with undefined
-		this.subscription = service.subscribe(this.name, this.params, callback);
+		this.subscription = service.subscribe(this.name, this.params, callback, error => {
+			that.trigger({failed: error})
+			delete that.subscription
+		});
 	}
 	finalise () {
+		let that = this;
 		this.subscription.then(id => {
 			service.unsubscribe(id);
+			delete that.subscription
 		});
 	}
 }
@@ -549,8 +554,28 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 			era,
 			call
 		}), 'Vec<u8>')
-		window.setTimeout(() => resolve(signedData), 2000)
+		window.setTimeout(() => resolve(signedData), 1000)
 	})
+}
+
+class TransactionEra {
+	constructor (period, phase) {
+		if (typeof period === 'number' && typeof phase === 'number') {
+			this.period = 2 << Math.min(15, Math.max(1, Math.ceil(Math.log2(period)) - 1))
+			this.phase = phase % this.period
+		}
+	}
+
+	encode() {
+		if (typeof this.period === 'number' && typeof this.phase === 'number') {
+			let l = Math.min(15, Math.max(1, Math.ceil(Math.log2(this.period)) - 1))
+			let factor = Math.max(1, this.period >> 12)
+			let res = toLE((Math.floor(this.phase / factor) << 4) + l, 2)
+			return res
+		} else {
+			return new Uint8Array([0])
+		}
+	}
 }
 
 // tx = {
@@ -566,15 +591,28 @@ function post(tx) {
 			// TODO: accept integer senders
 			throw 'Unsupported: account index for sender'
 		}
-		if (longevity) {
-			// TODO: use longevity with height to determine era and eraHash
-			throw 'Unsupported: eras in transactions'
+		let era
+		let eraHash
+		longevity = longevity || 256
+		if (longevity === true) {
+			era = new TransactionEra;
+			eraHash = substrate().genesisHash;
+		} else {
+			// use longevity with height to determine era and eraHash
+			let l = Math.min(15, Math.max(1, Math.ceil(Math.log2(longevity)) - 1))
+			let period = 2 << l
+			let factor = Math.max(1, period >> 12)
+			let Q = (n, d) => Math.floor(n / d) * d
+			let eraNumber = Q(height, factor)
+			let phase = eraNumber % period
+			era = new TransactionEra(period, phase)
+			eraHash = substrate().chain.hash(eraNumber)
 		}
 		return {
 			sender,
 			call,
-			era: new Uint8Array([0]),
-			eraHash: substrate().genesisHash,
+			era,
+			eraHash,
 			index: index || substrate().runtime.system.accountNonce(sender),
 			senderAccount: sender
 		}
@@ -808,7 +846,6 @@ function tally(x) {
 }
 
 function tallyAmounts(x) {
-	console.log('tallyAmounts', x)
 	var r = [0, 0];
 	x.forEach(([v, b]) => r[v ? 1 : 0] += b);
 	return {aye: r[1], nay: r[0]};
@@ -931,8 +968,10 @@ function encoded(value, type = null) {
 		}
 	}
 
-	if (type == 'TransactionEra') {
-		return new Uint8Array([0])
+	if (type == 'TransactionEra' && value instanceof TransactionEra) {
+		return value.encode()
+	} else if (type == 'TransactionEra') {
+		console.error("TxEra::encode bad", type, value)
 	}
 	
 	if (type.match(/^Compact<u[0-9]*>$/)) {
@@ -1021,12 +1060,14 @@ class Substrate {
 					if (item.arguments.length > 0 && item.arguments[0].name == 'origin' && item.arguments[0].type == 'Origin') {
 						item.arguments = item.arguments.slice(1)						
 					}
-					c[camel(item.name)] = function (...args) {
-						if (args.length != item.arguments.length) {
-							throw `Invalid number of argments (${args.length} given, ${item.arguments.length} expected)`
+					c[camel(item.name)] = function (...bondArgs) {
+						if (bondArgs.length != item.arguments.length) {
+							throw `Invalid number of argments (${bondArgs.length} given, ${item.arguments.length} expected)`
 						}
-						let encoded_args = encoded(args, item.arguments.map(x => x.type))
-						return new Uint8Array([module_index - 1, item.id, ...encoded_args])
+						return new TransformBond(args => {
+							let encoded_args = encoded(args, item.arguments.map(x => x.type))
+							return new Uint8Array([module_index - 1, item.id, ...encoded_args])
+						}, [bondArgs], [], 3, 3, undefined, true)
 					}
 					c[camel(item.name)].help = item.arguments.map(a => a.name)
 				})
@@ -1240,6 +1281,7 @@ class Substrate {
 		}
 		this.chain.height = this.chain.head.map(h => new BlockNumber(h.number))
 		this.chain.header = hashBond => new TransformBond(hash => service.request('chain_getHeader', [hash]), [hashBond]).subscriptable();
+		this.chain.hash = numberBond => new TransformBond(number => service.request('chain_getBlockHash', [number]), [numberBond]);
 		service.request('chain_getBlockHash', [0]).then(h => that.genesisHash = hexToBytes(h))
 		this.system = {
 			name: new TransformBond(() => service.request('system_name')).subscriptable(),

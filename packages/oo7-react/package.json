@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/paritytech/oo7-react#readme",
   "dependencies": {
-    "oo7": "^0.5.9",
+    "oo7": "file:../oo7",
     "react": "^15.4.2"
   },
   "devDependencies": {
