@@ -83,10 +83,11 @@ class ReactiveComponent extends React.Component {
 	 *   readyRender() { return <span>{this.state.time.toString()}</span>; }
  	 * }
 	 */
-	constructor(reactiveProps = [], bonds = {}) {
+	constructor(reactiveProps = [], bonds = {}, propTransforms = {}) {
 		super();
 		this.reactiveProps = reactiveProps;
 		this.bonds = bonds;
+		this.propTransforms = propTransforms;
 		this.allBondKeys = [].concat(reactiveProps).concat(Object.keys(bonds));
 	}
 
@@ -153,11 +154,11 @@ class ReactiveComponent extends React.Component {
 			this._consolidatedBonds.drop();
 			delete this._consolidatedBonds;
 		}
-		this._consolidatedBonds = new ReactiveBond(this.reactiveProps.map(f => nextProps[f]), [], a => {
+		this._consolidatedBonds = new ReactiveBond(this.reactiveProps.map(f => (this.reactiveProps[f] || x => x)(nextProps[f])), [], a => {
 			var s = that.state || {};
 			that.reactiveProps.forEach((f, i) => { s[f] = a[i]; });
 			that.setState(s);
-		}).use();
+		}, ).use();
 	}
 
 	/**
@@ -212,7 +213,7 @@ class ReactiveComponent extends React.Component {
  *   }
  * }
  */
-export class If extends ReactiveComponent {
+class If extends ReactiveComponent {
 	constructor () { super (['condition']) }
 	render () {
 		return this.state.condition ?
@@ -233,7 +234,7 @@ export class If extends ReactiveComponent {
  * }
  */
 class Rspan extends ReactiveComponent {
-    constructor() { super(['className', 'style', 'children']); }
+	constructor() { super(['className', 'style', 'children']); }
 	render() {
 		return (
 			<span
@@ -345,5 +346,5 @@ Hash.defaultProps = {
 };
 
 module.exports = {
-	ReactiveComponent, Rspan, Rdiv, Ra, Rimg, Hash, InjectedCacheWaiter
+	ReactiveComponent, Rspan, Rdiv, Ra, Rimg, Hash, InjectedCacheWaiter, If
 };

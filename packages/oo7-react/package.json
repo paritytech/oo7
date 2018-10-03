@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/paritytech/oo7-react#readme",
   "dependencies": {
-    "oo7": "^0.6.0",
+    "oo7": "^0.5.9",
     "react": "^15.4.2"
   },
   "devDependencies": {
@@ -38,6 +38,6 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.22.0",
     "chai": "^3.5.0",
-    "mocha": "^3.2.0"
+    "mocha": "^5.2.0"
   }
 }

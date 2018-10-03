@@ -231,7 +231,7 @@ class ReactiveBond extends Bond {
 		dependencies,
 		execute,
 		mayBeNull = true,
-		resolveDepth = 1,
+		resolveDepth = 3,
 		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse }
 	) {
 		super(mayBeNull, cache);

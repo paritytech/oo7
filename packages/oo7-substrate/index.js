@@ -295,22 +295,22 @@ function pretty(expr) {
 		return 'SlashPreference{unstake_threshold=' + expr + '}';
 	}
 	if (expr instanceof Balance) {
-		if (s_substrate && s_substrate.denominationInfo) {
-			let di = s_substrate.denominationInfo
+		if (s_substrate && s_substrate.denominationInfo()) {
+			let di = s_substrate.denominationInfo()
 
-			let denomincationSearch = [di.primary, Object.keys(di.denomincations)]
+			let denomincationSearch = [di.primary, Object.keys(di.denominations)]
 			let unit = null
 			let dp = 0
-			for (i in denomincationSearch) {
+			for (ii in denomincationSearch) {
+				let i = denomincationSearch[ii]
 				let denom = di.denominations[i]
-				let lower = denom / 30
-				let upper = denom * 30000
+				let divisor = Math.pow(10, denom)
+				let lower = divisor / 30
+				let upper = divisor * 30000
 				if (expr > lower && expr < upper) {
 					unit = i
-					divisor = Math.pow(10, denom)
-					expr /= Math.pow(10, divisor)
-					let dp = 0
-					for (; expr > 3000 / Math.pow(10, dp); dp++) {}
+					expr /= divisor
+					for (; expr < 3000 / Math.pow(10, dp); dp++) {}
 					break;
 				}
 			}
@@ -578,11 +578,11 @@ function post(tx) {
 			index: index || substrate().runtime.system.accountNonce(sender),
 			senderAccount: sender
 		}
-	}, 2), null).map(o => {
-		return o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount)
-	}).map(composed => {
-		return composed ? new TransactionBond(composed) : { signing: true }
-	})
+	}, 2), false).map(o => 
+		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount)
+	).map(composed =>
+		composed ? new TransactionBond(composed) : { signing: true }
+	)
 }
 
 /// Resolves to a default value when not ready. Once inputBond is ready,
@@ -1212,11 +1212,15 @@ class Substrate {
 	}
 
 	initialiseDenominations (di) {
+		if (!di.denominations[di.primary]) {
+			throw new Error(`Denominations must include primary as key`)
+		}
+		
 		let name = di.unit
 		let denom = 0
 		let ds = []
 		for (let i = 0; i <= di.denominations[di.primary] + 6; i += 3) {
-			let n = Object.keys(di.denominations).find(|k| di.denomations[k] == i)
+			let n = Object.keys(di.denominations).find(k => di.denominations[k] == i)
 			if (n) {
 				name = n
 				denom = i
@@ -1325,6 +1329,5 @@ function siPrefix(pot) {
 module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes,
 	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE,
 	leToNumber, Substrate, reviver, AccountId, Hash, VoteThreshold, Moment, Balance,
-	BlockNumber, Tuple, TransactionBond, secretStore, substrate, post,
-	denominations, interpretRender, formatValueNoDenom, combineValue, defDenom
+	BlockNumber, Tuple, TransactionBond, secretStore, substrate, post
 }
