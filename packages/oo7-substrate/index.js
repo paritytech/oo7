@@ -614,14 +614,17 @@ class TransactionEra {
 // }
 function post(tx) {
 	return new LatchBond(Bond.all([tx, substrate().chain.height]).map(([o, height]) => {
-		let {sender, call, index, longevity} = o
-		if (typeof sender == 'number') {
-			// TODO: accept integer senders
-			throw 'Unsupported: account index for sender'
-		}
+		let {sender, call, index, longevity, compact} = o
+		// defaults
+		longevity = typeof longevity === 'undefined' ? 256 : longevity
+		compact = typeof compact === 'undefined' ? true : compact
+
+		let senderAccount = typeof sender == 'number' || sender instanceof AccountIndex
+			? substrate().runtime.balances.lookupIndex(sender)
+			: sender
+	
 		let era
 		let eraHash
-		longevity = longevity || 256
 		if (longevity === true) {
 			era = new TransactionEra;
 			eraHash = substrate().genesisHash;
@@ -642,13 +645,14 @@ function post(tx) {
 			era,
 			eraHash,
 			index: index || substrate().runtime.system.accountNonce(sender),
-			senderAccount: sender
+			senderAccount
 		}
 	}, 2), false).map(o => 
 		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount)
-	).map(composed =>
-		composed ? new TransactionBond(composed) : { signing: true }
-	)
+	).map(composed => {
+		console.log('Transaction length:', composed)
+		return composed ? new TransactionBond(composed) : { signing: true }
+	})
 }
 
 /// Resolves to a default value when not ready. Once inputBond is ready,
@@ -854,6 +858,9 @@ String.prototype.mapChunks = function(sizes, f) {
 	return r;
 }
 
+// TODO: compact transactions (switch out account for index when possible)
+// TODO: receipts from tx
+
 Uint8Array.prototype.mapChunks = function(sizes, f) {
 	var r = [];
 	var count = this.length / sizes.reduce((a, b) => a + b, 0);
@@ -893,7 +900,7 @@ function encoded(value, type = null) {
 			})
 			return res
 		} else {
-			throw 'If type if array, value must be too'
+			throw 'If type is array, value must be too'
 		}
 	}
 	if (typeof value == 'object' && !type && value._type) {
@@ -986,6 +993,10 @@ function encoded(value, type = null) {
 			default:
 				break
 		}
+	}
+
+	if (value instanceof AccountIndex && type == 'AccountIndex') {
+		return toLE(value, 4)
 	}
 
 	if (value instanceof Uint8Array) {
@@ -1156,6 +1167,8 @@ class Substrate {
 			.map(([f, r]) => new Balance(f + r));
 		balances.totalBalance = balances.balance;
 
+		balances.lookupIndex = index => balances.enumSet(new AccountIndex(Math.floor(index / 64))).map(items => items[index % 64])
+
 		balances.accounts = balances.nextEnumSet.map(last =>
 			[...new Array(last + 1)].map((_, i) => balances.enumSet(i))
 		).map(sets => {
@@ -1166,7 +1179,19 @@ class Substrate {
 				)
 			)
 			return res
-		})
+		}).subscriptable()
+
+		balances.tryIndex = id => new TransformBond((accounts, id) => {
+			console.log('tryIndex', accounts, id)
+			if (id instanceof AccountId) {
+				let i = accounts[ss58_encode(id)]
+				return typeof i === 'number' || i instanceof AccountIndex
+					? new AccountIndex(i)
+					: id
+			} else {
+				return id
+			}
+		}, [balances.accounts, id], [], 3, 3, undefined, false)
 	}
 
 	addExtraDemocracy () {
@@ -1385,6 +1410,7 @@ if (typeof window !== 'undefined') {
 	window.makeTransaction = makeTransaction;
 	window.post = post;
 	window.Bond = Bond;
+	window.AccountId = AccountId;
 }
 
 function siPrefix(pot) {
@@ -1410,7 +1436,7 @@ function siPrefix(pot) {
 }
 
 module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes,
-	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE,
+	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, AccountId,
 	leToNumber, Substrate, reviver, AccountId, Hash, VoteThreshold, Moment, Balance,
 	BlockNumber, Tuple, TransactionBond, secretStore, substrate, post
 }
