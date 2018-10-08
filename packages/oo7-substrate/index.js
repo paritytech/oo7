@@ -137,7 +137,6 @@ function decode(input, type) {
 			case 'Event': {
 				let events = substrate().metadata.outerEvent.events
 				let moduleIndex = decode(input, 'u8')
-				console.log('Event:', moduleIndex, events, bytesToHex(input.data))
 				let module = events[moduleIndex][0]
 				let eventIndex = decode(input, 'u8')
 				let name = events[moduleIndex][1][eventIndex].name
@@ -622,7 +621,7 @@ function post(tx) {
 		let senderAccount = typeof sender == 'number' || sender instanceof AccountIndex
 			? substrate().runtime.balances.lookupIndex(sender)
 			: sender
-	
+
 		let era
 		let eraHash
 		if (longevity === true) {
@@ -644,13 +643,12 @@ function post(tx) {
 			call,
 			era,
 			eraHash,
-			index: index || substrate().runtime.system.accountNonce(sender),
+			index: index || substrate().runtime.system.accountNonce(senderAccount),
 			senderAccount
 		}
 	}, 2), false).map(o => 
 		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount)
 	).map(composed => {
-		console.log('Transaction length:', composed)
 		return composed ? new TransactionBond(composed) : { signing: true }
 	})
 }
@@ -953,7 +951,7 @@ function encoded(value, type = null) {
 		if (typeof value == 'object' && value instanceof Uint8Array && value.length == 32) {
 			return new Uint8Array([0xff, ...value])
 		}
-		if (typeof value == 'number') {
+		if (typeof value == 'number' || value instanceof AccountIndex) {
 			if (value < 0xf0) {
 				return new Uint8Array([value])
 			} else if (value < 1 << 16) {
@@ -1182,8 +1180,7 @@ class Substrate {
 		}).subscriptable()
 
 		balances.tryIndex = id => new TransformBond((accounts, id) => {
-			console.log('tryIndex', accounts, id)
-			if (id instanceof AccountId) {
+			if (id instanceof AccountId || (id instanceof Uint8Array && id.length == 32)) {
 				let i = accounts[ss58_encode(id)]
 				return typeof i === 'number' || i instanceof AccountIndex
 					? new AccountIndex(i)
