@@ -1,8 +1,9 @@
+const { Bond } = require('oo7')
 const { SubscriptionBond } = require('./subscriptionBond')
 const { encode } = require('./codec')
 const { secretStore } = require('./secretStore')
 const { TransactionEra, AccountIndex } = require('./types')
-const { Bond } = require('oo7')
+const { runtimeUp, storage, chain } = require('./bonds')
 
 class TransactionBond extends SubscriptionBond {
 	constructor (data) {
@@ -46,22 +47,22 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 //   longevity?
 //   index?
 // }
-function post(tx, substrate) {
-	return Bond.all([tx, substrate.chain.height]).map(([o, height]) => {
+function post(tx) {
+	return Bond.all([tx, chain.height, runtimeReady]).map(([o, height, unused]) => {
 		let {sender, call, index, longevity, compact} = o
 		// defaults
 		longevity = typeof longevity === 'undefined' ? 256 : longevity
 		compact = typeof compact === 'undefined' ? true : compact
 
 		let senderAccount = typeof sender == 'number' || sender instanceof AccountIndex
-			? substrate.runtime.balances.lookupIndex(sender)
+			? storage.balances.lookupIndex(sender)
 			: sender
 
 		let era
 		let eraHash
 		if (longevity === true) {
 			era = new TransactionEra;
-			eraHash = substrate.genesisHash;
+			eraHash = chain.hash(0)
 		} else {
 			// use longevity with height to determine era and eraHash
 			let l = Math.min(15, Math.max(1, Math.ceil(Math.log2(longevity)) - 1))
@@ -71,14 +72,14 @@ function post(tx, substrate) {
 			let eraNumber = Q(height, factor)
 			let phase = eraNumber % period
 			era = new TransactionEra(period, phase)
-			eraHash = substrate.chain.hash(eraNumber)
+			eraHash = chain.hash(eraNumber)
 		}
 		return {
 			sender,
 			call,
 			era,
 			eraHash,
-			index: index || substrate.runtime.system.accountNonce(senderAccount),
+			index: index || storage.system.accountNonce(senderAccount),
 			senderAccount
 		}
 	}, 2).latched(false).map(o => 

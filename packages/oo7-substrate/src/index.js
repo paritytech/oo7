@@ -7,7 +7,7 @@ const { post } = require('./transact');
 const { secretStore } = require('./secretStore')
 const { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, toLE, leToNumber, leHexToNumber, siPrefix } = require('./utils')
 const { storageKey } = require('./storageBond')
-const { substrate } = require('./substrate')
+const { initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
 const { nodeService } = require('./nodeService')
 const denominationInfo = require('./denominationInfo')
 
@@ -51,5 +51,7 @@ module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes
 	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, AccountId,
 	leToNumber, reviver, AccountId, AccountIndex, TransactionEra, Hash,
 	VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8, secretStore, substrate,
-	post, siPrefix, denominationInfo
+	post, siPrefix, denominationInfo, initBonds, chain, runtime, runtimePromise,
+	// bonds
+	initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp
 }

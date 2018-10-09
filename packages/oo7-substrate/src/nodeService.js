@@ -16,17 +16,23 @@ const subscriptionKey = {
 	}
 }
 
+let uri = 'ws://127.0.0.1:9944'
+
+function setNodeUri(u) {
+	uri = u
+	// TODO: reconnect in NodeService and rejig all subscriptions
+}
+
 class NodeService {
-	constructor () {
+	constructor (uri) {
 		this.subscriptions = {}
 		this.onReply = {}
 		this.onceOpen = []
 		this.index = 1
-		this.start()
+		this.start(uri)
 	}
 
-	start () {
-		let uri = 'ws://127.0.0.1:9944';
+	start (uri) {
 		let that = this;
 		this.ws = new WebSocket(uri)
 		this.ws.onopen = function () {
@@ -127,9 +133,9 @@ let s_nodeService = null;
 
 function nodeService() {
 	if (s_nodeService === null) {
-		s_nodeService = new NodeService;
+		s_nodeService = new NodeService(uri);
 	}
 	return s_nodeService;
 }
 
-module.exports = { nodeService, NodeService };
+module.exports = { nodeService, NodeService, setNodeUri };
