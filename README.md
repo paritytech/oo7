@@ -1,11 +1,10 @@
 # oo7 Suite
 
-![Travis](https://img.shields.io/travis/tomusdrw/oo7.svg)
+[![Build Status](https://travis-ci.org/paritytech/oo7.svg?branch=master)](https://travis-ci.org/paritytech/oo7)
 
-
-![npm:oo7](https://img.shields.io/npm/v/oo7.svg)
-![npm:oo7-parity](https://img.shields.io/npm/v/oo7-parity.svg)
-![npm:oo7-react](https://img.shields.io/npm/v/oo7-react.svg)
+[![npm:oo7](https://img.shields.io/npm/v/oo7.svg)](https://www.npmjs.com/package/oo7)
+[![npm:oo7-parity](https://img.shields.io/npm/v/oo7-parity.svg)](https://www.npmjs.com/package/oo7-parity)
+[![npm:oo7-react](https://img.shields.io/npm/v/oo7-react.svg)](https://www.npmjs.com/package/oo7-react)
 
 
 The `oo7` suite consists of three independent packages:
@@ -16,7 +15,7 @@ The `oo7` suite consists of three independent packages:
 
 # Documentation
 
-[Documentation](https://tomusdrw.github.io/oo7/class/packages/oo7-parity/src/index.js~Bonds.html#instance-member-accounts) to all three packages can be found [here](https://tomusdrw.github.io/oo7/)
+[Documentation](https://paritytech.github.io/oo7/class/packages/oo7-parity/src/index.js~Bonds.html#instance-member-accounts) to all three packages can be found [here](https://paritytech.github.io/oo7/)
 
 # Examples
 
