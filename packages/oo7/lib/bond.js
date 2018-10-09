@@ -507,6 +507,45 @@ class Bond {
 	isReady () { return this._ready; }
 
 	/**
+	 * Provide a derivative {@link Bond} which represents the same as this object
+	 * except that before it is ready it evaluates to a given default value and
+	 * after it becomes ready for the first time it stays fixed to that value
+	 * indefinitely.
+	 *
+	 * @param {Symbol} defaultValue - The value that the new bond should take when
+	 * this bond is not ready.
+	 * @returns {@link Bond} - Object representing the value returned by
+	 * this {@link Bond} except that it evaluates to the given default value when
+	 * this bond is not ready and sticks to the first value that made it ready.
+	 */
+	latched (defaultValue = undefined, mayBeNull = undefined, cache = null) {
+		const LatchBond = require('./latchBond');
+
+		return new LatchBond(
+			this,
+			typeof defaultValue === 'undefined' ? undefined : defaultValue,
+			typeof mayBeNull === 'undefined' ? undefined : mayBeNull,
+			cache
+		);
+	}
+
+	/**
+	 * Provide a {@link Bond} which represents the same as this object except that
+	 * it takes a particular value when this would be unready.
+	 *
+	 * @param {Symbol} defaultValue - The value that the new bond should take when
+	 * this bond is not ready.
+	 * @returns {@link Bond} - Object representing the value returned by
+	 * this {@link Bond} except that it evaluates to the given default value when
+	 * this bond is not ready. The returned object itself is always _ready_.
+	 */
+	default (defaultValue = null) {
+		const DefaultBond = require('./defaultBond');
+
+		return new DefaultBond(defaultValue, this);
+	}
+
+	/**
 	 * Provide a {@link Bond} which represents whether this object itself represents
 	 * a particular value.
 	 *

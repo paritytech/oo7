@@ -612,7 +612,7 @@ class TransactionEra {
 //   index?
 // }
 function post(tx) {
-	return new LatchBond(Bond.all([tx, substrate().chain.height]).map(([o, height]) => {
+	return Bond.all([tx, substrate().chain.height]).map(([o, height]) => {
 		let {sender, call, index, longevity, compact} = o
 		// defaults
 		longevity = typeof longevity === 'undefined' ? 256 : longevity
@@ -646,48 +646,11 @@ function post(tx) {
 			index: index || substrate().runtime.system.accountNonce(senderAccount),
 			senderAccount
 		}
-	}, 2), false).map(o => 
+	}, 2).latched(false).map(o => 
 		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount)
 	).map(composed => {
 		return composed ? new TransactionBond(composed) : { signing: true }
 	})
-}
-
-/// Resolves to a default value when not ready. Once inputBond is ready,
-/// its value remains fixed indefinitely.
-class LatchBond extends Bond {
-	constructor (targetBond, def = undefined, mayBeNull = undefined, cache = null) {
-		super(typeof mayBeNull === 'undefined' ? targetBond._mayBeNull : mayBeNull, cache)
-
-		if (typeof(def) !== 'undefined') {
-			this._ready = true;
-			this._value = def;
-		}
-
-		let that = this
-		this._targetBond = targetBond
-		this._poll = () => {
-			if (targetBond._ready) {
-				that.changed(targetBond._value)
-				that._targetBond.unnotify(that._notifyId);
-				delete that._poll
-				delete that._targetBond
-			}
-		}
-	}
-
-	initialise () {
-		if (this._poll) {
-			this._notifyId = this._targetBond.notify(this._poll);
-			this._poll();
-		}
-	}
-
-	finalise () {
-		if (this._targetBond) {
-			this._targetBond.unnotify(this._notifyId);
-		}
-	}
 }
 
 function storageValueKey(stringLocation) {
@@ -944,7 +907,7 @@ function encoded(value, type = null) {
 		}
 	}
 
-	if (type == 'Address' || type == 'RawAddress<AccountId, AccountIndex>') {
+	if (type == 'Address' || type == 'RawAddress<AccountId, AccountIndex>' || type == 'Address<AccountId, AccountIndex>') {
 		if (typeof value == 'string') {
 			value = ss58_decode(value)
 		}

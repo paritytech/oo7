@@ -124,7 +124,7 @@ class ReactiveComponent extends React.Component {
 		this.manageProps({}, this.props);
 		let that = this;
 		let bonds = this.bonds;
-		let bondKeys = Object.keys(bonds);
+		let bondKeys = Object.keys(bonds).filter(k => typeof bonds[k] !== 'function');
 		this._consolidatedExtraBonds = new ReactiveBond(bondKeys.map(f => bonds[f]), [], a => {
 			var s = that.state || {};
 			bondKeys.forEach((f, i) => { s[f] = a[i]; });
@@ -141,6 +141,10 @@ class ReactiveComponent extends React.Component {
 			this._consolidatedBonds.drop();
 			delete this._consolidatedBonds;
 		}
+		if (this._derivedBonds) {
+			this._derivedBonds.drop();
+			delete this._derivedBonds;
+		}
 	}
 
 	updateProps (nextProps) {
@@ -149,15 +153,42 @@ class ReactiveComponent extends React.Component {
 
 	manageProps (props, nextProps) {
 		var that = this;
+		let bonds = this.bonds;
+		let derivedBondKeys = Object.keys(bonds).filter(k => typeof bonds[k] === 'function');
+
+		if (this._derivedBonds) {
+			this._derivedBonds.drop();
+			delete this._derivedBonds;
+		}
 		if (this._consolidatedBonds) {
 			this._consolidatedBonds.drop();
 			delete this._consolidatedBonds;
 		}
-		this._consolidatedBonds = new ReactiveBond(this.reactiveProps.map(f => nextProps[f]), [], a => {
-			var s = that.state || {};
-			that.reactiveProps.forEach((f, i) => { s[f] = a[i]; });
-			that.setState(s);
-		}).use();
+
+		if (that.reactiveProps.length > 0) {
+			this._consolidatedBonds = new TransformBond(
+				(...a) => {
+					var s = {};
+					that.reactiveProps.forEach((f, i) => { s[f] = a[i]; });
+					that.setState(s);
+					return s;
+				},
+				this.reactiveProps.map(f => nextProps[f]),
+				[]
+			).subscriptable().use();
+		}
+
+		if (derivedBondKeys.length > 0) {
+			this._derivedBonds = new ReactiveBond(
+				derivedBondKeys.map(f => bonds[f](this._consolidatedBonds)),
+				[],
+				a => {
+					var s = {};
+					derivedBondKeys.forEach((f, i) => s[f] = a[i]);
+					that.setState(s);
+				}
+			).use();
+		}
 	}
 
 	/**
