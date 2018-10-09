@@ -1,7 +1,7 @@
 const { ss58_encode } = require('ss58')
 const { bytesToHex } = require('./utils')
 const { VecU8, AccountId, Hash, SlashPreference, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, Tuple, reviver } = require('./types')
-const denominationInfo = require('./denominationInfo')
+const { denominationInfo } = require('./denominationInfo')
 
 const numberWithCommas = n => {
 	let x = n.toString();
@@ -26,41 +26,37 @@ function pretty(expr) {
 		return 'SlashPreference{unstake_threshold=' + expr + '}';
 	}
 	if (expr instanceof Balance) {
-		if (denominationInfo.denominations) {
-			let di = denominationInfo
+		let di = denominationInfo
 
-			let denomincationSearch = [di.primary, Object.keys(di.denominations)]
-			let unit = null
-			let dp = 0
-			for (ii in denomincationSearch) {
-				let i = denomincationSearch[ii]
-				let denom = di.denominations[i]
-				let divisor = Math.pow(10, denom)
-				let lower = divisor / 30
-				let upper = divisor * 30000
-				if (expr > lower && expr < upper) {
-					unit = i
-					expr /= divisor
-					for (; expr < 3000 / Math.pow(10, dp); dp++) {}
-					break;
-				}
+		let denomincationSearch = [di.primary, Object.keys(di.denominations)]
+		let unit = null
+		let dp = 0
+		for (ii in denomincationSearch) {
+			let i = denomincationSearch[ii]
+			let denom = di.denominations[i]
+			let divisor = Math.pow(10, denom)
+			let lower = divisor / 30
+			let upper = divisor * 30000
+			if (expr > lower && expr < upper) {
+				unit = i
+				expr /= divisor
+				for (; expr < 3000 / Math.pow(10, dp); dp++) {}
+				break;
 			}
-
-			if (unit === null) {
-				// default
-				if (expr < Math.pow(10, di.denominations[di.primary]) / 30 && expr !== 0) {
-					unit = di.unit
-				} else {
-					unit = di.primary
-					expr /= Math.pow(10, di.denominations[unit])
-					expr = Math.round(expr)
-				}
-			}
-
-			return numberWithCommas(Math.round(expr * Math.pow(10, dp)) / Math.pow(10, dp)) + ' ' + unit
-		} else {
-			return numberWithCommas(expr)
 		}
+
+		if (unit === null) {
+			// default
+			if (expr < Math.pow(10, di.denominations[di.primary]) / 30 && expr !== 0) {
+				unit = di.unit
+			} else {
+				unit = di.primary
+				expr /= Math.pow(10, di.denominations[unit])
+				expr = Math.round(expr)
+			}
+		}
+
+		return numberWithCommas(Math.round(expr * Math.pow(10, dp)) / Math.pow(10, dp)) + ' ' + unit
 	}
 	if (expr instanceof BlockNumber) {
 		return numberWithCommas(expr);

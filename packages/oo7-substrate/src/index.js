@@ -9,6 +9,7 @@ const { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, toLE, leTo
 const { storageKey } = require('./storageBond')
 const { substrate } = require('./substrate')
 const { nodeService } = require('./nodeService')
+const denominationInfo = require('./denominationInfo')
 
 function tally(x) {
 	var r = [0, 0];
@@ -50,5 +51,5 @@ module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes
 	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, AccountId,
 	leToNumber, reviver, AccountId, AccountIndex, TransactionEra, Hash,
 	VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8, secretStore, substrate,
-	post, siPrefix
+	post, siPrefix, denominationInfo
 }

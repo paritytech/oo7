@@ -8,7 +8,6 @@ const { post } = require('./transact');
 const { stringToBytes, hexToBytes, bytesToHex, siPrefix } = require('./utils')
 const { StorageBond } = require('./storageBond')
 const metadata = require('./metadata')
-const denominationInfo = require('./denominationInfo')
 
 class Substrate {
 	constructor () {
@@ -50,14 +49,6 @@ class Substrate {
 			.then(m => s_substrate._initialiseFromMetadata(m))
 
 		this.onReady = []
-	}
-
-	denominationInfo () { 
-		return this._denominationInfo;
-	}
-
-	denominations () {
-		return this._denominations;
 	}
 
 	post (tx) {
@@ -138,39 +129,13 @@ class Substrate {
 
 		this.ready()
 	}
-
-	_initialiseDenominations (di) {
-		if (typeof denominationInfo === 'function') {
-			denominationInfo.set(di)
-		}
-		if (!di.denominations[di.primary]) {
-			throw new Error(`Denominations must include primary as key`)
-		}
-		
-		let name = di.unit
-		let denom = 0
-		let ds = []
-		for (let i = 0; i <= di.denominations[di.primary] + 6; i += 3) {
-			let n = Object.keys(di.denominations).find(k => di.denominations[k] == i)
-			if (n) {
-				name = n
-				denom = i
-			}
-			ds.push(siPrefix(i - denom) + name)
-		}
-		this._denominations = ds
-		this._denominationInfo = di;
-	}
 }
 
 let s_substrate = null
 
-function substrate(denominationInfo) {
+function substrate() {
 	if (!s_substrate) {
 		s_substrate = new Substrate
-	}
-	if (denominationInfo) {
-		s_substrate._initialiseDenominations(denominationInfo)
 	}
 	return s_substrate
 }
