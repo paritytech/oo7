@@ -23,6 +23,8 @@
   },
   "homepage": "https://github.com/polkadot-js/oo7-substrate#readme",
   "dependencies": {
+    "blakejs": "^1.1.0",
+    "bs58": "^4.0.1",
     "change-case": "^3.0.2",
     "isomorphic-fetch": "^2.2.1",
     "oo7": "^0.6.0",

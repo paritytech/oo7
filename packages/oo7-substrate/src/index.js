@@ -10,6 +10,7 @@ const { storageKey } = require('./storageBond')
 const { initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
 const { nodeService } = require('./nodeService')
 const denominationInfo = require('./denominationInfo')
+const { ss58Decode, ss58Encode } = require('./ss58');
 
 function tally(x) {
 	var r = [0, 0];
@@ -30,6 +31,8 @@ function tallyAmounts(x) {
 if (typeof window !== 'undefined') {
 	window.ss58_encode = ss58_encode;
 	window.ss58_decode = ss58_decode;
+	window.ss58Encode = ss58Encode;
+	window.ss58Decode = ss58Decode;
 	window.bytesToHex = bytesToHex;
 	window.stringToBytes = stringToBytes;
 	window.hexToBytes = hexToBytes;
@@ -49,8 +52,8 @@ if (typeof window !== 'undefined') {
 }
 
 module.exports = {
-	// TODO: type-correct variants &c.
 	ss58_decode, ss58_encode,
+	ss58Decode, ss58Encode,
 	// utils
 	stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, reviver, 
 	// types
