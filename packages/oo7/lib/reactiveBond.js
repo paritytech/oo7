@@ -78,7 +78,7 @@ function resolved (resolvable, depthLeft) {
 	/* if (!isReady(resolvable, depthLeft)) {
 		throw `Internal error: Unready value being resolved`;
 	} */
-//	console.log(`resolvable info: ${resolvable} ${typeof(resolvable)} ${resolvable.constructor.name} ${JSON.stringify(resolvable)}; depthLeft: ${depthLeft}`);
+	//	console.log(`resolvable info: ${resolvable} ${typeof(resolvable)} ${resolvable.constructor.name} ${JSON.stringify(resolvable)}; depthLeft: ${depthLeft}`);
 	if (typeof (resolvable) === 'object' && resolvable !== null) {
 		if (Bond.instanceOf(resolvable)) {
 			if (resolvable._ready !== true) {
