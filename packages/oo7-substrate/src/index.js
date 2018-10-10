@@ -1,5 +1,5 @@
 const nacl = require('tweetnacl');
-const { ss58_decode, ss58_encode } = require('ss58');
+const { ss58Decode, ss58Encode } = require('./ss58');
 const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, reviver } = require('./types');
 const { decode, encode } = require('./codec');
 const { pretty } = require('./pretty');
@@ -7,10 +7,9 @@ const { post } = require('./transact');
 const { secretStore } = require('./secretStore')
 const { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, toLE, leToNumber, leHexToNumber, siPrefix } = require('./utils')
 const { storageKey } = require('./storageBond')
-const { initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
-const { nodeService } = require('./nodeService')
+const { initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
+const { nodeService, setNodeUri } = require('./nodeService')
 const denominationInfo = require('./denominationInfo')
-const { ss58Decode, ss58Encode } = require('./ss58');
 
 function tally(x) {
 	var r = [0, 0];
@@ -24,13 +23,12 @@ function tallyAmounts(x) {
 	return {aye: r[1], nay: r[0]};
 }
 
-// TODO: SS58: make typesafe, include accountindex and rename to camel
 // TODO: receipts from tx
 // TODO: compact transactions (switch out account for index when possible)
 
 if (typeof window !== 'undefined') {
-	window.ss58_encode = ss58_encode;
-	window.ss58_decode = ss58_decode;
+	window.ss58Encode = ss58Encode;
+	window.ss58Decode = ss58Decode;
 	window.ss58Encode = ss58Encode;
 	window.ss58Decode = ss58Decode;
 	window.bytesToHex = bytesToHex;
@@ -52,7 +50,6 @@ if (typeof window !== 'undefined') {
 }
 
 module.exports = {
-	ss58_decode, ss58_encode,
 	ss58Decode, ss58Encode,
 	// utils
 	stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, reviver, 
@@ -62,6 +59,7 @@ module.exports = {
 	secretStore,
 	post,
 	denominationInfo,
+	setNodeUri,
 	// bonds
-	initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp
+	initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp
 }

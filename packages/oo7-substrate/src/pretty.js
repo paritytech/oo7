@@ -1,4 +1,4 @@
-const { ss58_encode } = require('ss58')
+const { ss58Encode } = require('./ss58')
 const { bytesToHex } = require('./utils')
 const { VecU8, AccountId, Hash, SlashPreference, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, Tuple, reviver } = require('./types')
 const { denominationInfo } = require('./denominationInfo')
@@ -68,7 +68,7 @@ function pretty(expr) {
 		return expr.toLocaleString() + " (" + expr.number + " seconds)";
 	}
 	if (expr instanceof AccountId) {
-		return ss58_encode(expr);
+		return ss58Encode(expr);
 	}
 	if (expr instanceof Tuple) {
 		return '(' + expr.map(pretty).join(', ') + ')';

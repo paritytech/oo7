@@ -23,7 +23,7 @@ let system = (() => {
 	return { name, version, chain }
 })()
 
-let storage = { core: (() => {
+let runtime = { core: (() => {
 	let authorityCount = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':auth:len'))]], r => decode(hexToBytes(r.changes[0][1]), 'u32'))
 	let authorities = authorityCount.map(
 		n => [...Array(n)].map((_, i) =>
@@ -94,15 +94,21 @@ function initialiseFromMetadata (m) {
 				c[camel(item.name)].help = item.arguments.map(a => a.name)
 			})
 		}
-		storage[m.prefix] = o
+		runtime[m.prefix] = o
 		calls[m.prefix] = c
 	})
 	m.modules.forEach(m => {
 		if (m.storage) {
 			try {
-				require(`./srml/${m.prefix}`).augment(storage, chain)
+				console.log('looking for augmentation of', m.prefix, `./srml/${m.prefix}`)
+				require(`./srml/${m.prefix}`).augment(runtime, chain)
+				console.log('Augmented successfully')
 			}
-			catch (e) {}
+			catch (e) {
+				if (!e.toString().startsWith('Error: Cannot find module')) {
+					throw e
+				}
+			}
 		}
 	})
 	onRuntimeInit.forEach(f => { if (f) f() })
@@ -125,12 +131,12 @@ function initRuntime (callback = null) {
 	}
 }
 
-function storagePromise() {
-	return new Promise((resolve, reject) => initRuntime(() => resolve(storage)))
+function runtimePromise() {
+	return new Promise((resolve, reject) => initRuntime(() => resolve(runtime)))
 }
 
 function callsPromise() {
 	return new Promise((resolve, reject) => initRuntime(() => resolve(calls)))
 }
 
-module.exports = { initRuntime, runtimeUp, storagePromise, callsPromise, storage, calls, chain, system }
+module.exports = { initRuntime, runtimeUp, runtimePromise, callsPromise, runtime, calls, chain, system }

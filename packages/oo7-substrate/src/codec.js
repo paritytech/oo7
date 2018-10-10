@@ -1,4 +1,4 @@
-const { ss58_decode } = require('ss58')
+const { ss58Decode } = require('./ss58')
 const { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra } = require('./types')
 const { toLE, leToNumber, bytesToHex } = require('./utils')
@@ -318,7 +318,7 @@ function encode(value, type = null) {
 
 	if (type == 'Address' || type == 'RawAddress<AccountId, AccountIndex>' || type == 'Address<AccountId, AccountIndex>') {
 		if (typeof value == 'string') {
-			value = ss58_decode(value)
+			value = ss58Decode(value)
 		}
 		if (typeof value == 'object' && value instanceof Uint8Array && value.length == 32) {
 			return new Uint8Array([0xff, ...value])
@@ -338,7 +338,7 @@ function encode(value, type = null) {
 
 	if (type == 'AccountId') {
 		if (typeof value == 'string') {
-			return ss58_decode(value);
+			return ss58Decode(value);
 		}
 		if (value instanceof Uint8Array && value.length == 32) {
 			return value

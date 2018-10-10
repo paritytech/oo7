@@ -1,5 +1,5 @@
 const nacl = require('tweetnacl');
-const { ss58_encode } = require('ss58')
+const { ss58Encode } = require('./ss58')
 const { AccountId } = require('./types')
 const { bytesToHex, hexToBytes, stringToSeed } = require('./utils')
 
@@ -13,12 +13,12 @@ class SecretStore {
 	submit (seed, name) {
 		let s = stringToSeed(seed);
 		let addr = this._addKey(s);
-		this.names[name] = ss58_encode(addr)
+		this.names[name] = ss58Encode(addr)
 		this._save()
 		return addr
 	}
 	accounts () {
-		return Object.keys(this.keys).map(ss58_decode)
+		return Object.keys(this.keys).map(ss58Decode)
 	}
 	find (n) {
 		let k = this.keys[this.names[n]]
@@ -26,7 +26,7 @@ class SecretStore {
 	}
 	sign (from, data) {
 		if (from instanceof Uint8Array && from.length == 32 || from instanceof AccountId) {
-			from = ss58_encode(from)
+			from = ss58Encode(from)
 		}
 		console.info(`Signing data from ${from}`, bytesToHex(data))
 		let key = this.keys[from].key
@@ -36,7 +36,7 @@ class SecretStore {
 		let key = nacl.sign.keyPair.fromSeed(s)
 		let addr = new AccountId(key.publicKey)
 		this.seeds.push(bytesToHex(s))
-		this.keys[ss58_encode(addr)] = { key }
+		this.keys[ss58Encode(addr)] = { key }
 		return addr
 	}
 	_save () {

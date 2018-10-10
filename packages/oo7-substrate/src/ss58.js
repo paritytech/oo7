@@ -1,6 +1,5 @@
-const { ss58_decode, ss58_encode } = require('ss58');
-const {blake2b} = require('blakejs')
 const bs58 = require('bs58')
+const { blake2b } = require('blakejs')
 const { toLE } = require('./utils')
 
 let defaultType = 42
