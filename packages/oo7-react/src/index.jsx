@@ -88,6 +88,7 @@ class ReactiveComponent extends React.Component {
 		this.reactiveProps = reactiveProps;
 		this.bonds = bonds;
 		this.allBondKeys = [].concat(reactiveProps).concat(Object.keys(bonds));
+		this.state = {}
 	}
 
 	/**

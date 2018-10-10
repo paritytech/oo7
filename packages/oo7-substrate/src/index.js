@@ -36,22 +36,29 @@ if (typeof window !== 'undefined') {
 	window.toLE = toLE;
 	window.leToNumber = leToNumber;
 	window.storageKey = storageKey;
-	window.pretty = pretty;
-	window.decode = decode;
-	window.nodeService = nodeService;
-	window.nacl = nacl;
-	window.secretStore = secretStore;
 	window.encode = encode;
+	window.decode = decode;
+	window.pretty = pretty;
+	window.nodeService = nodeService;
+	window.secretStore = secretStore;
+	window.nacl = nacl;
 	window.post = post;
 	window.AccountId = AccountId;
+	window.AccountIndex = AccountIndex;
 	window.storageKey = storageKey;
 }
 
-module.exports = { ss58_decode, ss58_encode, pretty, stringToSeed, stringToBytes,
-	hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, AccountId,
-	leToNumber, reviver, AccountId, AccountIndex, TransactionEra, Hash,
-	VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8, secretStore, substrate,
-	post, siPrefix, denominationInfo, initBonds, chain, runtime, runtimePromise,
+module.exports = {
+	// TODO: type-correct variants &c.
+	ss58_decode, ss58_encode,
+	// utils
+	stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, reviver, 
+	// types
+	AccountId, AccountIndex, TransactionEra, Hash, VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8,
+	pretty, encode, decode,
+	secretStore,
+	post,
+	denominationInfo,
 	// bonds
 	initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp
 }
