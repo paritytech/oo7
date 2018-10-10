@@ -3,7 +3,7 @@ const {blake2b} = require('blakejs')
 const bs58 = require('bs58')
 const { toLE } = require('./utils')
 
-let defaultType = 68
+let defaultType = 42
 const KNOWN_TYPES = [0, 1, 42, 43, 68, 69]
 
 function setNetworkDefault(type) {
@@ -31,13 +31,7 @@ function ss58Encode(a, type = defaultType, checksumLength = null, length = null,
 			case 4: { checksumLength = ([1, 2, 3, 4].indexOf(checksumLength) + 1) || 1; break; }
 			case 8: { checksumLength = ([1, 2, 3, 4, 5, 6, 7, 8].indexOf(checksumLength) + 1) || 1; break; }
 		}
-		let payload = toLE(a, length)
-
-		// 2 length checksum
-		let bytes = new Uint8Array([type, ...payload])
-		let hash = blake2b(bytes)
-		let complete = new Uint8Array([...bytes, hash[0], hash[1]])
-		return bs58.encode(complete)
+		payload = toLE(a, length)
 	} else if ((a instanceof AccountId || a instanceof Uint8Array) && a.length === 32) {
 		checksumLength = 2
 		payload = a
@@ -67,7 +61,8 @@ function ss58Decode(ss58, lookupIndex) {
 	}
 
 	if (a.length < 3) {
-		throw new Error('Invalid length of payload for address', a.length)
+		return null
+		//throw new Error('Invalid length of payload for address', a.length)
 	}
 	let length = a.length <= 3
 		? 1
@@ -91,6 +86,9 @@ function ss58Decode(ss58, lookupIndex) {
 		? new AccountIndex(leToNumber(payload))
 		: new AccountId(payload)
 
+	if (a[0] % 1 && !accountId && !lookupIndex) {
+		return null
+	}
 	let hash = blake2b(a[0] % 1 ? (accountId || lookupIndex(result)) : a.slice(0, 1 + length))
 
 	for (var i = 0; i < checksumLength; ++i) {
