@@ -4,7 +4,7 @@ const { nodeService } = require('./nodeService')
 const { SubscriptionBond } = require('./subscriptionBond')
 const { BlockNumber, Hash } = require('./types');
 const { decode, encode } = require('./codec');
-const { stringToBytes, hexToBytes, bytesToHex } = require('./utils')
+const { stringToBytes, hexToBytes, bytesToHex ,toLE} = require('./utils')
 const { StorageBond } = require('./storageBond')
 const metadata = require('./metadata')
 
