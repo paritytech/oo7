@@ -3,13 +3,15 @@ const nacl = require('tweetnacl');
 const { generateMnemonic, mnemonicToSeed } = require('bip39')
 const { ss58Encode } = require('./ss58')
 const { AccountId } = require('./types')
-const { bytesToHex } = require('./utils')
+const { bytesToHex, hexToBytes } = require('./utils')
 
 let cache = {}
 
 function keyFromSeed(seed) {
 	if (!cache[seed]) {
-		cache[seed] = nacl.sign.keyPair.fromSecretKey(mnemonicToSeed(seed))
+		cache[seed] = seed.match(/^0x[0-9a-fA-F]{64}$/)
+			? nacl.sign.keyPair.fromSeed(hexToBytes(seed))
+			: nacl.sign.keyPair.fromSeed(new Uint8Array(mnemonicToSeed(seed).slice(0, 32)))
 	}
 	return cache[seed]
 }
@@ -46,10 +48,16 @@ class SecretStore extends Bond {
 	}
 
 	sign (from, data) {
-		let item = find(from)
+		let item = this.find(from)
 		if (item) {
 			console.info(`Signing data from ${item.name}`, bytesToHex(data))
-			return nacl.sign.detached(data, item.key.secretKey)
+			let sig = nacl.sign.detached(data, item.key.secretKey)
+			console.info(`Signature is ${bytesToHex(sig)}`)
+			if (!nacl.sign.detached.verify(data, sig, item.key.publicKey)) {
+				console.warn(`Signature is INVALID!`)
+				return null
+			}
+			return sig
 		}
 		return null
 	}
@@ -57,7 +65,7 @@ class SecretStore extends Bond {
 	forget (identifier) {
 		let item = this.find(identifier)
 		if (item) {
-			console.info(`Forgetting key ${item.name} (${item.address})`)
+			console.info(`Forgetting key ${item.name} (${item.address}, ${item.seed})`)
 			this._keys = this._keys.filter(i => i !== item)
 			this._sync()
 		}
@@ -76,7 +84,6 @@ class SecretStore extends Bond {
 	}
 
 	_sync () {
-		console.log('Sync...')
 		localStorage.secretStore2 = JSON.stringify(this._keys.map(k => ({seed: k.seed, name: k.name})))
 		let byAddress = {}
 		let byName = {}
@@ -91,9 +98,7 @@ class SecretStore extends Bond {
 		})
 		this._byAddress = byAddress
 		this._byName = byName
-		console.log('...triggering...')
 		this.trigger({keys: this._keys, byAddress: this._byAddress, byName: this._byName})
-		console.log('...done')
 	}
 }
 

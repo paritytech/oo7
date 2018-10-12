@@ -46,7 +46,7 @@ function augment(runtime, chain) {
 		}
 		if (id instanceof AccountId || (id instanceof Uint8Array && id.length == 32)) {
 			let i = accounts[ss58Encode(id)]
-			return typeof i === 'number' || i instanceof AccountIndex
+			return (typeof i === 'number' || i instanceof AccountIndex)
 				? new AccountIndex(i)
 				: id
 		} else {
