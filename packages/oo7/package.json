@@ -5,7 +5,7 @@
   "main": "index.js",
   "jsnext:main": "index.js",
   "files": [
-    "lib/*"
+    "src/*"
   ],
   "scripts": {
     "test": "mocha --reporter spec",
