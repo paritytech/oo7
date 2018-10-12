@@ -1,6 +1,6 @@
 const React = require('react')
 const {ReactiveComponent} = require('oo7-react')
-const {ss58_decode, ss58_encode} = require('ss58')
+const {ss58Decode, ss58Encode} = require('oo7-substrate')
 const {blake2b} = require('blakejs')
 
 const zero = blake2b(new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]))
@@ -16,7 +16,7 @@ const copyToClipboard = str => {
  
 export default class Identicon extends ReactiveComponent {
 	constructor () {
-		super(["id"])
+		super(["account"])
 	}
 	render () {
 		let s = 64
@@ -53,19 +53,19 @@ export default class Identicon extends ReactiveComponent {
 			throw "Impossible"
 		}
 		
-		let id = typeof this.state.id == 'string' ? ss58_decode(this.state.id) : this.state.id
+		let id = typeof this.state.account == 'string' ? ss58Decode(this.state.account) : this.state.account
 		if (!(typeof id == 'object' && id && id instanceof Uint8Array && id.length == 32)) {
 			return <svg
 				id={this.props.id}
 				name={this.props.name}
 				className={this.props.className}
 				style={this.props.style}
-				width={this.props.width | this.props.size}
-				height={this.props.height | this.props.size}
+				width={this.props.width || this.props.size}
+				height={this.props.height || this.props.size}
 				viewBox='0 0 64 64'
 			/>
 		}
-		let ss58 = ss58_encode(id);
+		let ss58 = ss58Encode(id);
 		id = Array.from(blake2b(id)).map((x, i) => (x + 256 - zero[i]) % 256)
 
 		let sat = (Math.floor(id[29] * 70 / 256 + 26) % 80) + 30
@@ -94,8 +94,8 @@ export default class Identicon extends ReactiveComponent {
 			name={this.props.name}
 			className={this.props.className}
 			style={this.props.style}
-			width={this.props.width | this.props.size}
-			height={this.props.height | this.props.size}
+			width={this.props.width || this.props.size}
+			height={this.props.height || this.props.size}
 			viewBox='0 0 64 64'
 			onClick={() => { copyToClipboard(ss58); this.props.onCopied && this.props.onCopied(ss58); }}
 		>
