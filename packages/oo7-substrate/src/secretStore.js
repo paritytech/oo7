@@ -1,10 +1,12 @@
+const { Bond } = require('oo7')
 const nacl = require('tweetnacl');
 const { ss58Encode } = require('./ss58')
 const { AccountId } = require('./types')
 const { bytesToHex, hexToBytes, stringToSeed } = require('./utils')
 
-class SecretStore {
+class SecretStore extends Bond {
 	constructor () {
+		super()
 		this.keys = {}
 		this.seeds = []
 		this.names = {}
@@ -15,6 +17,7 @@ class SecretStore {
 		let addr = this._addKey(s);
 		this.names[name] = ss58Encode(addr)
 		this._save()
+		this._sync()
 		return addr
 	}
 	accounts () {
@@ -51,7 +54,11 @@ class SecretStore {
 			let o = JSON.parse(localStorage.secretStore)
 			o.seeds.forEach(seed => this._addKey(hexToBytes(seed)))
 			this.names = o.names
+			this._sync()
 		}
+	}
+	_sync () {
+		this.trigger({keys: this.keys, names: this.names})
 	}
 }
 
