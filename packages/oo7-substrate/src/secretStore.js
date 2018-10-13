@@ -34,7 +34,7 @@ class SecretStore extends Bond {
 	}
 
 	accounts () {
-		return Object.keys(this._keys).map(i => i.account)
+		return this._keys.map(k => k.account)
 	}
 
 	find (identifier) {

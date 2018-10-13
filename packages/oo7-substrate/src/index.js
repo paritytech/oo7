@@ -5,6 +5,7 @@ const { decode, encode } = require('./codec')
 const { pretty } = require('./pretty')
 const { post } = require('./transact')
 const { secretStore } = require('./secretStore')
+const { addressBook } = require('./addressBook')
 const { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, toLE, leToNumber, leHexToNumber, siPrefix } = require('./utils')
 const { storageKey } = require('./storageBond')
 const { initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
@@ -56,7 +57,7 @@ module.exports = {
 	// types
 	AccountId, AccountIndex, TransactionEra, Hash, VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8,
 	pretty, encode, decode,
-	secretStore,
+	secretStore, addressBook,
 	post,
 	denominationInfo,
 	setNodeUri,
