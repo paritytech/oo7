@@ -1,6 +1,6 @@
 {
   "name": "oo7-substrate",
-  "version": "0.1.0",
+  "version": "0.3.6",
   "description": "Substrate Bonds library",
   "main": "src/index.js",
   "scripts": {
@@ -23,9 +23,13 @@
   },
   "homepage": "https://github.com/polkadot-js/oo7-substrate#readme",
   "dependencies": {
+    "base-x": "^3.0.4",
+    "bip39": "^2.5.0",
+    "blakejs": "^1.1.0",
+    "bs58": "^4.0.1",
     "change-case": "^3.0.2",
     "isomorphic-fetch": "^2.2.1",
-    "oo7": "^0.6.0",
+    "oo7": "^0.7.1",
     "ss58": "^1.0.2",
     "tweetnacl": "^1.0.0",
     "xxhashjs": "^0.2.2"

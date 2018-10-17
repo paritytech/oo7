@@ -691,16 +691,46 @@ class Bond {
 	 * b.changed(21); // logs [42]
 	 * b.changed(34.5); // logs [69]
 	 *
-	 * @param {function} f - The transformation to apply to the value represented
+	 * @param {function} transform - The transformation to apply to the value represented
 	 * by this {@link Bond}.
 	 * @param {number} outResolveDepth - The number of levels deep in any array
 	 * object values of the result of the transformation that {@link Bond} values
 	 * will be resolved.
-	 * @default 0
+	 * @default 3
+	 * @param {*} cache - Cache information. See constructor.
+	 * @default null
+	 * @param {*} latched - Should the value be latched so that once ready it stays ready?
+	 * @default false
+	 * @param {*} mayBeNull - Should the value be allowed to be `null` such that if it ever becomes
+	 * null, it is treated as being unready?
+	 * @default true
 	 * @returns {@link Bond} - An object representing this object's value with
-	 * the function `f` applied to it.
+	 * the function `transform` applied to it.
 	 */
-	map (transform, outResolveDepth = 3, cache = undefined, latched = true, mayBeNull = false) {
+	map (transform, outResolveDepth = 3, cache = undefined, latched = false, mayBeNull = true) {
+		const TransformBond = require('./transformBond');
+		return new TransformBond(transform, [this], [], outResolveDepth, 3, cache, latched, mayBeNull);
+	}
+
+	/**
+	 * Just like `map`, except that it defaults to no latching and mayBeNull.
+	 * @param {function} transform - The transformation to apply to the value represented
+	 * by this {@link Bond}.
+	 * @param {number} outResolveDepth - The number of levels deep in any array
+	 * object values of the result of the transformation that {@link Bond} values
+	 * will be resolved.
+	 * @default 3
+	 * @param {*} cache - Cache information. See constructor.
+	 * @default null
+	 * @param {*} latched - Should the value be latched so that once ready it stays ready?
+	 * @default true
+	 * @param {*} mayBeNull - Should the value be allowed to be `null` such that if it ever becomes
+	 * null, it is treated as being unready?
+	 * @default false
+	 * @returns {@link Bond} - An object representing this object's value with
+	 * the function `transform` applied to it.
+	 */
+	xform (transform, outResolveDepth = 3, cache = undefined, latched = true, mayBeNull = false) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond(transform, [this], [], outResolveDepth, 3, cache, latched, mayBeNull);
 	}
@@ -716,11 +746,11 @@ class Bond {
 	 * b.changed([1, 2, 3]); // logs [2, 4, 6]
 	 * b.changed([21]); // logs [42]
 	 *
-	 * @param {function} f - The transformation to apply to each element.
+	 * @param {function} transform - The transformation to apply to each element.
 	 * @returns The new {@link Bond} object representing the element-wise
 	 * Transformation.
 	 */
-	mapEach (transform, cache = undefined, latched = true, mayBeNull = false) {
+	mapEach (transform, cache = undefined, latched = false, mayBeNull = true) {
 		return this.map(item => item.map(transform), 3, cache, latched, mayBeNull);
 	}
 
@@ -754,7 +784,7 @@ class Bond {
 	 * value represented by this object subscripted by the value represented by
 	 * `name`.
 	 */
-	sub (name, outResolveDepth = 3, cache = undefined, latched = true, mayBeNull = false) {
+	sub (name, outResolveDepth = 3, cache = undefined, latched = false, mayBeNull = true) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond(
 			(object, field) => object[field],
@@ -798,7 +828,7 @@ class Bond {
 	 * @returns {@link Bond} - The object representing the value of the array of
 	 * each object's representative value in `list`.
 	 */
-	static all (list, resolveDepth = 3, cache = undefined, latched = true, mayBeNull = false) {
+	static all (list, resolveDepth = 3, cache = undefined, latched = false, mayBeNull = true) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond((...args) => args, list, [], 3, resolveDepth, cache, latched, mayBeNull);
 	}
@@ -826,7 +856,7 @@ class Bond {
 	 * @param {number} outResolveDepth - The depth in any returned structure
 	 * that a {@link Bond} may be for it to be resolved.
 	 */
-	static mapAll (list, transform, outResolveDepth = 3, resolveDepth = 3, cache = undefined, latched = true, mayBeNull = false) {
+	static mapAll (list, transform, outResolveDepth = 3, resolveDepth = 3, cache = undefined, latched = false, mayBeNull = true) {
 		const TransformBond = require('./transformBond');
 		return new TransformBond(transform, list, [], outResolveDepth, resolveDepth, cache, latched, mayBeNull);
 	}
@@ -863,7 +893,7 @@ class Bond {
 	 * @returns {Bond} - A {@link Bond} representing `init` when the input array is empty,
 	 * otherwise the reduction of that array.
 	 */
-	reduce (accum, init, cache = undefined, latched = true, mayBeNull = false) {
+	reduce (accum, init, cache = undefined, latched = false, mayBeNull = true) {
 		var nextItem = function (acc, rest) {
 			let next = rest.pop();
 			return accum(acc, next).map(([result, finished]) =>

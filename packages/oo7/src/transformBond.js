@@ -98,7 +98,7 @@ class TransformBond extends ReactiveBond {
 		outResolveDepth = 3,
 		resolveDepth = 3,
 		cache = { id: null, stringify: JSON.stringify, parse: JSON.parse },
-		latched = true,
+		latched = false,
 		mayBeNull = true,
 		context = defaultContext
 	) {

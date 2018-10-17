@@ -12,6 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const oo7 = require('./src');
+const Bond = require('./bond');
 
-module.exports = oo7;
+/**
+ * Derivative {@link Bond} representing the another {@link Bond} except defaulting
+ * to same given `default` when not ready.
+ */
+class DefaultBond extends Bond {
+	constructor (defaultValue, targetBond) {
+		super(false);
+
+		this._poll = () => this.changed(targetBond._ready ? targetBond._value : defaultValue);
+		this._targetBond = targetBond;
+	}
+
+	initialise () {
+		this._notifyId = this._targetBond.notify(this._poll);
+		this._poll();
+	}
+
+	finalise () {
+		this._targetBond.unnotify(this._notifyId);
+	}
+}
+
+module.exports = DefaultBond;

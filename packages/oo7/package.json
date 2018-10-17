@@ -1,11 +1,11 @@
 {
   "name": "oo7",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "description": "The Bond API",
   "main": "index.js",
   "jsnext:main": "index.js",
   "files": [
-    "lib/*"
+    "src/*"
   ],
   "scripts": {
     "test": "mocha --reporter spec",

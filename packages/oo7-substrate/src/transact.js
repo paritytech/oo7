@@ -3,7 +3,7 @@ const { SubscriptionBond } = require('./subscriptionBond')
 const { encode } = require('./codec')
 const { secretStore } = require('./secretStore')
 const { TransactionEra, AccountIndex } = require('./types')
-const { runtimeUp, storage, chain } = require('./bonds')
+const { runtimeUp, runtime, chain } = require('./bonds')
 
 class TransactionBond extends SubscriptionBond {
 	constructor (data) {
@@ -14,7 +14,7 @@ class TransactionBond extends SubscriptionBond {
 function composeTransaction (sender, call, index, era, checkpoint, senderAccount) {
 	return new Promise((resolve, reject) => {
 		if (typeof sender == 'string') {
-			sender = ss58_decode(sender)
+			sender = ss58Decode(sender)
 		}
 		if (sender instanceof Uint8Array && sender.length == 32) {
 			senderAccount = sender
@@ -48,14 +48,14 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 //   index?
 // }
 function post(tx) {
-	return Bond.all([tx, chain.height, runtimeReady]).map(([o, height, unused]) => {
+	return Bond.all([tx, chain.height, runtimeUp]).map(([o, height, unused]) => {
 		let {sender, call, index, longevity, compact} = o
 		// defaults
 		longevity = typeof longevity === 'undefined' ? 256 : longevity
 		compact = typeof compact === 'undefined' ? true : compact
 
 		let senderAccount = typeof sender == 'number' || sender instanceof AccountIndex
-			? storage.balances.lookupIndex(sender)
+			? runtime.balances.lookupIndex(sender)
 			: sender
 
 		let era
@@ -79,7 +79,7 @@ function post(tx) {
 			call,
 			era,
 			eraHash,
-			index: index || storage.system.accountNonce(senderAccount),
+			index: index || runtime.system.accountNonce(senderAccount),
 			senderAccount
 		}
 	}, 2).latched(false).map(o => 

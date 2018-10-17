@@ -11,19 +11,19 @@ const metadata = require('./metadata')
 let chain = (() => {
 	let head = new SubscriptionBond('chain_newHead').subscriptable()
 	let height = head.map(h => new BlockNumber(h.number))
-	let header = hashBond => new TransformBond(hash => service.request('chain_getHeader', [hash]), [hashBond]).subscriptable()
-	let hash = numberBond => new TransformBond(number => service.request('chain_getBlockHash', [number]), [numberBond])
+	let header = hashBond => new TransformBond(hash => nodeService().request('chain_getHeader', [hash]), [hashBond]).subscriptable()
+	let hash = numberBond => new TransformBond(number => nodeService().request('chain_getBlockHash', [number]), [numberBond])
 	return { head, height, header, hash }
 })()
 
 let system = (() => {
-	let name = new TransformBond(() => service.request('system_name')).subscriptable()
-	let version = new TransformBond(() => service.request('system_version')).subscriptable()
-	let chain = new TransformBond(() => service.request('system_chain')).subscriptable()
+	let name = new TransformBond(() => nodeService().request('system_name')).subscriptable()
+	let version = new TransformBond(() => nodeService().request('system_version')).subscriptable()
+	let chain = new TransformBond(() => nodeService().request('system_chain')).subscriptable()
 	return { name, version, chain }
 })()
 
-let storage = { core: (() => {
+let runtime = { core: (() => {
 	let authorityCount = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':auth:len'))]], r => decode(hexToBytes(r.changes[0][1]), 'u32'))
 	let authorities = authorityCount.map(
 		n => [...Array(n)].map((_, i) =>
@@ -33,13 +33,20 @@ let storage = { core: (() => {
 			)
 		), 2)
 	let code = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':code'))]], r => hexToBytes(r.changes[0][1]))
-	let codeHash = new TransformBond(() => service.request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [this.chain.head])
-	let codeSize = new TransformBond(() => service.request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [this.chain.head])
+	let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [chain.head])
+	let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [chain.head])
 	return { authorityCount, authorities, code, codeHash, codeSize }
 })() }
 
 let calls = {}
-let runtimeUp = new Bond
+
+class RuntimeUp extends Bond {
+	initialise() {
+		let that = this
+		initRuntime(() => that.trigger(true))
+	}
+}
+let runtimeUp = new RuntimeUp
 
 let onRuntimeInit = []
 
@@ -87,20 +94,23 @@ function initialiseFromMetadata (m) {
 				c[camel(item.name)].help = item.arguments.map(a => a.name)
 			})
 		}
-		storage[m.prefix] = o
+		runtime[m.prefix] = o
 		calls[m.prefix] = c
 	})
 	m.modules.forEach(m => {
 		if (m.storage) {
 			try {
-				require(`./srml/${m.prefix}`).augment(storage, chain)
+				require(`./srml/${m.prefix}`).augment(runtime, chain)
 			}
-			catch (e) {}
+			catch (e) {
+				if (!e.toString().startsWith('Error: Cannot find module')) {
+					throw e
+				}
+			}
 		}
 	})
 	onRuntimeInit.forEach(f => { if (f) f() })
 	onRuntimeInit = null
-	runtimeUp.trigger(true)
 }
 
 function initRuntime (callback = null) {
@@ -109,7 +119,7 @@ function initRuntime (callback = null) {
 		if (onRuntimeInit.length === 1) {
 			nodeService().request('state_getMetadata')
 				.then(blob => decode(hexToBytes(blob), 'RuntimeMetadata'))
-				.then(m => s_substrate._initialiseFromMetadata(m))
+				.then(initialiseFromMetadata)
 		}
 	} else {
 		// already inited runtime
@@ -119,12 +129,12 @@ function initRuntime (callback = null) {
 	}
 }
 
-function storagePromise() {
-	return new Promise((resolve, reject) => initRuntime(() => resolve(storage)))
+function runtimePromise() {
+	return new Promise((resolve, reject) => initRuntime(() => resolve(runtime)))
 }
 
 function callsPromise() {
 	return new Promise((resolve, reject) => initRuntime(() => resolve(calls)))
 }
 
-module.exports = { initRuntime, storage, calls, storagePromise, callsPromise, chain, system, state, runtimeUp }
+module.exports = { initRuntime, runtimeUp, runtimePromise, callsPromise, runtime, calls, chain, system }
