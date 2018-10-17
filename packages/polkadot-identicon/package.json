@@ -1,0 +1,45 @@
+{
+  "name": "polkadot-identicon",
+  "version": "1.1.8",
+  "description": "A Polkadot-themed SS58 identicon Bonded React component",
+  "main": "lib/index.js",
+  "files": [
+    "lib/*",
+    "types.d.ts"
+  ],
+  "scripts": {
+    "compile": "babel --presets react -d lib/ src/",
+    "prepare": "npm run compile",
+    "test": "echo \"Error: no test specified yet\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polkadot-js/polkadot-identicon.git"
+  },
+  "keywords": [
+    "polkadot",
+    "substrate",
+    "ss58",
+    "identicon"
+  ],
+  "author": "Parity Technologies <admin@parity.io>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/polkadot-js/polkadot-identicon/issues"
+  },
+  "homepage": "https://github.com/polkadot-js/polkadot-identicon#readme",
+  "types": "types.d.ts",
+  "dependencies": {
+    "blake2js": "^1.0.0",
+    "oo7": "^0.7.1",
+    "oo7-react": "^0.8.0",
+    "oo7-substrate": "^0.3.6",
+    "react": "^16.4.2",
+    "ss58": "^1.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react": "^6.24.1",
+    "watch": "^1.0.2"
+  }
+}

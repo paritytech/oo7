@@ -110,11 +110,11 @@ function augment (runtime, chain) {
 			[runtime.staking.bondage(id), chain.height]
 		)
 	
-	staking.nominationIndex = (val, nom) =>
+	staking.nominationIndex = (val) =>
 		new TransformBond((i, id) => {
 			let ss58 = ss58Encode(id);
 			return i.findIndex(a => ss58Encode(a) === ss58);
-		}, [runtime.staking.nominatorsFor(nom), val])
+		}, [runtime.staking.nominatorsFor(staking.nominating(val)), val])
 }
 
 module.exports = { augment }

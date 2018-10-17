@@ -100,9 +100,7 @@ function initialiseFromMetadata (m) {
 	m.modules.forEach(m => {
 		if (m.storage) {
 			try {
-				console.log('looking for augmentation of', m.prefix, `./srml/${m.prefix}`)
 				require(`./srml/${m.prefix}`).augment(runtime, chain)
-				console.log('Augmented successfully')
 			}
 			catch (e) {
 				if (!e.toString().startsWith('Error: Cannot find module')) {

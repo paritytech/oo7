@@ -40,19 +40,19 @@ function augment(runtime, chain) {
 		return res
 	}).subscriptable()
 
-	balances.tryIndex = id => new TransformBond((accounts, id) => {
+	balances.tryIndex = (id, whenNone = id) => new TransformBond((accounts, id, whenNone) => {
 		if (typeof id === 'string') {
 			id = ss58Decode(id)
 		}
 		if (id instanceof AccountId || (id instanceof Uint8Array && id.length == 32)) {
 			let i = accounts[ss58Encode(id)]
-			return typeof i === 'number' || i instanceof AccountIndex
+			return (typeof i === 'number' || i instanceof AccountIndex)
 				? new AccountIndex(i)
-				: id
+				: whenNone
 		} else {
-			return id
+			return whenNone
 		}
-	}, [balances.accounts, id], [], 3, 3, undefined, false)
+	}, [balances.accounts, id, whenNone], [], 3, 3, undefined, false)
 
 	balances.ss58Encode = (address, type, csLength, length) => new TransformBond((address, id, index, type, csLength, length) => {
 		if (address instanceof AccountIndex) {
