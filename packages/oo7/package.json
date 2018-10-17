@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/paritytech/oo7#readme",
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.2.0",
     "eslint": "^5.6.1",
     "eslint-config-semistandard": "^11.0.0",
     "eslint-config-standard": "^10.2.1",
