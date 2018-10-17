@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const Bond = require('./bond')
+const Bond = require('./bond');
 
 /**
  * Derivative {@link Bond} resolving to a default value when not ready.
@@ -20,40 +20,40 @@ const Bond = require('./bond')
  */
 class LatchBond extends Bond {
 	constructor (targetBond, def = undefined, mayBeNull = undefined, cache = null) {
-		super(typeof mayBeNull === 'undefined' ? targetBond._mayBeNull : mayBeNull, cache)
+		super(typeof mayBeNull === 'undefined' ? targetBond._mayBeNull : mayBeNull, cache);
 
-		if (typeof(def) !== 'undefined') {
-			this._ready = true
-			this._value = def
+		if (typeof (def) !== 'undefined') {
+			this._ready = true;
+			this._value = def;
 		}
 
-		let that = this
-		this._targetBond = targetBond
+		let that = this;
+		this._targetBond = targetBond;
 		this._poll = () => {
 			if (targetBond._ready) {
-				that.changed(targetBond._value)
-				that._targetBond.unnotify(that._notifyId)
-				delete that._poll
-				delete that._targetBond
+				that.changed(targetBond._value);
+				that._targetBond.unnotify(that._notifyId);
+				delete that._poll;
+				delete that._targetBond;
 			}
-		}
+		};
 	}
 
 	initialise () {
 		if (this._poll) {
-			this._notifyId = this._targetBond.notify(this._poll)
+			this._notifyId = this._targetBond.notify(this._poll);
 			if (this._poll) {
 				// line above might have killed it.
-				this._poll()
+				this._poll();
 			}
 		}
 	}
 
 	finalise () {
 		if (this._targetBond) {
-			this._targetBond.unnotify(this._notifyId)
+			this._targetBond.unnotify(this._notifyId);
 		}
 	}
 }
 
-module.exports = LatchBond
+module.exports = LatchBond;
