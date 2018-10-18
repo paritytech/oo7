@@ -213,6 +213,11 @@ node-fetch@^1.0.1:
     encoding "^0.1.11"
     is-stream "^1.0.1"
 
+oo7@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/oo7/-/oo7-0.7.1.tgz#ef9b8dba6d0b4fff7423520a3adb0b796b946002"
+  integrity sha512-qHnEOiDbeW7MC6cb4ArEsr4ZU9vOF8hxtehi2tA7vCdmunx+2ZNskB+qNMBZYj3mlpbFafjlg1/FFCExAiLC0g==
+
 param-case@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/param-case/-/param-case-2.1.1.tgz#df94fd8cf6531ecf75e6bef9a0858fbc72be2247"
