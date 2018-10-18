@@ -31,7 +31,7 @@
   "homepage": "https://github.com/paritytech/oo7-react#readme",
   "dependencies": {
     "oo7": "^0.7.1",
-    "react": "^15.4.2"
+    "react": "^16.5.2"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
