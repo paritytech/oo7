@@ -169,7 +169,7 @@ function splitValue (a) {
 
 	for (var j = 0; j < i; ++j) { a = a.div(1000); }
 
-	return {base: a, denom: i};
+	return { base: a, denom: i };
 }
 
 /**

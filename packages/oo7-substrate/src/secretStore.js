@@ -7,13 +7,13 @@ const { bytesToHex, hexToBytes } = require('./utils')
 
 let cache = {}
 
-function keyFromSeed(seed) {
-	if (!cache[seed]) {
-		cache[seed] = seed.match(/^0x[0-9a-fA-F]{64}$/)
-			? nacl.sign.keyPair.fromSeed(hexToBytes(seed))
-			: nacl.sign.keyPair.fromSeed(new Uint8Array(mnemonicToSeed(seed).slice(0, 32)))
+function seedFromPhrase(phrase) {
+	if (!cache[phrase]) {
+		cache[phrase] = phrase.match(/^0x[0-9a-fA-F]{64}$/)
+			? hexToBytes(phrase)
+			: new Uint8Array(mnemonicToSeed(phrase).slice(0, 32))
 	}
-	return cache[seed]
+	return cache[phrase]
 }
 
 class SecretStore extends Bond {
@@ -23,14 +23,14 @@ class SecretStore extends Bond {
 		this._load()
 	}
 
-	submit (seed, name) {
-		this._keys.push({seed, name})
+	submit (phrase, name) {
+		this._keys.push({phrase, name})
 		this._sync()
-		return this.accountFromSeed(seed)
+		return this.accountFromPhrase(phrase)
 	}
 
-	accountFromSeed (seed) {
-		return new AccountId(keyFromSeed(seed).publicKey)
+	accountFromPhrase (phrase) {
+		return new AccountId(nacl.sign.keyPair.fromSeed(seedFromPhrase(phrase)).publicKey)
 	}
 
 	accounts () {
@@ -65,39 +65,42 @@ class SecretStore extends Bond {
 	forget (identifier) {
 		let item = this.find(identifier)
 		if (item) {
-			console.info(`Forgetting key ${item.name} (${item.address}, ${item.seed})`)
+			console.info(`Forgetting key ${item.name} (${item.address}, ${item.phrase})`)
 			this._keys = this._keys.filter(i => i !== item)
 			this._sync()
 		}
 	}
 
 	_load () {
-		if (localStorage.secretStore2) {
-			this._keys = JSON.parse(localStorage.secretStore2)
+		if (localStorage.secretStore) {
+			this._keys = JSON.parse(localStorage.secretStore).map(({seed, phrase, name}) => ({ phrase, name, seed: hexToBytes(seed) }))
+		} else if (localStorage.secretStore2) {
+			this._keys = JSON.parse(localStorage.secretStore2).map(({seed, name}) => ({ phrase: seed, name }))
 		} else {
 			this._keys = [{
 				name: 'Default',
-				seed: generateMnemonic()
+				phrase: generateMnemonic()
 			}]
 		}
 		this._sync()
 	}
 
 	_sync () {
-		localStorage.secretStore2 = JSON.stringify(this._keys.map(k => ({seed: k.seed, name: k.name})))
 		let byAddress = {}
 		let byName = {}
-		this._keys = this._keys.map(({seed, name, key}) => {
-			key = key || keyFromSeed(seed)
+		this._keys = this._keys.map(({seed, phrase, name, key}) => {
+			seed = seed || seedFromPhrase(phrase)
+			key = key || nacl.sign.keyPair.fromSeed(seed)
 			let account = new AccountId(key.publicKey)
 			let address = ss58Encode(account)
-			let item = {seed, name, key, account, address}
+			let item = {seed, phrase, name, key, account, address}
 			byAddress[address] = item
 			byName[name] = item
 			return item
 		})
 		this._byAddress = byAddress
 		this._byName = byName
+		localStorage.secretStore = JSON.stringify(this._keys.map(k => ({seed: bytesToHex(k.seed), phrase: k.phrase, name: k.name})))
 		this.trigger({keys: this._keys, byAddress: this._byAddress, byName: this._byName})
 	}
 }
