@@ -26,6 +26,8 @@ function setNodeUri(u) {
 class NodeService {
 	constructor (uri) {
 		this.subscriptions = {}
+		this.cancelations = {}
+		this.ids = {}
 		this.onReply = {}
 		this.onceOpen = []
 		this.index = 1
@@ -35,36 +37,39 @@ class NodeService {
 		this.start(uri[0])
 	}
 
-	start (uri) {
+	start (uri = this.uri[0]) {
+		if (this.ws) {
+			this.ws.close()
+			delete this.ws
+		}
+
 		let that = this
 		this.ws = new WebSocket(uri)
 		this.ws.onopen = function () {
 			console.log('Connection open')
-			this.backoff = 0
+			that.rejig()
+			that.backoff = 0
 			let onceOpen = that.onceOpen;
 			that.onceOpen = []
 			window.setTimeout(() => onceOpen.forEach(f => f()), 0)
 		}
 		this.ws.onmessage = function (msg) {
+			if (that.reconnect) {
+				console.log('Clearing reconnect')
+				window.clearTimeout(that.reconnect)
+			}
+
 			let d = JSON.parse(msg.data)
 //			console.log("Message from node", d)
 			if (d.id) {
 				that.onReply[d.id](d)
 				delete that.onReply[d.id];
-			} else if (d.method && d.params && that.subscriptions[d.method] && that.subscriptions[d.method][d.params.subscription]) {
-				that.subscriptions[d.method][d.params.subscription](d.params.result, d.method)
+			} else if (d.method && d.params && that.subscriptions[d.params.subscription]) {
+				that.subscriptions[d.params.subscription].callback(d.params.result, d.method)
 			}
 
-			if (that.reconnect) {
-				window.clearTimeout(that.reconnect)
-			}
 			// epect a message every 10 seconds or we reconnect.
-			if (false) 
-				that.reconnect = window.setTimeout(() => {
-				that.ws.close()
-				delete that.ws
-				that.start()
-			}, 10000)
+			that.reconnect = window.setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
 		}
 		this.ws.onerror = () => {
 			window.setTimeout(() => {
@@ -73,6 +78,19 @@ class NodeService {
 			}, that.backoff)
 			that.backoff = Math.min(30000, that.backoff + 1000)
 		}
+	}
+
+	rejig () {
+		let that = this
+		let subs = this.subscriptions
+		this.subscriptions = {}
+		let ids = this.ids
+		this.ids = {}
+		console.log('Resubscribing', ids, subs)
+		Object.keys(ids).forEach(id => {
+			let sub = subs[ids[id]]
+			that.subscribe(sub.what, sub.params, sub.callback, console.warn, id)
+		})
 	}
 
 	request (method, params = []) {
@@ -110,27 +128,41 @@ class NodeService {
 		}
 	}
 
-	subscribe (what, params, callback, errorHandler) {
+	subscribe (what, params, callback, errorHandler, extId = null) {
 		let that = this
 		return this.request(subscriptionKey[what].subscribe, params).then(id => {
-			let notification = subscriptionKey[what].notification;
-			that.subscriptions[notification] = that.subscriptions[notification] || {}
-			that.subscriptions[notification][id] = callback
-			return { what, id }
+			if (that.cancelations[extId]) {
+				console.log('Delayed unsubscription of', extId)
+				delete that.cancelations[extId]
+				this.request(subscriptionKey[what].unsubscribe, [id]).catch(errorHandler)
+			} else {
+				that.subscriptions[id] = { what, params, callback }
+				extId = extId || id
+				console.log('Sub to', extId, id)
+				that.ids[extId] = id
+				return extId
+			}
 		}).catch(errorHandler)
 	}
 
-	unsubscribe ({what, id}) {
+	unsubscribe (extId) {
 		let that = this
+		console.log('Unsub from', extId)
 
-		let notification = subscriptionKey[what].notification;
-		if (!(this.subscriptions[notification] && this.subscriptions[notification][id])) {
+		if (!this.ids[extId]) {
+			console.log('Resubscription not yet complete. Defering unsubscribe', extId)
+			this.cancelations[extId] = true
+			return
+		}
+		let id = this.ids[extId]
+		if (!this.subscriptions[id]) {
 			throw 'Invalid subscription id'
 		}
-		let unsubscribe = subscriptionKey[what].unsubscribe
+		delete this.ids[extId]
+		let unsubscribe = subscriptionKey[this.subscriptions[id].what].unsubscribe
 
 		return this.request(unsubscribe, [id]).then(result => {
-			delete that.subscriptions[notification][id]
+			delete that.subscriptions[id]
 			return result
 		})
 	}
