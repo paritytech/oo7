@@ -93,10 +93,10 @@
             }
           },
           "extra": {
-            "rawValue": "./lib",
-            "raw": "'./lib'"
+            "rawValue": "./src",
+            "raw": "'./src'"
           },
-          "value": "./lib"
+          "value": "./src"
         },
         "leadingComments": [
           {
@@ -858,7 +858,7 @@
         "binop": null,
         "updateContext": null
       },
-      "value": "./lib",
+      "value": "./src",
       "start": 636,
       "end": 643,
       "loc": {

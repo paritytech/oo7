@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">packages/polkadot-identicon/lib/index.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src">oo7-parity/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7-parity/src/index.js~Bonds.html">Bonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createBonds">createBonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isNotOwned">isNotOwned</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isOwned">isOwned</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-bonds">bonds</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-options">options</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src-abis">oo7-parity/src/abis</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-abiPolyfill">abiPolyfill</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-BadgeABI">BadgeABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-BadgeRegABI">BadgeRegABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-GitHubHintABI">GitHubHintABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-OperationsABI">OperationsABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-RegistryExtras">RegistryExtras</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TokenABI">TokenABI</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TokenRegABI">TokenRegABI</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-parity-src-utils">oo7-parity/src/utils</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-capitalizeFirstLetter">capitalizeFirstLetter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cleanup">cleanup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-combineValue">combineValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-defDenom">defDenom</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-denominationMultiplier">denominationMultiplier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatBalance">formatBalance</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatBlockNumber">formatBlockNumber</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatToExponential">formatToExponential</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatValue">formatValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatValueNoDenom">formatValueNoDenom</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-interpretQuantity">interpretQuantity</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-interpretRender">interpretRender</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isAddressValid">isAddressValid</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-isNullData">isNullData</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-removeSigningPrefix">removeSigningPrefix</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-sha3">sha3</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-singleton">singleton</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-splitSignature">splitSignature</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-splitValue">splitValue</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toChecksumAddress">toChecksumAddress</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-asciiToHex">asciiToHex</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-bytesToHex">bytesToHex</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-denominations">denominations</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hexToAscii">hexToAscii</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-substrate-src">oo7-substrate/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7-substrate/src/addressBook.js~AddressBook.html">AddressBook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7-substrate/src/nodeService.js~NodeService.html">NodeService</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7-substrate/src/secretStore.js~SecretStore.html">SecretStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-addressBook">addressBook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-nodeService">nodeService</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-setNodeUri">setNodeUri</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-pretty">pretty</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/defaultBond.js~DefaultBond.html">DefaultBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/latchBond.js~LatchBond.html">LatchBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/notReadyBond.js~NotReadyBond.html">NotReadyBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/reactiveBond.js~ReactiveBond.html">ReactiveBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/reactivePromise.js~ReactivePromise.html">ReactivePromise</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/readyBond.js~ReadyBond.html">ReadyBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/timeBond.js~TimeBond.html">TimeBond</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/transformBond.js~TransformBond.html">TransformBond</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#polkadot-identicon-lib">polkadot-identicon/lib</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/polkadot-identicon/lib/index.js~Identicon.html">Identicon</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">packages/polkadot-identicon/lib/index.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const React = require(&apos;react&apos;);
+const { ReactiveComponent } = require(&apos;oo7-react&apos;);
+const { ss58Decode, ss58Encode } = require(&apos;oo7-substrate&apos;);
+const { blake2b } = require(&apos;blakejs&apos;);
+
+const zero = blake2b(new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]));
+
+const copyToClipboard = str =&gt; {
+	const el = document.createElement(&apos;textarea&apos;);
+	el.value = str;
+	document.body.appendChild(el);
+	el.select();
+	document.execCommand(&apos;copy&apos;);
+	document.body.removeChild(el);
+};
+
+export default class Identicon extends ReactiveComponent {
+	constructor() {
+		super([&quot;account&quot;]);
+	}
+	render() {
+		let s = 64;
+		let c = s / 2;
+		let r = this.props.sixPoint ? s / 2 / 8 * 5 : s / 2 / 4 * 3;
+		let rroot3o2 = r * Math.sqrt(3) / 2;
+		let ro2 = r / 2;
+		let rroot3o4 = r * Math.sqrt(3) / 4;
+		let ro4 = r / 4;
+		let r3o4 = r * 3 / 4;
+
+		let z = s / 64 * 5;
+		let schema = {
+			target: { freq: 1, colors: [0, 28, 0, 0, 28, 0, 0, 28, 0, 0, 28, 0, 0, 28, 0, 0, 28, 0, 1] },
+			cube: { freq: 20, colors: [0, 1, 3, 2, 4, 3, 0, 1, 3, 2, 4, 3, 0, 1, 3, 2, 4, 3, 5] },
+			quazar: { freq: 16, colors: [1, 2, 3, 1, 2, 4, 5, 5, 4, 1, 2, 3, 1, 2, 4, 5, 5, 4, 0] },
+			flower: { freq: 32, colors: [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 3] },
+			cyclic: { freq: 32, colors: [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6] },
+			vmirror: { freq: 128, colors: [0, 1, 2, 3, 4, 5, 3, 4, 2, 0, 1, 6, 7, 8, 9, 7, 8, 6, 10] },
+			hmirror: { freq: 128, colors: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 8, 6, 7, 5, 3, 4, 2, 11] }
+		};
+
+		let total = Object.keys(schema).map(k =&gt; schema[k].freq).reduce((a, b) =&gt; a + b);
+		let findScheme = d =&gt; {
+			let cum = 0;
+			let ks = Object.keys(schema);
+			for (let i in ks) {
+				let n = schema[ks[i]].freq;
+				cum += n;
+				if (d &lt; cum) {
+					return schema[ks[i]];
+				}
+			}
+			throw &quot;Impossible&quot;;
+		};
+
+		let id = typeof this.state.account == &apos;string&apos; ? ss58Decode(this.state.account) : this.state.account;
+		if (!(typeof id == &apos;object&apos; &amp;&amp; id &amp;&amp; id instanceof Uint8Array &amp;&amp; id.length == 32)) {
+			return React.createElement(&apos;svg&apos;, {
+				id: this.props.id,
+				name: this.props.name,
+				className: this.props.className,
+				style: this.props.style,
+				width: this.props.width || this.props.size,
+				height: this.props.height || this.props.size,
+				viewBox: &apos;0 0 64 64&apos;
+			});
+		}
+		let ss58 = ss58Encode(id);
+		id = Array.from(blake2b(id)).map((x, i) =&gt; (x + 256 - zero[i]) % 256);
+
+		let sat = Math.floor(id[29] * 70 / 256 + 26) % 80 + 30;
+		let d = Math.floor((id[30] + id[31] * 256) % total);
+		let scheme = findScheme(d);
+		let palette = Array.from(id).map((x, i) =&gt; {
+			let b = (x + i % 28 * 58) % 256;
+			if (b == 0) {
+				return &apos;#444&apos;;
+			}
+			if (b == 255) {
+				return &apos;transparent&apos;;
+			}
+			let h = Math.floor(b % 64 * 360 / 64);
+			let l = [53, 15, 35, 75][Math.floor(b / 64)];
+			return `hsl(${h}, ${sat}%, ${l}%)`;
+		});
+
+		let rot = id[28] % 6 * 3;
+
+		let colors = scheme.colors.map((_, i) =&gt; palette[scheme.colors[i &lt; 18 ? (i + rot) % 18 : 18]]);
+
+		let i = 0;
+		return React.createElement(
+			&apos;svg&apos;,
+			{
+				id: this.props.id,
+				name: this.props.name,
+				className: this.props.className,
+				style: this.props.style,
+				width: this.props.width || this.props.size,
+				height: this.props.height || this.props.size,
+				viewBox: &apos;0 0 64 64&apos;,
+				onClick: () =&gt; {
+					copyToClipboard(ss58);this.props.onCopied &amp;&amp; this.props.onCopied(ss58);
+				}
+			},
+			React.createElement(&apos;circle&apos;, { cx: s / 2, cy: s / 2, r: s / 2, fill: &apos;#eee&apos; }),
+			React.createElement(&apos;circle&apos;, { cx: c, cy: c - r, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c, cy: c - ro2, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o4, cy: c - r3o4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o2, cy: c - ro2, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o4, cy: c - ro4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o2, cy: c, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o2, cy: c + ro2, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o4, cy: c + ro4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c - rroot3o4, cy: c + r3o4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c, cy: c + r, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c, cy: c + ro2, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o4, cy: c + r3o4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o2, cy: c + ro2, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o4, cy: c + ro4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o2, cy: c, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o2, cy: c - ro2, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o4, cy: c - ro4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c + rroot3o4, cy: c - r3o4, r: z, fill: colors[i++] }),
+			React.createElement(&apos;circle&apos;, { cx: c, cy: c, r: z, fill: colors[i++] })
+		);
+	}
+}</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

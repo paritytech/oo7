@@ -1,5 +1,11 @@
 window.esdocSearchIndex = [
   [
+    "./packages/oo7-substrate/src/addressbook.js~addressbook",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html",
+    "<span>AddressBook</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/addressBook.js</span>",
+    "class"
+  ],
+  [
     "./packages/oo7-parity/src/abis/index.js~badgeabi",
     "variable/index.html#static-variable-BadgeABI",
     "<span>BadgeABI</span> <span class=\"search-result-import-path\">./packages/oo7-parity/src/abis/index.js</span>",
@@ -12,21 +18,21 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
-    "./packages/oo7/lib/bond.js~bond",
-    "class/packages/oo7/lib/bond.js~Bond.html",
-    "<span>Bond</span> <span class=\"search-result-import-path\">./packages/oo7/lib/bond.js</span>",
+    "./packages/oo7/src/bond.js~bond",
+    "class/packages/oo7/src/bond.js~Bond.html",
+    "<span>Bond</span> <span class=\"search-result-import-path\">./packages/oo7/src/bond.js</span>",
     "class"
   ],
   [
-    "./packages/oo7/lib/bondcache.js~bondcache",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html",
-    "<span>BondCache</span> <span class=\"search-result-import-path\">./packages/oo7/lib/bondCache.js</span>",
+    "./packages/oo7/src/bondcache.js~bondcache",
+    "class/packages/oo7/src/bondCache.js~BondCache.html",
+    "<span>BondCache</span> <span class=\"search-result-import-path\">./packages/oo7/src/bondCache.js</span>",
     "class"
   ],
   [
-    "./packages/oo7/lib/bondproxy.js~bondproxy",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html",
-    "<span>BondProxy</span> <span class=\"search-result-import-path\">./packages/oo7/lib/bondProxy.js</span>",
+    "./packages/oo7/src/bondproxy.js~bondproxy",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html",
+    "<span>BondProxy</span> <span class=\"search-result-import-path\">./packages/oo7/src/bondProxy.js</span>",
     "class"
   ],
   [
@@ -36,15 +42,39 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "./packages/oo7/src/defaultbond.js~defaultbond",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html",
+    "<span>DefaultBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/defaultBond.js</span>",
+    "class"
+  ],
+  [
     "./packages/oo7-parity/src/abis/index.js~githubhintabi",
     "variable/index.html#static-variable-GitHubHintABI",
     "<span>GitHubHintABI</span> <span class=\"search-result-import-path\">./packages/oo7-parity/src/abis/index.js</span>",
     "variable"
   ],
   [
-    "./packages/oo7/lib/notreadybond.js~notreadybond",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html",
-    "<span>NotReadyBond</span> <span class=\"search-result-import-path\">./packages/oo7/lib/notReadyBond.js</span>",
+    "./packages/polkadot-identicon/lib/index.js~identicon",
+    "class/packages/polkadot-identicon/lib/index.js~Identicon.html",
+    "<span>Identicon</span> <span class=\"search-result-import-path\">./packages/polkadot-identicon/lib/index.js</span>",
+    "class"
+  ],
+  [
+    "./packages/oo7/src/latchbond.js~latchbond",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html",
+    "<span>LatchBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/latchBond.js</span>",
+    "class"
+  ],
+  [
+    "./packages/oo7-substrate/src/nodeservice.js~nodeservice",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html",
+    "<span>NodeService</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/nodeService.js</span>",
+    "class"
+  ],
+  [
+    "./packages/oo7/src/notreadybond.js~notreadybond",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html",
+    "<span>NotReadyBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/notReadyBond.js</span>",
     "class"
   ],
   [
@@ -54,21 +84,21 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
-    "./packages/oo7/lib/reactivebond.js~reactivebond",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html",
-    "<span>ReactiveBond</span> <span class=\"search-result-import-path\">./packages/oo7/lib/reactiveBond.js</span>",
+    "./packages/oo7/src/reactivebond.js~reactivebond",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html",
+    "<span>ReactiveBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/reactiveBond.js</span>",
     "class"
   ],
   [
-    "./packages/oo7/lib/reactivepromise.js~reactivepromise",
-    "class/packages/oo7/lib/reactivePromise.js~ReactivePromise.html",
-    "<span>ReactivePromise</span> <span class=\"search-result-import-path\">./packages/oo7/lib/reactivePromise.js</span>",
+    "./packages/oo7/src/reactivepromise.js~reactivepromise",
+    "class/packages/oo7/src/reactivePromise.js~ReactivePromise.html",
+    "<span>ReactivePromise</span> <span class=\"search-result-import-path\">./packages/oo7/src/reactivePromise.js</span>",
     "class"
   ],
   [
-    "./packages/oo7/lib/readybond.js~readybond",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html",
-    "<span>ReadyBond</span> <span class=\"search-result-import-path\">./packages/oo7/lib/readyBond.js</span>",
+    "./packages/oo7/src/readybond.js~readybond",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html",
+    "<span>ReadyBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/readyBond.js</span>",
     "class"
   ],
   [
@@ -78,9 +108,15 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
-    "./packages/oo7/lib/timebond.js~timebond",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html",
-    "<span>TimeBond</span> <span class=\"search-result-import-path\">./packages/oo7/lib/timeBond.js</span>",
+    "./packages/oo7-substrate/src/secretstore.js~secretstore",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html",
+    "<span>SecretStore</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/secretStore.js</span>",
+    "class"
+  ],
+  [
+    "./packages/oo7/src/timebond.js~timebond",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html",
+    "<span>TimeBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/timeBond.js</span>",
     "class"
   ],
   [
@@ -96,15 +132,21 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
-    "./packages/oo7/lib/transformbond.js~transformbond",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html",
-    "<span>TransformBond</span> <span class=\"search-result-import-path\">./packages/oo7/lib/transformBond.js</span>",
+    "./packages/oo7/src/transformbond.js~transformbond",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html",
+    "<span>TransformBond</span> <span class=\"search-result-import-path\">./packages/oo7/src/transformBond.js</span>",
     "class"
   ],
   [
     "./packages/oo7-parity/src/abis/index.js~abipolyfill",
     "function/index.html#static-function-abiPolyfill",
     "<span>abiPolyfill</span> <span class=\"search-result-import-path\">./packages/oo7-parity/src/abis/index.js</span>",
+    "function"
+  ],
+  [
+    "./packages/oo7-substrate/src/addressbook.js~addressbook",
+    "function/index.html#static-function-addressBook",
+    "<span>addressBook</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/addressBook.js</span>",
     "function"
   ],
   [
@@ -141,6 +183,12 @@ window.esdocSearchIndex = [
     "./packages/oo7-parity/src/utils/index.js~combinevalue",
     "function/index.html#static-function-combineValue",
     "<span>combineValue</span> <span class=\"search-result-import-path\">./packages/oo7-parity/src/utils/index.js</span>",
+    "function"
+  ],
+  [
+    "./packages/oo7-substrate/src/transact.js~composetransaction",
+    "function/index.html#static-function-composeTransaction",
+    "<span>composeTransaction</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/transact.js</span>",
     "function"
   ],
   [
@@ -240,15 +288,51 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
+    "./packages/oo7-substrate/src/metadata.js~metadata",
+    "variable/index.html#static-variable-metadata",
+    "<span>metadata</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/metadata.js</span>",
+    "variable"
+  ],
+  [
+    "./packages/oo7-substrate/src/nodeservice.js~nodeservice",
+    "function/index.html#static-function-nodeService",
+    "<span>nodeService</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/nodeService.js</span>",
+    "function"
+  ],
+  [
     "./packages/oo7-parity/src/index.js~options",
     "variable/index.html#static-variable-options",
     "<span>options</span> <span class=\"search-result-import-path\">./packages/oo7-parity/src/index.js</span>",
     "variable"
   ],
   [
+    "./packages/oo7-substrate/src/transact.js~post",
+    "function/index.html#static-function-post",
+    "<span>post</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/transact.js</span>",
+    "function"
+  ],
+  [
+    "./packages/oo7-substrate/src/pretty.js~pretty",
+    "function/index.html#static-function-pretty",
+    "<span>pretty</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/pretty.js</span>",
+    "function"
+  ],
+  [
     "./packages/oo7-parity/src/utils/index.js~removesigningprefix",
     "function/index.html#static-function-removeSigningPrefix",
     "<span>removeSigningPrefix</span> <span class=\"search-result-import-path\">./packages/oo7-parity/src/utils/index.js</span>",
+    "function"
+  ],
+  [
+    "./packages/oo7-substrate/src/secretstore.js~secretstore",
+    "function/index.html#static-function-secretStore",
+    "<span>secretStore</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/secretStore.js</span>",
+    "function"
+  ],
+  [
+    "./packages/oo7-substrate/src/nodeservice.js~setnodeuri",
+    "function/index.html#static-function-setNodeUri",
+    "<span>setNodeUri</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/nodeService.js</span>",
     "function"
   ],
   [
@@ -1050,693 +1134,1155 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "packages/oo7-substrate/src/addressbook.js",
+    "file/packages/oo7-substrate/src/addressBook.js.html",
+    "packages/oo7-substrate/src/addressBook.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#_accounts",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-member-_accounts",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#_accounts",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#_byaddress",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-member-_byAddress",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#_byAddress",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#_byname",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-member-_byName",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#_byName",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#_load",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-method-_load",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#_load",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#_sync",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-method-_sync",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#_sync",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#accounts",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-method-accounts",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#accounts",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#constructor",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-constructor-constructor",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#constructor",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#find",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-method-find",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#find",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#forget",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-method-forget",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#forget",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/addressbook.js~addressbook#submit",
+    "class/packages/oo7-substrate/src/addressBook.js~AddressBook.html#instance-method-submit",
+    "packages/oo7-substrate/src/addressBook.js~AddressBook#submit",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/bonds.js",
+    "file/packages/oo7-substrate/src/bonds.js.html",
+    "packages/oo7-substrate/src/bonds.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/codec.js",
+    "file/packages/oo7-substrate/src/codec.js.html",
+    "packages/oo7-substrate/src/codec.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/denominationinfo.js",
+    "file/packages/oo7-substrate/src/denominationInfo.js.html",
+    "packages/oo7-substrate/src/denominationInfo.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/index.js",
+    "file/packages/oo7-substrate/src/index.js.html",
+    "packages/oo7-substrate/src/index.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/metadata.js",
+    "file/packages/oo7-substrate/src/metadata.js.html",
+    "packages/oo7-substrate/src/metadata.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js",
+    "file/packages/oo7-substrate/src/nodeService.js.html",
+    "packages/oo7-substrate/src/nodeService.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#backoff",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-backoff",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#backoff",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#constructor",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-constructor-constructor",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#constructor",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#finalise",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-finalise",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#finalise",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#index",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-index",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#index",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#onreply",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-onReply",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#onReply",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#onceopen",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-onceOpen",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#onceOpen",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#request",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-request",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#request",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#start",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-start",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#start",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#subscribe",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-subscribe",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#subscribe",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#subscriptions",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-subscriptions",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#subscriptions",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#unsubscribe",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-unsubscribe",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#unsubscribe",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#uri",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-uri",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#uri",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#uriindex",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-uriIndex",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#uriIndex",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#ws",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-ws",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#ws",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/pretty.js",
+    "file/packages/oo7-substrate/src/pretty.js.html",
+    "packages/oo7-substrate/src/pretty.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js",
+    "file/packages/oo7-substrate/src/secretStore.js.html",
+    "packages/oo7-substrate/src/secretStore.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#_byaddress",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-member-_byAddress",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#_byAddress",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#_byname",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-member-_byName",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#_byName",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#_keys",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-member-_keys",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#_keys",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#_load",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-_load",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#_load",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#_sync",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-_sync",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#_sync",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#accountfromphrase",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-accountFromPhrase",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#accountFromPhrase",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#accounts",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-accounts",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#accounts",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#constructor",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-constructor-constructor",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#constructor",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#find",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-find",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#find",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#forget",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-forget",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#forget",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#sign",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-sign",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#sign",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#submit",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-submit",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#submit",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/srml/balances.js",
+    "file/packages/oo7-substrate/src/srml/balances.js.html",
+    "packages/oo7-substrate/src/srml/balances.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/srml/democracy.js",
+    "file/packages/oo7-substrate/src/srml/democracy.js.html",
+    "packages/oo7-substrate/src/srml/democracy.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/srml/session.js",
+    "file/packages/oo7-substrate/src/srml/session.js.html",
+    "packages/oo7-substrate/src/srml/session.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/srml/staking.js",
+    "file/packages/oo7-substrate/src/srml/staking.js.html",
+    "packages/oo7-substrate/src/srml/staking.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/ss58.js",
+    "file/packages/oo7-substrate/src/ss58.js.html",
+    "packages/oo7-substrate/src/ss58.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/storagebond.js",
+    "file/packages/oo7-substrate/src/storageBond.js.html",
+    "packages/oo7-substrate/src/storageBond.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/subscriptionbond.js",
+    "file/packages/oo7-substrate/src/subscriptionBond.js.html",
+    "packages/oo7-substrate/src/subscriptionBond.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/transact.js",
+    "file/packages/oo7-substrate/src/transact.js.html",
+    "packages/oo7-substrate/src/transact.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/types.js",
+    "file/packages/oo7-substrate/src/types.js.html",
+    "packages/oo7-substrate/src/types.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/utils.js",
+    "file/packages/oo7-substrate/src/utils.js.html",
+    "packages/oo7-substrate/src/utils.js",
+    "file"
+  ],
+  [
     "packages/oo7/index.js",
     "file/packages/oo7/index.js.html",
     "packages/oo7/index.js",
     "file"
   ],
   [
-    "packages/oo7/lib/bond.js",
-    "file/packages/oo7/lib/bond.js.html",
-    "packages/oo7/lib/bond.js",
+    "packages/oo7/src/bond.js",
+    "file/packages/oo7/src/bond.js.html",
+    "packages/oo7/src/bond.js",
     "file"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_defaultto",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_defaultTo",
-    "packages/oo7/lib/bond.js~Bond#_defaultTo",
+    "packages/oo7/src/bond.js~bond#_defaultto",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_defaultTo",
+    "packages/oo7/src/bond.js~Bond#_defaultTo",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_maybenull",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_mayBeNull",
-    "packages/oo7/lib/bond.js~Bond#_mayBeNull",
+    "packages/oo7/src/bond.js~bond#_maybenull",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_mayBeNull",
+    "packages/oo7/src/bond.js~Bond#_mayBeNull",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_notreadybond",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_notReadyBond",
-    "packages/oo7/lib/bond.js~Bond#_notReadyBond",
+    "packages/oo7/src/bond.js~bond#_notreadybond",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_notReadyBond",
+    "packages/oo7/src/bond.js~Bond#_notReadyBond",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_notifies",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_notifies",
-    "packages/oo7/lib/bond.js~Bond#_notifies",
+    "packages/oo7/src/bond.js~bond#_notifies",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_notifies",
+    "packages/oo7/src/bond.js~Bond#_notifies",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_parse",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_parse",
-    "packages/oo7/lib/bond.js~Bond#_parse",
+    "packages/oo7/src/bond.js~bond#_parse",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_parse",
+    "packages/oo7/src/bond.js~Bond#_parse",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_ready",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_ready",
-    "packages/oo7/lib/bond.js~Bond#_ready",
+    "packages/oo7/src/bond.js~bond#_ready",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_ready",
+    "packages/oo7/src/bond.js~Bond#_ready",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_readybond",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_readyBond",
-    "packages/oo7/lib/bond.js~Bond#_readyBond",
+    "packages/oo7/src/bond.js~bond#_readybond",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_readyBond",
+    "packages/oo7/src/bond.js~Bond#_readyBond",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_stringify",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_stringify",
-    "packages/oo7/lib/bond.js~Bond#_stringify",
+    "packages/oo7/src/bond.js~bond#_stringify",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_stringify",
+    "packages/oo7/src/bond.js~Bond#_stringify",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_subscribers",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_subscribers",
-    "packages/oo7/lib/bond.js~Bond#_subscribers",
+    "packages/oo7/src/bond.js~bond#_subscribers",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_subscribers",
+    "packages/oo7/src/bond.js~Bond#_subscribers",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_thens",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_thens",
-    "packages/oo7/lib/bond.js~Bond#_thens",
+    "packages/oo7/src/bond.js~bond#_thens",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_thens",
+    "packages/oo7/src/bond.js~Bond#_thens",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_triggering",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_triggering",
-    "packages/oo7/lib/bond.js~Bond#_triggering",
+    "packages/oo7/src/bond.js~bond#_triggering",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_triggering",
+    "packages/oo7/src/bond.js~Bond#_triggering",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_users",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_users",
-    "packages/oo7/lib/bond.js~Bond#_users",
+    "packages/oo7/src/bond.js~bond#_users",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_users",
+    "packages/oo7/src/bond.js~Bond#_users",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_uuid",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_uuid",
-    "packages/oo7/lib/bond.js~Bond#_uuid",
+    "packages/oo7/src/bond.js~bond#_uuid",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_uuid",
+    "packages/oo7/src/bond.js~Bond#_uuid",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#_value",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-member-_value",
-    "packages/oo7/lib/bond.js~Bond#_value",
+    "packages/oo7/src/bond.js~bond#_value",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-member-_value",
+    "packages/oo7/src/bond.js~Bond#_value",
     "member"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#changed",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-changed",
-    "packages/oo7/lib/bond.js~Bond#changed",
+    "packages/oo7/src/bond.js~bond#changed",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-changed",
+    "packages/oo7/src/bond.js~Bond#changed",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#constructor",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-constructor-constructor",
-    "packages/oo7/lib/bond.js~Bond#constructor",
+    "packages/oo7/src/bond.js~bond#constructor",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-constructor-constructor",
+    "packages/oo7/src/bond.js~Bond#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#defaultto",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-defaultTo",
-    "packages/oo7/lib/bond.js~Bond#defaultTo",
+    "packages/oo7/src/bond.js~bond#default",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-default",
+    "packages/oo7/src/bond.js~Bond#default",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#done",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-done",
-    "packages/oo7/lib/bond.js~Bond#done",
+    "packages/oo7/src/bond.js~bond#defaultto",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-defaultTo",
+    "packages/oo7/src/bond.js~Bond#defaultTo",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#drop",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-drop",
-    "packages/oo7/lib/bond.js~Bond#drop",
+    "packages/oo7/src/bond.js~bond#done",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-done",
+    "packages/oo7/src/bond.js~Bond#done",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#finalise",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-finalise",
-    "packages/oo7/lib/bond.js~Bond#finalise",
+    "packages/oo7/src/bond.js~bond#drop",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-drop",
+    "packages/oo7/src/bond.js~Bond#drop",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#initialise",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-initialise",
-    "packages/oo7/lib/bond.js~Bond#initialise",
+    "packages/oo7/src/bond.js~bond#finalise",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-finalise",
+    "packages/oo7/src/bond.js~Bond#finalise",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#isdone",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-isDone",
-    "packages/oo7/lib/bond.js~Bond#isDone",
+    "packages/oo7/src/bond.js~bond#initialise",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-initialise",
+    "packages/oo7/src/bond.js~Bond#initialise",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#isready",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-isReady",
-    "packages/oo7/lib/bond.js~Bond#isReady",
+    "packages/oo7/src/bond.js~bond#isdone",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-isDone",
+    "packages/oo7/src/bond.js~Bond#isDone",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#log",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-log",
-    "packages/oo7/lib/bond.js~Bond#log",
+    "packages/oo7/src/bond.js~bond#isready",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-isReady",
+    "packages/oo7/src/bond.js~Bond#isReady",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#map",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-map",
-    "packages/oo7/lib/bond.js~Bond#map",
+    "packages/oo7/src/bond.js~bond#latched",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-latched",
+    "packages/oo7/src/bond.js~Bond#latched",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#mapeach",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-mapEach",
-    "packages/oo7/lib/bond.js~Bond#mapEach",
+    "packages/oo7/src/bond.js~bond#log",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-log",
+    "packages/oo7/src/bond.js~Bond#log",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#maptostring",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-mapToString",
-    "packages/oo7/lib/bond.js~Bond#mapToString",
+    "packages/oo7/src/bond.js~bond#map",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-map",
+    "packages/oo7/src/bond.js~Bond#map",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#notready",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-notReady",
-    "packages/oo7/lib/bond.js~Bond#notReady",
+    "packages/oo7/src/bond.js~bond#mapeach",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-mapEach",
+    "packages/oo7/src/bond.js~Bond#mapEach",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#notify",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-notify",
-    "packages/oo7/lib/bond.js~Bond#notify",
+    "packages/oo7/src/bond.js~bond#maptostring",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-mapToString",
+    "packages/oo7/src/bond.js~Bond#mapToString",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#ready",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-ready",
-    "packages/oo7/lib/bond.js~Bond#ready",
+    "packages/oo7/src/bond.js~bond#notready",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-notReady",
+    "packages/oo7/src/bond.js~Bond#notReady",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#reduce",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-reduce",
-    "packages/oo7/lib/bond.js~Bond#reduce",
+    "packages/oo7/src/bond.js~bond#notify",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-notify",
+    "packages/oo7/src/bond.js~Bond#notify",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#reset",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-reset",
-    "packages/oo7/lib/bond.js~Bond#reset",
+    "packages/oo7/src/bond.js~bond#ready",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-ready",
+    "packages/oo7/src/bond.js~Bond#ready",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#sub",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-sub",
-    "packages/oo7/lib/bond.js~Bond#sub",
+    "packages/oo7/src/bond.js~bond#reduce",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-reduce",
+    "packages/oo7/src/bond.js~Bond#reduce",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#subscriptable",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-subscriptable",
-    "packages/oo7/lib/bond.js~Bond#subscriptable",
+    "packages/oo7/src/bond.js~bond#reset",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-reset",
+    "packages/oo7/src/bond.js~Bond#reset",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#then",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-then",
-    "packages/oo7/lib/bond.js~Bond#then",
+    "packages/oo7/src/bond.js~bond#sub",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-sub",
+    "packages/oo7/src/bond.js~Bond#sub",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#tie",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-tie",
-    "packages/oo7/lib/bond.js~Bond#tie",
+    "packages/oo7/src/bond.js~bond#subscriptable",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-subscriptable",
+    "packages/oo7/src/bond.js~Bond#subscriptable",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#tostring",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-toString",
-    "packages/oo7/lib/bond.js~Bond#toString",
+    "packages/oo7/src/bond.js~bond#then",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-then",
+    "packages/oo7/src/bond.js~Bond#then",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#trigger",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-trigger",
-    "packages/oo7/lib/bond.js~Bond#trigger",
+    "packages/oo7/src/bond.js~bond#tie",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-tie",
+    "packages/oo7/src/bond.js~Bond#tie",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#unnotify",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-unnotify",
-    "packages/oo7/lib/bond.js~Bond#unnotify",
+    "packages/oo7/src/bond.js~bond#tostring",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-toString",
+    "packages/oo7/src/bond.js~Bond#toString",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#untie",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-untie",
-    "packages/oo7/lib/bond.js~Bond#untie",
+    "packages/oo7/src/bond.js~bond#trigger",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-trigger",
+    "packages/oo7/src/bond.js~Bond#trigger",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond#use",
-    "class/packages/oo7/lib/bond.js~Bond.html#instance-method-use",
-    "packages/oo7/lib/bond.js~Bond#use",
+    "packages/oo7/src/bond.js~bond#unnotify",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-unnotify",
+    "packages/oo7/src/bond.js~Bond#unnotify",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond._fromsymbol",
-    "class/packages/oo7/lib/bond.js~Bond.html#static-method-_fromSymbol",
-    "packages/oo7/lib/bond.js~Bond._fromSymbol",
+    "packages/oo7/src/bond.js~bond#untie",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-untie",
+    "packages/oo7/src/bond.js~Bond#untie",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond._knowsymbol",
-    "class/packages/oo7/lib/bond.js~Bond.html#static-method-_knowSymbol",
-    "packages/oo7/lib/bond.js~Bond._knowSymbol",
+    "packages/oo7/src/bond.js~bond#use",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-use",
+    "packages/oo7/src/bond.js~Bond#use",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond.all",
-    "class/packages/oo7/lib/bond.js~Bond.html#static-method-all",
-    "packages/oo7/lib/bond.js~Bond.all",
+    "packages/oo7/src/bond.js~bond#xform",
+    "class/packages/oo7/src/bond.js~Bond.html#instance-method-xform",
+    "packages/oo7/src/bond.js~Bond#xform",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond.instanceof",
-    "class/packages/oo7/lib/bond.js~Bond.html#static-method-instanceOf",
-    "packages/oo7/lib/bond.js~Bond.instanceOf",
+    "packages/oo7/src/bond.js~bond._fromsymbol",
+    "class/packages/oo7/src/bond.js~Bond.html#static-method-_fromSymbol",
+    "packages/oo7/src/bond.js~Bond._fromSymbol",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond.mapall",
-    "class/packages/oo7/lib/bond.js~Bond.html#static-method-mapAll",
-    "packages/oo7/lib/bond.js~Bond.mapAll",
+    "packages/oo7/src/bond.js~bond._knowsymbol",
+    "class/packages/oo7/src/bond.js~Bond.html#static-method-_knowSymbol",
+    "packages/oo7/src/bond.js~Bond._knowSymbol",
     "method"
   ],
   [
-    "packages/oo7/lib/bond.js~bond.promise",
-    "class/packages/oo7/lib/bond.js~Bond.html#static-method-promise",
-    "packages/oo7/lib/bond.js~Bond.promise",
+    "packages/oo7/src/bond.js~bond.all",
+    "class/packages/oo7/src/bond.js~Bond.html#static-method-all",
+    "packages/oo7/src/bond.js~Bond.all",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js",
-    "file/packages/oo7/lib/bondCache.js.html",
-    "packages/oo7/lib/bondCache.js",
+    "packages/oo7/src/bond.js~bond.instanceof",
+    "class/packages/oo7/src/bond.js~Bond.html#static-method-instanceOf",
+    "packages/oo7/src/bond.js~Bond.instanceOf",
+    "method"
+  ],
+  [
+    "packages/oo7/src/bond.js~bond.mapall",
+    "class/packages/oo7/src/bond.js~Bond.html#static-method-mapAll",
+    "packages/oo7/src/bond.js~Bond.mapAll",
+    "method"
+  ],
+  [
+    "packages/oo7/src/bond.js~bond.promise",
+    "class/packages/oo7/src/bond.js~Bond.html#static-method-promise",
+    "packages/oo7/src/bond.js~Bond.promise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/bondcache.js",
+    "file/packages/oo7/src/bondCache.js.html",
+    "packages/oo7/src/bondCache.js",
     "file"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#changed",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-changed",
-    "packages/oo7/lib/bondCache.js~BondCache#changed",
+    "packages/oo7/src/bondcache.js~bondcache#changed",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-changed",
+    "packages/oo7/src/bondCache.js~BondCache#changed",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#checkconsistency",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-checkConsistency",
-    "packages/oo7/lib/bondCache.js~BondCache#checkConsistency",
+    "packages/oo7/src/bondcache.js~bondcache#checkconsistency",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-checkConsistency",
+    "packages/oo7/src/bondCache.js~BondCache#checkConsistency",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#constructor",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-constructor-constructor",
-    "packages/oo7/lib/bondCache.js~BondCache#constructor",
+    "packages/oo7/src/bondcache.js~bondcache#constructor",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-constructor-constructor",
+    "packages/oo7/src/bondCache.js~BondCache#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#deferparentprefix",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-member-deferParentPrefix",
-    "packages/oo7/lib/bondCache.js~BondCache#deferParentPrefix",
+    "packages/oo7/src/bondcache.js~bondcache#deferparentprefix",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-member-deferParentPrefix",
+    "packages/oo7/src/bondCache.js~BondCache#deferParentPrefix",
     "member"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#ensureactive",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-ensureActive",
-    "packages/oo7/lib/bondCache.js~BondCache#ensureActive",
+    "packages/oo7/src/bondcache.js~bondcache#ensureactive",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-ensureActive",
+    "packages/oo7/src/bondCache.js~BondCache#ensureActive",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#finalise",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-finalise",
-    "packages/oo7/lib/bondCache.js~BondCache#finalise",
+    "packages/oo7/src/bondcache.js~bondcache#finalise",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-finalise",
+    "packages/oo7/src/bondCache.js~BondCache#finalise",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#initialise",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-initialise",
-    "packages/oo7/lib/bondCache.js~BondCache#initialise",
+    "packages/oo7/src/bondcache.js~bondcache#initialise",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-initialise",
+    "packages/oo7/src/bondCache.js~BondCache#initialise",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#onmessage",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-onMessage",
-    "packages/oo7/lib/bondCache.js~BondCache#onMessage",
+    "packages/oo7/src/bondcache.js~bondcache#onmessage",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-onMessage",
+    "packages/oo7/src/bondCache.js~BondCache#onMessage",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#onstoragechanged",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-onStorageChanged",
-    "packages/oo7/lib/bondCache.js~BondCache#onStorageChanged",
+    "packages/oo7/src/bondcache.js~bondcache#onstoragechanged",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-onStorageChanged",
+    "packages/oo7/src/bondCache.js~BondCache#onStorageChanged",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#onunload",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-onUnload",
-    "packages/oo7/lib/bondCache.js~BondCache#onUnload",
+    "packages/oo7/src/bondcache.js~bondcache#onunload",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-onUnload",
+    "packages/oo7/src/bondCache.js~BondCache#onUnload",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#reconstruct",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-method-reconstruct",
-    "packages/oo7/lib/bondCache.js~BondCache#reconstruct",
+    "packages/oo7/src/bondcache.js~bondcache#reconstruct",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-method-reconstruct",
+    "packages/oo7/src/bondCache.js~BondCache#reconstruct",
     "method"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#regs",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-member-regs",
-    "packages/oo7/lib/bondCache.js~BondCache#regs",
+    "packages/oo7/src/bondcache.js~bondcache#regs",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-member-regs",
+    "packages/oo7/src/bondCache.js~BondCache#regs",
     "member"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#sessionid",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-member-sessionId",
-    "packages/oo7/lib/bondCache.js~BondCache#sessionId",
+    "packages/oo7/src/bondcache.js~bondcache#sessionid",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-member-sessionId",
+    "packages/oo7/src/bondCache.js~BondCache#sessionId",
     "member"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#storage",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-member-storage",
-    "packages/oo7/lib/bondCache.js~BondCache#storage",
+    "packages/oo7/src/bondcache.js~bondcache#storage",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-member-storage",
+    "packages/oo7/src/bondCache.js~BondCache#storage",
     "member"
   ],
   [
-    "packages/oo7/lib/bondcache.js~bondcache#window",
-    "class/packages/oo7/lib/bondCache.js~BondCache.html#instance-member-window",
-    "packages/oo7/lib/bondCache.js~BondCache#window",
+    "packages/oo7/src/bondcache.js~bondcache#window",
+    "class/packages/oo7/src/bondCache.js~BondCache.html#instance-member-window",
+    "packages/oo7/src/bondCache.js~BondCache#window",
     "member"
   ],
   [
-    "packages/oo7/lib/bondproxy.js",
-    "file/packages/oo7/lib/bondProxy.js.html",
-    "packages/oo7/lib/bondProxy.js",
+    "packages/oo7/src/bondproxy.js",
+    "file/packages/oo7/src/bondProxy.js.html",
+    "packages/oo7/src/bondProxy.js",
     "file"
   ],
   [
-    "packages/oo7/lib/bondproxy.js~bondproxy#bonds",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html#instance-member-bonds",
-    "packages/oo7/lib/bondProxy.js~BondProxy#bonds",
+    "packages/oo7/src/bondproxy.js~bondproxy#bonds",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html#instance-member-bonds",
+    "packages/oo7/src/bondProxy.js~BondProxy#bonds",
     "member"
   ],
   [
-    "packages/oo7/lib/bondproxy.js~bondproxy#constructor",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html#instance-constructor-constructor",
-    "packages/oo7/lib/bondProxy.js~BondProxy#constructor",
+    "packages/oo7/src/bondproxy.js~bondproxy#constructor",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html#instance-constructor-constructor",
+    "packages/oo7/src/bondProxy.js~BondProxy#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/bondproxy.js~bondproxy#deferparentprefix",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html#instance-member-deferParentPrefix",
-    "packages/oo7/lib/bondProxy.js~BondProxy#deferParentPrefix",
+    "packages/oo7/src/bondproxy.js~bondproxy#deferparentprefix",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html#instance-member-deferParentPrefix",
+    "packages/oo7/src/bondProxy.js~BondProxy#deferParentPrefix",
     "member"
   ],
   [
-    "packages/oo7/lib/bondproxy.js~bondproxy#fromuuid",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html#instance-member-fromUuid",
-    "packages/oo7/lib/bondProxy.js~BondProxy#fromUuid",
+    "packages/oo7/src/bondproxy.js~bondproxy#fromuuid",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html#instance-member-fromUuid",
+    "packages/oo7/src/bondProxy.js~BondProxy#fromUuid",
     "member"
   ],
   [
-    "packages/oo7/lib/bondproxy.js~bondproxy#onmessage",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html#instance-method-onMessage",
-    "packages/oo7/lib/bondProxy.js~BondProxy#onMessage",
+    "packages/oo7/src/bondproxy.js~bondproxy#onmessage",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html#instance-method-onMessage",
+    "packages/oo7/src/bondProxy.js~BondProxy#onMessage",
     "method"
   ],
   [
-    "packages/oo7/lib/bondproxy.js~bondproxy#window",
-    "class/packages/oo7/lib/bondProxy.js~BondProxy.html#instance-member-window",
-    "packages/oo7/lib/bondProxy.js~BondProxy#window",
+    "packages/oo7/src/bondproxy.js~bondproxy#window",
+    "class/packages/oo7/src/bondProxy.js~BondProxy.html#instance-member-window",
+    "packages/oo7/src/bondProxy.js~BondProxy#window",
     "member"
   ],
   [
-    "packages/oo7/lib/index.js",
-    "file/packages/oo7/lib/index.js.html",
-    "packages/oo7/lib/index.js",
+    "packages/oo7/src/defaultbond.js",
+    "file/packages/oo7/src/defaultBond.js.html",
+    "packages/oo7/src/defaultBond.js",
     "file"
   ],
   [
-    "packages/oo7/lib/notreadybond.js",
-    "file/packages/oo7/lib/notReadyBond.js.html",
-    "packages/oo7/lib/notReadyBond.js",
+    "packages/oo7/src/defaultbond.js~defaultbond#_notifyid",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html#instance-member-_notifyId",
+    "packages/oo7/src/defaultBond.js~DefaultBond#_notifyId",
+    "member"
+  ],
+  [
+    "packages/oo7/src/defaultbond.js~defaultbond#_poll",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html#instance-member-_poll",
+    "packages/oo7/src/defaultBond.js~DefaultBond#_poll",
+    "member"
+  ],
+  [
+    "packages/oo7/src/defaultbond.js~defaultbond#_targetbond",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html#instance-member-_targetBond",
+    "packages/oo7/src/defaultBond.js~DefaultBond#_targetBond",
+    "member"
+  ],
+  [
+    "packages/oo7/src/defaultbond.js~defaultbond#constructor",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html#instance-constructor-constructor",
+    "packages/oo7/src/defaultBond.js~DefaultBond#constructor",
+    "method"
+  ],
+  [
+    "packages/oo7/src/defaultbond.js~defaultbond#finalise",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html#instance-method-finalise",
+    "packages/oo7/src/defaultBond.js~DefaultBond#finalise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/defaultbond.js~defaultbond#initialise",
+    "class/packages/oo7/src/defaultBond.js~DefaultBond.html#instance-method-initialise",
+    "packages/oo7/src/defaultBond.js~DefaultBond#initialise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/index.js",
+    "file/packages/oo7/src/index.js.html",
+    "packages/oo7/src/index.js",
     "file"
   ],
   [
-    "packages/oo7/lib/notreadybond.js~notreadybond#_notifyid",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html#instance-member-_notifyId",
-    "packages/oo7/lib/notReadyBond.js~NotReadyBond#_notifyId",
-    "member"
-  ],
-  [
-    "packages/oo7/lib/notreadybond.js~notreadybond#_poll",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html#instance-member-_poll",
-    "packages/oo7/lib/notReadyBond.js~NotReadyBond#_poll",
-    "member"
-  ],
-  [
-    "packages/oo7/lib/notreadybond.js~notreadybond#_targetbond",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html#instance-member-_targetBond",
-    "packages/oo7/lib/notReadyBond.js~NotReadyBond#_targetBond",
-    "member"
-  ],
-  [
-    "packages/oo7/lib/notreadybond.js~notreadybond#constructor",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html#instance-constructor-constructor",
-    "packages/oo7/lib/notReadyBond.js~NotReadyBond#constructor",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/notreadybond.js~notreadybond#finalise",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html#instance-method-finalise",
-    "packages/oo7/lib/notReadyBond.js~NotReadyBond#finalise",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/notreadybond.js~notreadybond#initialise",
-    "class/packages/oo7/lib/notReadyBond.js~NotReadyBond.html#instance-method-initialise",
-    "packages/oo7/lib/notReadyBond.js~NotReadyBond#initialise",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/reactivebond.js",
-    "file/packages/oo7/lib/reactiveBond.js.html",
-    "packages/oo7/lib/reactiveBond.js",
+    "packages/oo7/src/latchbond.js",
+    "file/packages/oo7/src/latchBond.js.html",
+    "packages/oo7/src/latchBond.js",
     "file"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_active",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_active",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_active",
+    "packages/oo7/src/latchbond.js~latchbond#_notifyid",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-member-_notifyId",
+    "packages/oo7/src/latchBond.js~LatchBond#_notifyId",
     "member"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_args",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_args",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_args",
+    "packages/oo7/src/latchbond.js~latchbond#_poll",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-member-_poll",
+    "packages/oo7/src/latchBond.js~LatchBond#_poll",
     "member"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_dependencies",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_dependencies",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_dependencies",
+    "packages/oo7/src/latchbond.js~latchbond#_ready",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-member-_ready",
+    "packages/oo7/src/latchBond.js~LatchBond#_ready",
     "member"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_execute",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_execute",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_execute",
+    "packages/oo7/src/latchbond.js~latchbond#_targetbond",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-member-_targetBond",
+    "packages/oo7/src/latchBond.js~LatchBond#_targetBond",
     "member"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_executereset",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_executeReset",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_executeReset",
+    "packages/oo7/src/latchbond.js~latchbond#_value",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-member-_value",
+    "packages/oo7/src/latchBond.js~LatchBond#_value",
     "member"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_notified",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-method-_notified",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_notified",
+    "packages/oo7/src/latchbond.js~latchbond#constructor",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-constructor-constructor",
+    "packages/oo7/src/latchBond.js~LatchBond#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_notifykeys",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_notifyKeys",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_notifyKeys",
-    "member"
-  ],
-  [
-    "packages/oo7/lib/reactivebond.js~reactivebond#_resolvedepth",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-member-_resolveDepth",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#_resolveDepth",
-    "member"
-  ],
-  [
-    "packages/oo7/lib/reactivebond.js~reactivebond#constructor",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-constructor-constructor",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#constructor",
+    "packages/oo7/src/latchbond.js~latchbond#finalise",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-method-finalise",
+    "packages/oo7/src/latchBond.js~LatchBond#finalise",
     "method"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#finalise",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-method-finalise",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#finalise",
+    "packages/oo7/src/latchbond.js~latchbond#initialise",
+    "class/packages/oo7/src/latchBond.js~LatchBond.html#instance-method-initialise",
+    "packages/oo7/src/latchBond.js~LatchBond#initialise",
     "method"
   ],
   [
-    "packages/oo7/lib/reactivebond.js~reactivebond#initialise",
-    "class/packages/oo7/lib/reactiveBond.js~ReactiveBond.html#instance-method-initialise",
-    "packages/oo7/lib/reactiveBond.js~ReactiveBond#initialise",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/reactivepromise.js",
-    "file/packages/oo7/lib/reactivePromise.js.html",
-    "packages/oo7/lib/reactivePromise.js",
+    "packages/oo7/src/notreadybond.js",
+    "file/packages/oo7/src/notReadyBond.js.html",
+    "packages/oo7/src/notReadyBond.js",
     "file"
   ],
   [
-    "packages/oo7/lib/reactivepromise.js~reactivepromise#constructor",
-    "class/packages/oo7/lib/reactivePromise.js~ReactivePromise.html#instance-constructor-constructor",
-    "packages/oo7/lib/reactivePromise.js~ReactivePromise#constructor",
+    "packages/oo7/src/notreadybond.js~notreadybond#_notifyid",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html#instance-member-_notifyId",
+    "packages/oo7/src/notReadyBond.js~NotReadyBond#_notifyId",
+    "member"
+  ],
+  [
+    "packages/oo7/src/notreadybond.js~notreadybond#_poll",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html#instance-member-_poll",
+    "packages/oo7/src/notReadyBond.js~NotReadyBond#_poll",
+    "member"
+  ],
+  [
+    "packages/oo7/src/notreadybond.js~notreadybond#_targetbond",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html#instance-member-_targetBond",
+    "packages/oo7/src/notReadyBond.js~NotReadyBond#_targetBond",
+    "member"
+  ],
+  [
+    "packages/oo7/src/notreadybond.js~notreadybond#constructor",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html#instance-constructor-constructor",
+    "packages/oo7/src/notReadyBond.js~NotReadyBond#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/readybond.js",
-    "file/packages/oo7/lib/readyBond.js.html",
-    "packages/oo7/lib/readyBond.js",
+    "packages/oo7/src/notreadybond.js~notreadybond#finalise",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html#instance-method-finalise",
+    "packages/oo7/src/notReadyBond.js~NotReadyBond#finalise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/notreadybond.js~notreadybond#initialise",
+    "class/packages/oo7/src/notReadyBond.js~NotReadyBond.html#instance-method-initialise",
+    "packages/oo7/src/notReadyBond.js~NotReadyBond#initialise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/reactivebond.js",
+    "file/packages/oo7/src/reactiveBond.js.html",
+    "packages/oo7/src/reactiveBond.js",
     "file"
   ],
   [
-    "packages/oo7/lib/readybond.js~readybond#_notifyid",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html#instance-member-_notifyId",
-    "packages/oo7/lib/readyBond.js~ReadyBond#_notifyId",
+    "packages/oo7/src/reactivebond.js~reactivebond#_active",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_active",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_active",
     "member"
   ],
   [
-    "packages/oo7/lib/readybond.js~readybond#_poll",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html#instance-member-_poll",
-    "packages/oo7/lib/readyBond.js~ReadyBond#_poll",
+    "packages/oo7/src/reactivebond.js~reactivebond#_args",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_args",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_args",
     "member"
   ],
   [
-    "packages/oo7/lib/readybond.js~readybond#_targetbond",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html#instance-member-_targetBond",
-    "packages/oo7/lib/readyBond.js~ReadyBond#_targetBond",
+    "packages/oo7/src/reactivebond.js~reactivebond#_dependencies",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_dependencies",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_dependencies",
     "member"
   ],
   [
-    "packages/oo7/lib/readybond.js~readybond#constructor",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html#instance-constructor-constructor",
-    "packages/oo7/lib/readyBond.js~ReadyBond#constructor",
+    "packages/oo7/src/reactivebond.js~reactivebond#_execute",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_execute",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_execute",
+    "member"
+  ],
+  [
+    "packages/oo7/src/reactivebond.js~reactivebond#_executereset",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_executeReset",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_executeReset",
+    "member"
+  ],
+  [
+    "packages/oo7/src/reactivebond.js~reactivebond#_notified",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-method-_notified",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_notified",
     "method"
   ],
   [
-    "packages/oo7/lib/readybond.js~readybond#finalise",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html#instance-method-finalise",
-    "packages/oo7/lib/readyBond.js~ReadyBond#finalise",
+    "packages/oo7/src/reactivebond.js~reactivebond#_notifykeys",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_notifyKeys",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_notifyKeys",
+    "member"
+  ],
+  [
+    "packages/oo7/src/reactivebond.js~reactivebond#_resolvedepth",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-member-_resolveDepth",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#_resolveDepth",
+    "member"
+  ],
+  [
+    "packages/oo7/src/reactivebond.js~reactivebond#constructor",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-constructor-constructor",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/readybond.js~readybond#initialise",
-    "class/packages/oo7/lib/readyBond.js~ReadyBond.html#instance-method-initialise",
-    "packages/oo7/lib/readyBond.js~ReadyBond#initialise",
+    "packages/oo7/src/reactivebond.js~reactivebond#finalise",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-method-finalise",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#finalise",
     "method"
   ],
   [
-    "packages/oo7/lib/timebond.js",
-    "file/packages/oo7/lib/timeBond.js.html",
-    "packages/oo7/lib/timeBond.js",
+    "packages/oo7/src/reactivebond.js~reactivebond#initialise",
+    "class/packages/oo7/src/reactiveBond.js~ReactiveBond.html#instance-method-initialise",
+    "packages/oo7/src/reactiveBond.js~ReactiveBond#initialise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/reactivepromise.js",
+    "file/packages/oo7/src/reactivePromise.js.html",
+    "packages/oo7/src/reactivePromise.js",
     "file"
   ],
   [
-    "packages/oo7/lib/timebond.js~timebond#constructor",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html#instance-constructor-constructor",
-    "packages/oo7/lib/timeBond.js~TimeBond#constructor",
+    "packages/oo7/src/reactivepromise.js~reactivepromise#constructor",
+    "class/packages/oo7/src/reactivePromise.js~ReactivePromise.html#instance-constructor-constructor",
+    "packages/oo7/src/reactivePromise.js~ReactivePromise#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/timebond.js~timebond#finalise",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html#instance-method-finalise",
-    "packages/oo7/lib/timeBond.js~TimeBond#finalise",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/timebond.js~timebond#initialise",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html#instance-method-initialise",
-    "packages/oo7/lib/timeBond.js~TimeBond#initialise",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/timebond.js~timebond#interval",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html#instance-member-interval",
-    "packages/oo7/lib/timeBond.js~TimeBond#interval",
-    "member"
-  ],
-  [
-    "packages/oo7/lib/timebond.js~timebond#poll",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html#instance-method-poll",
-    "packages/oo7/lib/timeBond.js~TimeBond#poll",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/timebond.js~timebond.testintervals",
-    "class/packages/oo7/lib/timeBond.js~TimeBond.html#static-method-testIntervals",
-    "packages/oo7/lib/timeBond.js~TimeBond.testIntervals",
-    "method"
-  ],
-  [
-    "packages/oo7/lib/transformbond.js",
-    "file/packages/oo7/lib/transformBond.js.html",
-    "packages/oo7/lib/transformBond.js",
+    "packages/oo7/src/readybond.js",
+    "file/packages/oo7/src/readyBond.js.html",
+    "packages/oo7/src/readyBond.js",
     "file"
   ],
   [
-    "packages/oo7/lib/transformbond.js~transformbond#_outbond",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html#instance-member-_outBond",
-    "packages/oo7/lib/transformBond.js~TransformBond#_outBond",
+    "packages/oo7/src/readybond.js~readybond#_notifyid",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html#instance-member-_notifyId",
+    "packages/oo7/src/readyBond.js~ReadyBond#_notifyId",
     "member"
   ],
   [
-    "packages/oo7/lib/transformbond.js~transformbond#constructor",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html#instance-constructor-constructor",
-    "packages/oo7/lib/transformBond.js~TransformBond#constructor",
+    "packages/oo7/src/readybond.js~readybond#_poll",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html#instance-member-_poll",
+    "packages/oo7/src/readyBond.js~ReadyBond#_poll",
+    "member"
+  ],
+  [
+    "packages/oo7/src/readybond.js~readybond#_targetbond",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html#instance-member-_targetBond",
+    "packages/oo7/src/readyBond.js~ReadyBond#_targetBond",
+    "member"
+  ],
+  [
+    "packages/oo7/src/readybond.js~readybond#constructor",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html#instance-constructor-constructor",
+    "packages/oo7/src/readyBond.js~ReadyBond#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/transformbond.js~transformbond#dropout",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html#instance-method-dropOut",
-    "packages/oo7/lib/transformBond.js~TransformBond#dropOut",
+    "packages/oo7/src/readybond.js~readybond#finalise",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html#instance-method-finalise",
+    "packages/oo7/src/readyBond.js~ReadyBond#finalise",
     "method"
   ],
   [
-    "packages/oo7/lib/transformbond.js~transformbond#finalise",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html#instance-method-finalise",
-    "packages/oo7/lib/transformBond.js~TransformBond#finalise",
+    "packages/oo7/src/readybond.js~readybond#initialise",
+    "class/packages/oo7/src/readyBond.js~ReadyBond.html#instance-method-initialise",
+    "packages/oo7/src/readyBond.js~ReadyBond#initialise",
     "method"
   ],
   [
-    "packages/oo7/lib/transformbond.js~transformbond#useout",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html#instance-method-useOut",
-    "packages/oo7/lib/transformBond.js~TransformBond#useOut",
+    "packages/oo7/src/timebond.js",
+    "file/packages/oo7/src/timeBond.js.html",
+    "packages/oo7/src/timeBond.js",
+    "file"
+  ],
+  [
+    "packages/oo7/src/timebond.js~timebond#constructor",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html#instance-constructor-constructor",
+    "packages/oo7/src/timeBond.js~TimeBond#constructor",
     "method"
   ],
   [
-    "packages/oo7/lib/transformbond.js~transformbond.setdefaultcontext",
-    "class/packages/oo7/lib/transformBond.js~TransformBond.html#static-method-setDefaultContext",
-    "packages/oo7/lib/transformBond.js~TransformBond.setDefaultContext",
+    "packages/oo7/src/timebond.js~timebond#finalise",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html#instance-method-finalise",
+    "packages/oo7/src/timeBond.js~TimeBond#finalise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/timebond.js~timebond#initialise",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html#instance-method-initialise",
+    "packages/oo7/src/timeBond.js~TimeBond#initialise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/timebond.js~timebond#interval",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html#instance-member-interval",
+    "packages/oo7/src/timeBond.js~TimeBond#interval",
+    "member"
+  ],
+  [
+    "packages/oo7/src/timebond.js~timebond#poll",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html#instance-method-poll",
+    "packages/oo7/src/timeBond.js~TimeBond#poll",
+    "method"
+  ],
+  [
+    "packages/oo7/src/timebond.js~timebond.testintervals",
+    "class/packages/oo7/src/timeBond.js~TimeBond.html#static-method-testIntervals",
+    "packages/oo7/src/timeBond.js~TimeBond.testIntervals",
+    "method"
+  ],
+  [
+    "packages/oo7/src/transformbond.js",
+    "file/packages/oo7/src/transformBond.js.html",
+    "packages/oo7/src/transformBond.js",
+    "file"
+  ],
+  [
+    "packages/oo7/src/transformbond.js~transformbond#_outbond",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html#instance-member-_outBond",
+    "packages/oo7/src/transformBond.js~TransformBond#_outBond",
+    "member"
+  ],
+  [
+    "packages/oo7/src/transformbond.js~transformbond#constructor",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html#instance-constructor-constructor",
+    "packages/oo7/src/transformBond.js~TransformBond#constructor",
+    "method"
+  ],
+  [
+    "packages/oo7/src/transformbond.js~transformbond#dropout",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html#instance-method-dropOut",
+    "packages/oo7/src/transformBond.js~TransformBond#dropOut",
+    "method"
+  ],
+  [
+    "packages/oo7/src/transformbond.js~transformbond#finalise",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html#instance-method-finalise",
+    "packages/oo7/src/transformBond.js~TransformBond#finalise",
+    "method"
+  ],
+  [
+    "packages/oo7/src/transformbond.js~transformbond#useout",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html#instance-method-useOut",
+    "packages/oo7/src/transformBond.js~TransformBond#useOut",
+    "method"
+  ],
+  [
+    "packages/oo7/src/transformbond.js~transformbond.setdefaultcontext",
+    "class/packages/oo7/src/transformBond.js~TransformBond.html#static-method-setDefaultContext",
+    "packages/oo7/src/transformBond.js~TransformBond.setDefaultContext",
+    "method"
+  ],
+  [
+    "packages/polkadot-identicon/lib/index.js",
+    "file/packages/polkadot-identicon/lib/index.js.html",
+    "packages/polkadot-identicon/lib/index.js",
+    "file"
+  ],
+  [
+    "packages/polkadot-identicon/lib/index.js~identicon#constructor",
+    "class/packages/polkadot-identicon/lib/index.js~Identicon.html#instance-constructor-constructor",
+    "packages/polkadot-identicon/lib/index.js~Identicon#constructor",
+    "method"
+  ],
+  [
+    "packages/polkadot-identicon/lib/index.js~identicon#render",
+    "class/packages/polkadot-identicon/lib/index.js~Identicon.html#instance-method-render",
+    "packages/polkadot-identicon/lib/index.js~Identicon#render",
     "method"
   ]
 ]
