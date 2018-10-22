@@ -1,6 +1,6 @@
 {
   "name": "oo7-react",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "The Reactive Bond API",
   "main": "lib/index.js",
   "files": [
