@@ -783,40 +783,40 @@ function overlay (base, top) {
 }
 
 function transactionPromise (api, tx, progress, f) {
-	progress({initialising: null});
+	progress({ initialising: null });
 	let condition = tx.condition || null;
 	Promise.all([api().eth.accounts(), api().eth.gasPrice()])
 		.then(([a, p]) => {
-			progress({estimating: null});
+			progress({ estimating: null });
 			tx.from = tx.from || a[0];
 			tx.gasPrice = tx.gasPrice || p;
 			return tx.gas || api().eth.estimateGas(tx);
 		})
 		.then(g => {
-			progress({estimated: g});
+			progress({ estimated: g });
 			tx.gas = tx.gas || g;
 			return api().parity.postTransaction(tx);
 		})
 		.then(signerRequestId => {
-			progress({requested: signerRequestId});
+			progress({ requested: signerRequestId });
 			return api().pollMethod('parity_checkRequest', signerRequestId);
 		})
 		.then(transactionHash => {
 			if (condition) {
-				progress(f({signed: transactionHash, scheduled: condition}));
-				return {signed: transactionHash, scheduled: condition};
+				progress(f({ signed: transactionHash, scheduled: condition }));
+				return { signed: transactionHash, scheduled: condition };
 			} else {
-				progress({signed: transactionHash});
+				progress({ signed: transactionHash });
 				return api()
 					.pollMethod('eth_getTransactionReceipt', transactionHash, (receipt) => receipt && receipt.blockNumber && !receipt.blockNumber.eq(0))
 					.then(receipt => {
-						progress(f({confirmed: receipt}));
+						progress(f({ confirmed: receipt }));
 						return receipt;
 					});
 			}
 		})
 		.catch(error => {
-			progress({failed: error});
+			progress({ failed: error });
 		});
 }
 
@@ -912,7 +912,7 @@ function createBonds (options) {
 			super([message, from], [], ([message, from]) => {
 				api().parity.postSign(from, asciiToHex(message))
 					.then(signerRequestId => {
-						this.trigger({requested: signerRequestId});
+						this.trigger({ requested: signerRequestId });
 						return api().pollMethod('parity_checkRequest', signerRequestId);
 					})
 					.then(signature => {
@@ -922,7 +922,7 @@ function createBonds (options) {
 					})
 					.catch(error => {
 						console.error(error);
-						this.trigger({failed: error});
+						this.trigger({ failed: error });
 					});
 			}, false);
 			this.then(_ => null);
@@ -935,12 +935,12 @@ function createBonds (options) {
 	function call (addr, method, args, options) {
 		let data = util.abiEncode(method.name, method.inputs.map(f => f.type), args);
 		let decode = d => util.abiDecode(method.outputs.map(f => f.type), d);
-		return api().eth.call(overlay({to: addr, data: data}, options)).then(decode);
+		return api().eth.call(overlay({ to: addr, data: data }, options)).then(decode);
 	}
 
 	function post (addr, method, args, options) {
 		let toOptions = (addr, method, options, ...args) => {
-			return overlay({to: addr, data: util.abiEncode(method.name, method.inputs.map(f => f.type), args)}, options);
+			return overlay({ to: addr, data: util.abiEncode(method.name, method.inputs.map(f => f.type), args) }, options);
 		};
 		// inResolveDepth is 2 to allow for Bonded `condition`values which are
 		// object values in `options`.
@@ -1209,7 +1209,7 @@ function createBonds (options) {
 		let decode = d => util.abiDecode(method.outputs.map(f => f.type), d);
 		let traceMode = options.traceMode;
 		delete options.traceMode;
-		return api().trace.call(overlay({to: addr, data: data}, options), traceMode, 'latest').then(decode);
+		return api().trace.call(overlay({ to: addr, data: data }, options), traceMode, 'latest').then(decode);
 	}
 
 	bonds.deployContract = function (init, abi, options = {}) {
@@ -1438,7 +1438,7 @@ function createBonds (options) {
 		registry: reg || null
 	}), [bonds.registry.reverse(address), address, bonds.accountsInfo]);
 
-	bonds.registry.names = oo7.Bond.mapAll([bonds.registry.ReverseConfirmed({}, {limit: 100}), bonds.accountsInfo],
+	bonds.registry.names = oo7.Bond.mapAll([bonds.registry.ReverseConfirmed({}, { limit: 100 }), bonds.accountsInfo],
 		(reg, info) => {
 			let r = {};
 			Object.keys(info).forEach(k => r[k] = info[k].name);
