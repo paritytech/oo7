@@ -24,10 +24,16 @@ let system = (() => {
 })()
 
 let version = (new SubscriptionBond('chain_runtimeVersion', [], r => {
-	let res = {}
-	r.apis.forEach(([id, version]) => res[String.fromCharCode.apply(null, id)] = version)
-	r.apis = res
-	return r
+	let apis = {}
+	r.apis.forEach(([id, version]) => apis[String.fromCharCode.apply(null, id)] = version)
+	return {
+		authoringVersion: r.authoring_version,
+		implName: r.impl_name,
+		implVersion: r.impl_version,
+		specName: r.spec_name,
+		specVersion: r.spec_version,
+		apis
+	}
 })).subscriptable()
 
 version.tie(() => initRuntime(null, true))
