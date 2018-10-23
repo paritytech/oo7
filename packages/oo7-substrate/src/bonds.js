@@ -23,7 +23,16 @@ let system = (() => {
 	return { name, version, chain }
 })()
 
-let runtime = { core: (() => {
+let version = (new SubscriptionBond('chain_runtimeVersion', [], r => {
+	let res = {}
+	r.apis.forEach(([id, version]) => res[String.fromCharCode.apply(null, id)] = version)
+	r.apis = res
+	return r
+})).subscriptable()
+
+version.tie(() => initRuntime(null, true))
+
+let runtime = { version, core: (() => {
 	let authorityCount = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':auth:len'))]], r => decode(hexToBytes(r.changes[0][1]), 'u32'))
 	let authorities = authorityCount.map(
 		n => [...Array(n)].map((_, i) =>
@@ -33,12 +42,6 @@ let runtime = { core: (() => {
 			)
 		), 2)
 	let code = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':code'))]], r => hexToBytes(r.changes[0][1]))
-	let version = new SubscriptionBond('chain_runtimeVersion', [], r => {
-		let res = {}
-		r.apis.forEach(([id, version]) => res[String.fromCharCode.apply(null, id)] = version)
-		r.apis = res
-		return r
-	})
 	let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [version])
 	let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [version])
 	return { authorityCount, authorities, code, codeHash, codeSize, version }
@@ -119,7 +122,7 @@ function initialiseFromMetadata (m) {
 	onRuntimeInit = null
 }
 
-function initRuntime (callback = null) {
+function initRuntime (callback = null, force = false) {
 	if (onRuntimeInit instanceof Array) {
 		onRuntimeInit.push(callback)
 		if (onRuntimeInit.length === 1) {
@@ -128,6 +131,14 @@ function initRuntime (callback = null) {
 				.then(initialiseFromMetadata)
 		}
 	} else {
+		if (force) {
+			// reinitialise runtime
+			console.info("Reinitialising runtime")
+			onRuntimeInit = [callback]
+			nodeService().request('state_getMetadata')
+				.then(blob => decode(hexToBytes(blob), 'RuntimeMetadata'))
+				.then(initialiseFromMetadata)
+		}
 		// already inited runtime
 		if (callback) {
 			callback()
