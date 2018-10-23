@@ -13,6 +13,11 @@ const subscriptionKey = {
 		notification: 'chain_newHead',
 		subscribe: 'chain_subscribeNewHead',
 		unsubscribe: 'chain_unsubscribeNewHead'
+	},
+	chain_runtimeVersion: {
+		notification: 'chain_runtimeVersion',
+		subscribe: 'chain_subscribeRuntimeVersion',
+		unsubscribe: 'chain_unsubscribeRuntimeVersion'
 	}
 }
 
@@ -55,7 +60,6 @@ class NodeService {
 		}
 		this.ws.onmessage = function (msg) {
 			if (that.reconnect) {
-				console.log('Clearing reconnect')
 				window.clearTimeout(that.reconnect)
 			}
 
@@ -86,7 +90,7 @@ class NodeService {
 		this.subscriptions = {}
 		let ids = this.ids
 		this.ids = {}
-		console.log('Resubscribing', ids, subs)
+//		console.log('Resubscribing', ids, subs)
 		Object.keys(ids).forEach(id => {
 			let sub = subs[ids[id]]
 			that.subscribe(sub.what, sub.params, sub.callback, console.warn, id)
@@ -132,13 +136,12 @@ class NodeService {
 		let that = this
 		return this.request(subscriptionKey[what].subscribe, params).then(id => {
 			if (that.cancelations[extId]) {
-				console.log('Delayed unsubscription of', extId)
+//				console.log('Delayed unsubscription of', extId)
 				delete that.cancelations[extId]
 				this.request(subscriptionKey[what].unsubscribe, [id]).catch(errorHandler)
 			} else {
 				that.subscriptions[id] = { what, params, callback }
 				extId = extId || id
-				console.log('Sub to', extId, id)
 				that.ids[extId] = id
 				return extId
 			}
@@ -147,10 +150,9 @@ class NodeService {
 
 	unsubscribe (extId) {
 		let that = this
-		console.log('Unsub from', extId)
 
 		if (!this.ids[extId]) {
-			console.log('Resubscription not yet complete. Defering unsubscribe', extId)
+//			console.log('Resubscription not yet complete. Defering unsubscribe', extId)
 			this.cancelations[extId] = true
 			return
 		}

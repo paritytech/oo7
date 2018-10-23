@@ -33,9 +33,15 @@ let runtime = { core: (() => {
 			)
 		), 2)
 	let code = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':code'))]], r => hexToBytes(r.changes[0][1]))
-	let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [chain.head])
-	let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [chain.head])
-	return { authorityCount, authorities, code, codeHash, codeSize }
+	let version = new SubscriptionBond('chain_runtimeVersion', [], r => {
+		let res = {}
+		r.apis.forEach(([id, version]) => res[String.fromCharCode.apply(null, id)] = version)
+		r.apis = res
+		return r
+	})
+	let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [version])
+	let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [version])
+	return { authorityCount, authorities, code, codeHash, codeSize, version }
 })() }
 
 let calls = {}
