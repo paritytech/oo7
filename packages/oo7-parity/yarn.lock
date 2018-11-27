@@ -18,24 +18,22 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@parity/abi@~2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@parity/abi/-/abi-2.1.4.tgz#23e2b9e6d37a54035b76d941d6d74b9c5d21fb99"
-  integrity sha512-4yPqCYXlLhb9jmmAg+0SkA/2Rmf1ZvPzmGF3WBKvgrAjWPAvj5hZYW5rquRqrP3L22KfG+7A9RAw3aZYp45AMQ==
+"@parity/abi@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@parity/abi/-/abi-3.0.1.tgz#7cd2bdaab2a798ce3480a6630164cd1ce1ed6448"
+  integrity sha512-Sjp6AYw5dZPCHYDU6sggJph53hgGaMBno+XCepi3nkYO1dNy3tvqtvNHYzINwkYSESHpu1+ecO2d+H1YlSIc7w==
   dependencies:
-    bignumber.js "4.1.0"
-    js-sha3 "0.5.5"
-    utf8 "^2.1.2"
+    bignumber.js "7.2.1"
+    js-sha3 "0.7.0"
+    utf8 "^3.0.0"
 
-"@parity/api@^2":
-  version "2.1.24"
-  resolved "https://registry.yarnpkg.com/@parity/api/-/api-2.1.24.tgz#e04ca177598354b435b83c8cfe7c7c3672bf3e44"
-  integrity sha512-jJ93cyC5eZC9pQY/FXcSyQiFHNzg5wFzrVLB+RVfbKbIqCWmOAhlv+rssN35qPZ4ccehIGgFB5i7rkpfSajzkQ==
+"@parity/api@^3":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@parity/api/-/api-3.0.1.tgz#fa07c1b6357a1516318121b926d8236b0e3860d8"
+  integrity sha512-ITbQLQGfloPdUfXSnYFVdY4UHJpN80E5cHCOPeTldkeTYPxW5kE1kDSXuboez25GiMfWMrPFkpyHhIHuT5Z4dw==
   dependencies:
-    "@parity/abi" "~2.1.4"
-    "@parity/jsonrpc" "2.1.x"
-    "@parity/wordlist" "1.1.x"
-    bignumber.js "4.1.0"
+    "@parity/abi" "^3.0.1"
+    bignumber.js "^7"
     blockies "0.0.2"
     es6-error "4.0.2"
     es6-promise "^4.1.1"
@@ -45,16 +43,6 @@
     lodash "^4.17.4"
     store "^2.0.12"
     websocket "^1.0.25"
-
-"@parity/jsonrpc@2.1.x":
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/@parity/jsonrpc/-/jsonrpc-2.1.6.tgz#260bbe7dfcec18d59f0bf1668dfd6021452d6452"
-  integrity sha512-9RLsnAmgpl07EwDSDGu+OYW8xZ4cKDPQ/Zhxy4h6LXuPwTsF1eCWc0M3R8201/U+OrDUK/G6RXoUfoKnUpO+LA==
-
-"@parity/wordlist@1.1.x":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@parity/wordlist/-/wordlist-1.1.0.tgz#9e9ed3ab7837f5633b5844e60a355e9e63e427ae"
-  integrity sha1-np7Tq3g39WM7WETmCjVenmPkJ64=
 
 acorn-jsx@^4.1.1:
   version "4.1.1"
@@ -129,7 +117,12 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-bignumber.js@4.1.0, bignumber.js@^4.0.0:
+bignumber.js@7.2.1, bignumber.js@^7:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-7.2.1.tgz#80c048759d826800807c4bfd521e50edbba57a5f"
+  integrity sha512-S4XzBk5sMB+Rcb/LNcpzXr57VRTxgAvaAEDAl1AwRx27j00hT84O6OkteE7u8UB3NuaaygCRrEpqox4uDOrbdQ==
+
+bignumber.js@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-4.1.0.tgz#db6f14067c140bd46624815a7916c92d9b6c24b1"
   integrity sha512-eJzYkFYy9L4JzXsbymsFn3p54D+llV27oTQ+ziJG7WFRheJcNZilgVXMG0LoZtlQSKBsJdWtLFqOD0u+U0jZKA==
@@ -828,6 +821,11 @@ js-sha3@0.5.5:
   resolved "https://registry.yarnpkg.com/js-sha3/-/js-sha3-0.5.5.tgz#baf0c0e8c54ad5903447df96ade7a4a1bca79a4a"
   integrity sha1-uvDA6MVK1ZA0R9+Wreekobynmko=
 
+js-sha3@0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/js-sha3/-/js-sha3-0.7.0.tgz#0a5c57b36f79882573b2d84051f8bb85dd1bd63a"
+  integrity sha512-Wpks3yBDm0UcL5qlVhwW9Jr9n9i4FfeWBFOOXP5puDS/SiudJGhw7DPyBqn3487qD4F0lsC0q3zxink37f7zeA==
+
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -1426,10 +1424,10 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
-utf8@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/utf8/-/utf8-2.1.2.tgz#1fa0d9270e9be850d9b05027f63519bf46457d96"
-  integrity sha1-H6DZJw6b6FDZsFAn9jUZv0ZFfZY=
+utf8@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/utf8/-/utf8-3.0.0.tgz#f052eed1364d696e769ef058b183df88c87f69d1"
+  integrity sha512-E8VjFIQ/TyQgp+TZfS6l8yp/xWppSAHzidGiRrqe4bK4XP9pTRyKFgGJpO3SN7zdX4DeomTrwaseCHovfpFcqQ==
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
