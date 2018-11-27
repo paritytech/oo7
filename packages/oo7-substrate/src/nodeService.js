@@ -24,6 +24,7 @@ const subscriptionKey = {
 let uri = ['ws://127.0.0.1:9944']
 
 function setNodeUri(u) {
+	if (uri === u) return
 	uri = u
 	if (!s_nodeService) return // prevent instanciating
 	s_nodeService.uri = u
@@ -48,8 +49,8 @@ class NodeService {
 		if (this.ws) {
 			this.ws.close()
 			delete this.ws
-    }
-    
+		}
+
 		let that = this
 		this.ws = new WebSocket(uri)
 		this.ws.onopen = function () {
