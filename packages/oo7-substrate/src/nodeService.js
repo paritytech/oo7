@@ -24,8 +24,10 @@ const subscriptionKey = {
 let uri = ['ws://127.0.0.1:9944']
 
 function setNodeUri(u) {
-	uri = u
-	// TODO: reconnect in NodeService and rejig all subscriptions
+  uri = u
+  if (!s_nodeService) return // prevent instanciating
+  s_nodeService.uri = u
+  s_nodeService.start()
 }
 
 class NodeService {
@@ -39,15 +41,15 @@ class NodeService {
 		this.uriIndex = 0
 		this.backoff = 0
 		this.uri = uri
-		this.start(uri[0])
+    this.start(uri[0])
 	}
 
 	start (uri = this.uri[0]) {
 		if (this.ws) {
 			this.ws.close()
 			delete this.ws
-		}
-
+    }
+    
 		let that = this
 		this.ws = new WebSocket(uri)
 		this.ws.onopen = function () {
@@ -75,10 +77,11 @@ class NodeService {
 			// epect a message every 10 seconds or we reconnect.
 			that.reconnect = window.setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
 		}
-		this.ws.onerror = () => {
+		this.ws.onerror = (err) => {
+      if (err.target.url !== that.uri[that.uriIndex]) return // no reconnection if uri changed
 			window.setTimeout(() => {
 				that.uriIndex = (that.uriIndex + 1) % that.uri.length
-				that.start(that.uri[that.uriIndex])
+        that.start(that.uri[that.uriIndex])
 			}, that.backoff)
 			that.backoff = Math.min(30000, that.backoff + 1000)
 		}
@@ -107,7 +110,7 @@ class NodeService {
 				"method": method,
 				"params": params
 			};
-			that.ws.send(JSON.stringify(msg))
+      that.ws.send(JSON.stringify(msg))
 //			console.log('Attempting send', msg)
 	
 			that.onReply[id] = msg => {
@@ -120,7 +123,7 @@ class NodeService {
 		})
 
 		if (this.ws.readyState == 0) {
-			// still connecting
+      // still connecting
 			return new Promise(resolve => {
 				that.onceOpen.push(() => {
 					let res = doSend()
@@ -177,7 +180,7 @@ class NodeService {
 let s_nodeService = null;
 
 function nodeService() {
-	if (s_nodeService === null) {
+	if (!s_nodeService) {
 		s_nodeService = new NodeService(uri);
 	}
 	return s_nodeService;
