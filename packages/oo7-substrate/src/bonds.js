@@ -36,7 +36,7 @@ let version = (new SubscriptionBond('chain_runtimeVersion', [], r => {
 	}
 })).subscriptable()
 
-version.tie(() => initRuntime(null, true))
+setTimeout(() => version.tie(() => initRuntime(null, true)), 0)
 
 let runtime = { version, core: (() => {
 	let authorityCount = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':auth:len'))]], r => decode(hexToBytes(r.changes[0][1]), 'u32'))
