@@ -4,7 +4,7 @@
   "description": "Substrate Bonds library",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified yet\""
+    "test": "mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -33,5 +33,9 @@
     "ss58": "^1.0.2",
     "tweetnacl": "^1.0.0",
     "xxhashjs": "^0.2.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
   }
 }
