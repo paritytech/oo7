@@ -30,22 +30,21 @@ const transforms = {
 var decodePrefix = '';
 
 function decode(input, type) {
+//	console.log("Decode", input, type);		
 	if (typeof input.data === 'undefined') {
 		input = { data: input };
 	}
 	if (typeof type === 'object') {
 		return type.map(t => decode(input, t));
 	}
-	while (type.startsWith('T::')) {
-		type = type.slice(3);
-	}
+	type = type.replace(/ /g, '').replace(/^(T::)+/, '');
 	if (type == 'EventRecord<Event>') {
 		type = 'EventRecord'
 	}
-	if (type.match(/^<[A-Z][A-Za-z0-9]* as HasCompact>::Type$/) || type.match(/^Compact<[A-Za-z][A-Za-z0-9]*>$/)) {
+	if (type.match(/^<[A-Z][A-Za-z0-9]*asHasCompact>::Type$/) || type.match(/^Compact<[A-Za-z][A-Za-z0-9]*>$/)) {
 		type = 'Compact'
 	}
-	
+
 	let dataHex = bytesToHex(input.data.slice(0, 50));
 //	console.log(decodePrefix + 'des >>>', type, dataHex);
 //	decodePrefix +=  "   ";
@@ -243,7 +242,7 @@ function decode(input, type) {
 				}
 				let t = type.match(/^\((.*)\)$/);
 				if (t) {
-					res = new Tuple(...decode(input, t[1].split(', ')));
+					res = new Tuple(...decode(input, t[1].split(',')));
 					break;
 				}
 				throw 'Unknown type to decode: ' + type;
@@ -278,6 +277,7 @@ function encode(value, type = null) {
 	if (typeof type != 'string') {
 		throw 'type must be either an array or a string'
 	}
+	type = type.replace(/ /g, '').replace(/^(T::)+/, '');
 
 	if (typeof value == 'string' && value.startsWith('0x')) {
 		value = hexToBytes(value)

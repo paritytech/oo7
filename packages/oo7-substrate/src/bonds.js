@@ -10,10 +10,11 @@ const metadata = require('./metadata')
 
 let chain = (() => {
 	let head = new SubscriptionBond('chain_newHead').subscriptable()
+	let finalisedHead = new SubscriptionBond('chain_finalisedHead').subscriptable()
 	let height = head.map(h => new BlockNumber(h.number))
 	let header = hashBond => new TransformBond(hash => nodeService().request('chain_getHeader', [hash]), [hashBond]).subscriptable()
 	let hash = numberBond => new TransformBond(number => nodeService().request('chain_getBlockHash', [number]), [numberBond])
-	return { head, height, header, hash }
+	return { head, finalisedHead, height, header, hash }
 })()
 
 let system = (() => {
@@ -66,6 +67,7 @@ let runtimeUp = new RuntimeUp
 let onRuntimeInit = []
 
 function initialiseFromMetadata (m) {
+	console.log("initialiseFromMetadata", m)
 	if (metadata.set) {
 		metadata.set(m)
 	}
@@ -126,6 +128,8 @@ function initialiseFromMetadata (m) {
 	})
 	onRuntimeInit.forEach(f => { if (f) f() })
 	onRuntimeInit = null
+
+	console.log("initialiseFromMetadata DONE")
 }
 
 function initRuntime (callback = null, force = false) {

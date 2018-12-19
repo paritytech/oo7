@@ -14,6 +14,11 @@ const subscriptionKey = {
 		subscribe: 'chain_subscribeNewHead',
 		unsubscribe: 'chain_unsubscribeNewHead'
 	},
+	chain_finalisedHead: {
+		notification: 'chain_finalisedHead',
+		subscribe: 'chain_subscribeFinalisedHeads',
+		unsubscribe: 'chain_unsubscribeFinalisedHeads'
+	},
 	chain_runtimeVersion: {
 		notification: 'chain_runtimeVersion',
 		subscribe: 'chain_subscribeRuntimeVersion',
@@ -56,7 +61,9 @@ class NodeService {
 			that.backoff = 0
 			let onceOpen = that.onceOpen;
 			that.onceOpen = []
-			window.setTimeout(() => onceOpen.forEach(f => f()), 0)
+			window.setTimeout(() => {
+				onceOpen.forEach(f => f())
+			}, 0)
 		}
 		this.ws.onmessage = function (msg) {
 			if (that.reconnect) {
@@ -90,7 +97,6 @@ class NodeService {
 		this.subscriptions = {}
 		let ids = this.ids
 		this.ids = {}
-//		console.log('Resubscribing', ids, subs)
 		Object.keys(ids).forEach(id => {
 			let sub = subs[ids[id]]
 			that.subscribe(sub.what, sub.params, sub.callback, console.warn, id)
@@ -108,7 +114,6 @@ class NodeService {
 				"params": params
 			};
 			that.ws.send(JSON.stringify(msg))
-//			console.log('Attempting send', msg)
 	
 			that.onReply[id] = msg => {
 				if (msg.error) {
