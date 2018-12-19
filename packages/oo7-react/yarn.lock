@@ -1727,11 +1727,6 @@ once@^1.3.0:
   dependencies:
     wrappy "1"
 
-oo7@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/oo7/-/oo7-0.7.2.tgz#e776312724e46ad048467b39adf31cdb374c32ff"
-  integrity sha512-MWDYjwR5P9MLeosdNScXTsxnTK/lsk8uiCur6EVPuka0Dj441vRkvg8XfVwhgGaLDXG3V2v3wtW6InMPyt/bKw==
-
 os-homedir@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/os-homedir/-/os-homedir-1.0.2.tgz#ffbc4988336e0e833de0c168c7ef152121aa7fb3"
