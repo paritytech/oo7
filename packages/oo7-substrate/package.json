@@ -34,7 +34,6 @@
     "tweetnacl": "^1.0.0",
     "xxhashjs": "^0.2.2"
   },
-  "gitHead": "8c7873c173c79c493eb435235982b58180f8101d",
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^5.2.0"
