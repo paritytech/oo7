@@ -19,10 +19,10 @@ const subscriptionKey = {
 		subscribe: 'chain_subscribeFinalisedHeads',
 		unsubscribe: 'chain_unsubscribeFinalisedHeads'
 	},
-	chain_runtimeVersion: {
-		notification: 'chain_runtimeVersion',
-		subscribe: 'chain_subscribeRuntimeVersion',
-		unsubscribe: 'chain_unsubscribeRuntimeVersion'
+	state_runtimeVersion: {
+		notification: 'state_runtimeVersion',
+		subscribe: 'state_subscribeRuntimeVersion',
+		unsubscribe: 'state_unsubscribeRuntimeVersion'
 	}
 }
 

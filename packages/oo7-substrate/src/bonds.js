@@ -24,7 +24,7 @@ let system = (() => {
 	return { name, version, chain }
 })()
 
-let version = (new SubscriptionBond('chain_runtimeVersion', [], r => {
+let version = (new SubscriptionBond('state_runtimeVersion', [], r => {
 	let apis = {}
 	r.apis.forEach(([id, version]) => apis[String.fromCharCode.apply(null, id)] = version)
 	return {
