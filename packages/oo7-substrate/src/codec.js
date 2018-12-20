@@ -210,6 +210,7 @@ function decode(input, type) {
 				input.data = input.data.slice(2);
 				break;
 			case 'u32':
+			case 'ParaId': 
 			case 'VoteIndex':
 			case 'PropIndex':
 			case 'ReferendumIndex': {
@@ -389,6 +390,7 @@ function encode(value, type = null) {
 			case 'u64':
 			return toLE(value, 8)
 			case 'AccountIndex':
+			case 'ParaId': 
 			case 'u32':
 				return toLE(value, 4)
 			case 'u16':
