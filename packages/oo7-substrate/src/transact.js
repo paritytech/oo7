@@ -11,7 +11,7 @@ class TransactionBond extends SubscriptionBond {
 	}
 }
 
-function composeTransaction (sender, call, index, era, checkpoint, senderAccount) {
+function composeTransaction (sender, call, index, era, checkpoint, senderAccount, compact) {
 	return new Promise((resolve, reject) => {
 		if (typeof sender == 'string') {
 			sender = ss58Decode(sender)
@@ -21,6 +21,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 		} else if (!senderAccount) {
 			reject(`Invalid senderAccount when sender is account index`)
 		}
+		console.log("composing transaction", senderAccount, index, call, era, checkpoint);
 		let e = encode([
 			index, call, era, checkpoint
 		], [
@@ -28,6 +29,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 		])
 	
 		let signature = secretStore().sign(senderAccount, e)
+		console.log("encoding transaction", sender, index, era, call);
 		let signedData = encode(encode({
 			_type: 'Transaction',
 			version: 0x81,
@@ -37,6 +39,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 			era,
 			call
 		}), 'Vec<u8>')
+		console.log("signed:", bytesToHex(signedData))
 		window.setTimeout(() => resolve(signedData), 1000)
 	})
 }
@@ -53,11 +56,16 @@ function post(tx) {
 		// defaults
 		longevity = typeof longevity === 'undefined' ? 256 : longevity
 		compact = typeof compact === 'undefined' ? true : compact
+		
+		let senderIsIndex = typeof sender === 'number' || sender instanceof AccountIndex
 
-		let senderAccount = typeof sender == 'number' || sender instanceof AccountIndex
+		let senderAccount = senderIsIndex
 			? runtime.balances.lookupIndex(sender)
 			: sender
-
+		if (senderIsIndex && !compact) {
+			sender = senderAccount
+		}
+	
 		let era
 		let eraHash
 		if (longevity === true) {
@@ -80,10 +88,11 @@ function post(tx) {
 			era,
 			eraHash,
 			index: index || runtime.system.accountNonce(senderAccount),
-			senderAccount
+			senderAccount,
+			compact
 		}
 	}, 2).latched(false).map(o => 
-		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount)
+		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount, o.compact)
 	).map(composed => {
 		return composed ? new TransactionBond(composed) : { signing: true }
 	})

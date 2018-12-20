@@ -11,6 +11,7 @@ const { storageKey } = require('./storageBond')
 const { initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
 const { nodeService, setNodeUri } = require('./nodeService')
 const denominationInfo = require('./denominationInfo')
+const { metadata } = require('./metadata')
 
 function tally(x) {
 	var r = [0, 0]
@@ -61,6 +62,7 @@ module.exports = {
 	post,
 	denominationInfo,
 	setNodeUri,
+	metadata,
 	// bonds
 	initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp
 }

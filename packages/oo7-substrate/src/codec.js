@@ -2,15 +2,36 @@ const { ss58Decode } = require('./ss58')
 const { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra } = require('./types')
 const { toLE, leToNumber, bytesToHex } = require('./utils')
-const metadata = require('./metadata')
+const { metadata } = require('./metadata')
 
 const transforms = {
-	RuntimeMetadata: { outerEvent: 'OuterEventMetadata', modules: 'Vec<RuntimeModuleMetadata>' },
+	RuntimeMetadata: { outerEvent: 'OuterEventMetadata', modules: 'Vec<RuntimeModuleMetadata>', outerDispatch: 'OuterDispatchMetadata' },
+	OuterDispatchMetadata: { name: 'String', calls: 'Vec<OuterDispatchCall>' },
+	OuterDispatchCall: { name: 'String', prefix: 'String', index: 'u16' },
 	RuntimeModuleMetadata: { prefix: 'String', module: 'ModuleMetadata', storage: 'Option<StorageMetadata>' },
 	StorageFunctionModifier: { _enum: [ 'Optional', 'Default' ] },
 	StorageFunctionTypeMap: { key: 'Type', value: 'Type' },
 	StorageFunctionType: { _enum: { Plain: 'Type', Map: 'StorageFunctionTypeMap' } },
-	StorageFunctionMetadata: { name: 'String', modifier: 'StorageFunctionModifier', type: 'StorageFunctionType', documentation: 'Vec<String>' },
+	StorageFunctionMetadata: {
+		name: 'String',
+		modifier: 'StorageFunctionModifier',
+		type: 'StorageFunctionType',
+		default: 'Vec<u8>',
+		documentation: 'Vec<String>',
+		_post: x => {
+			try {
+				if (x.default) {
+					x.default = decode(
+						x.default,
+						x.type.option === 'Plain' ? x.type.value : x.type.value.value
+					)
+				}
+			}
+			catch (e) {
+				x.default = null
+			}
+		}
+	},
 	StorageMetadata: { prefix: 'String', items: 'Vec<StorageFunctionMetadata>' },
 	EventMetadata: { name: 'String', arguments: 'Vec<Type>', documentation: 'Vec<String>' },
 	OuterEventMetadata: { name: 'String', events: 'Vec<(String, Vec<EventMetadata>)>' },
@@ -41,8 +62,18 @@ function decode(input, type) {
 	if (type == 'EventRecord<Event>') {
 		type = 'EventRecord'
 	}
-	if (type.match(/^<[A-Z][A-Za-z0-9]*asHasCompact>::Type$/) || type.match(/^Compact<[A-Za-z][A-Za-z0-9]*>$/)) {
-		type = 'Compact'
+
+	let reencodeCompact;
+	let p1 = type.match(/^<([A-Z][A-Za-z0-9]*)asHasCompact>::Type$/);
+	if (p1) {
+		reencodeCompact = p1[1]
+	}
+	let p2 = type.match(/^Compact<([A-Za-z][A-Za-z0-9]*)>$/);
+	if (p2) {
+		reencodeCompact = p2[1]
+	}
+	if (reencodeCompact) {
+		return decode(encode(decode(input, 'Compact'), reencodeCompact), reencodeCompact);
 	}
 
 	let dataHex = bytesToHex(input.data.slice(0, 50));
@@ -62,7 +93,9 @@ function decode(input, type) {
 				// a struct
 				res = {};
 				Object.keys(transform).forEach(k => {
-					res[k] = decode(input, transform[k]);
+					if (k != '_post') {
+						res[k] = decode(input, transform[k])
+					}
 				});
 			} else if (transform._enum instanceof Array) {
 				// simple enum
@@ -76,6 +109,9 @@ function decode(input, type) {
 				let option = Object.keys(transform._enum)[n];
 				res = { option, value: typeof transform._enum[option] === 'undefined' ? undefined : decode(input, transform._enum[option]) };
 			}
+		}
+		if (transform._post) {
+			transform._post(res)
 		}
 		res._type = type;
 	} else {
@@ -92,7 +128,7 @@ function decode(input, type) {
 				break;
 			}*/
 			case 'Event': {
-				let events = metadata.outerEvent.events
+				let events = metadata().outerEvent.events
 				let moduleIndex = decode(input, 'u8')
 				let module = events[moduleIndex][0]
 				let eventIndex = decode(input, 'u8')
@@ -160,13 +196,13 @@ function decode(input, type) {
 				} else {
 					let n = (input.data[0] >> 2) + 4;
 					res = leToNumber(input.data.slice(1, n + 1));
-					len = 5 + n;
+					len = 1 + n;
 				}
 				input.data = input.data.slice(len);
 				break;
 			}
 			case 'u8':
-				res = leToNumber(input.data.slice(0, 1));
+				res = input.data.slice(0, 1);
 				input.data = input.data.slice(1);
 				break;
 			case 'u16':
@@ -315,7 +351,7 @@ function encode(value, type = null) {
 		}
 	}
 
-	if (type == 'Address' || type == 'RawAddress<AccountId, AccountIndex>' || type == 'Address<AccountId, AccountIndex>') {
+	if (type == 'Address' || type == 'RawAddress<AccountId,AccountIndex>' || type == 'Address<AccountId,AccountIndex>') {
 		if (typeof value == 'string') {
 			value = ss58Decode(value)
 		}
@@ -383,7 +419,7 @@ function encode(value, type = null) {
 		console.error("TxEra::encode bad", type, value)
 	}
 	
-	if (type.match(/^<[A-Z][A-Za-z0-9]* as HasCompact>::Type$/) || type.match(/^Compact<[A-Za-z][A-Za-z0-9]*>$/) || type === 'Compact') {
+	if (type.match(/^<[A-Z][A-Za-z0-9]*asHasCompact>::Type$/) || type.match(/^Compact<[A-Za-z][A-Za-z0-9]*>$/) || type === 'Compact') {
 		if (value < 1 << 6) {
 			return new Uint8Array([value << 2])
 		} else if (value < 1 << 14) {
@@ -391,14 +427,9 @@ function encode(value, type = null) {
 		} else if (value < 1 << 30) {
 			return toLE((value << 2) + 2, 4)
 		} else {
-			var v = [3, ...toLE(value, 4)]
-			let n = value >> 32
-			while (n > 0) {
-				v[0]++
-				v.push(n % 256)
-				n >>= 8
-			}
-			return new Uint8Array(v)
+			let bytes = 0;
+			for (let v = value; v > 0; v = Math.floor(v / 256)) { ++bytes }
+			return new Uint8Array([3 + ((bytes - 4) << 2), ...toLE(value, bytes)])
 		}
 	}
 

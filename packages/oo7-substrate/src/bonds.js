@@ -6,7 +6,7 @@ const { BlockNumber, Hash } = require('./types');
 const { decode, encode } = require('./codec');
 const { stringToBytes, hexToBytes, bytesToHex, toLE } = require('./utils')
 const { StorageBond } = require('./storageBond')
-const metadata = require('./metadata')
+const { setMetadata } = require('./metadata')
 
 let chain = (() => {
 	let head = new SubscriptionBond('chain_newHead').subscriptable()
@@ -39,20 +39,24 @@ let version = (new SubscriptionBond('state_runtimeVersion', [], r => {
 
 setTimeout(() => version.tie(() => initRuntime(null, true)), 0)
 
-let runtime = { version, core: (() => {
-	let authorityCount = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':auth:len'))]], r => decode(hexToBytes(r.changes[0][1]), 'u32'))
-	let authorities = authorityCount.map(
-		n => [...Array(n)].map((_, i) =>
-			new SubscriptionBond('state_storage',
-				[[ '0x' + bytesToHex(stringToBytes(":auth:")) + bytesToHex(toLE(i, 4)) ]],
-				r => decode(hexToBytes(r.changes[0][1]), 'AccountId')
-			)
-		), 2)
-	let code = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':code'))]], r => hexToBytes(r.changes[0][1]))
-	let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [version])
-	let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [version])
-	return { authorityCount, authorities, code, codeHash, codeSize, version }
-})() }
+let runtime = {
+	version, 
+	metadata: new Bond,
+	core: (() => {
+		let authorityCount = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':auth:len'))]], r => decode(hexToBytes(r.changes[0][1]), 'u32'))
+		let authorities = authorityCount.map(
+			n => [...Array(n)].map((_, i) =>
+				new SubscriptionBond('state_storage',
+					[[ '0x' + bytesToHex(stringToBytes(":auth:")) + bytesToHex(toLE(i, 4)) ]],
+					r => decode(hexToBytes(r.changes[0][1]), 'AccountId')
+				)
+			), 2)
+		let code = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':code'))]], r => hexToBytes(r.changes[0][1]))
+		let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [version])
+		let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [version])
+		return { authorityCount, authorities, code, codeHash, codeSize, version }
+	})()
+}
 
 let calls = {}
 
@@ -66,27 +70,25 @@ let runtimeUp = new RuntimeUp
 
 let onRuntimeInit = []
 
-function initialiseFromMetadata (m) {
-	console.log("initialiseFromMetadata", m)
-	if (metadata.set) {
-		metadata.set(m)
-	}
-	m.modules.forEach((m, module_index) => {
+function initialiseFromMetadata (md) {
+	console.log("initialiseFromMetadata", md)
+	setMetadata(md)
+	md.modules.forEach((m) => {
 		let o = {}
 		let c = {}
 		if (m.storage) {
-			let prefix = m.storage.prefix
+			let storePrefix = m.storage.prefix
 			m.storage.items.forEach(item => {
 				switch (item.type.option) {
 					case 'Plain': {
-						o[camel(item.name)] = new StorageBond(`${prefix} ${item.name}`, item.type.value)
+						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value)
 						break
 					}
 					case 'Map': {
 						let keyType = item.type.value.key
 						let valueType = item.type.value.value
 						o[camel(item.name)] = keyBond => new TransformBond(
-							key => new StorageBond(`${prefix} ${item.name}`, valueType, encode(key, keyType)),
+							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType)),
 							[keyBond]
 						).subscriptable()
 						break
@@ -94,7 +96,8 @@ function initialiseFromMetadata (m) {
 				}
 			})
 		}
-		if (m.module && m.module.call) {
+		let moduleDispatch = md.outerDispatch.calls.find(c => c.prefix == m.prefix)
+		if (m.module && m.module.call && moduleDispatch) {
 			m.module.call.functions.forEach(item => {
 				if (item.arguments.length > 0 && item.arguments[0].name == 'origin' && item.arguments[0].type == 'Origin') {
 					item.arguments = item.arguments.slice(1)
@@ -105,7 +108,7 @@ function initialiseFromMetadata (m) {
 					}
 					return new TransformBond(args => {
 						let encoded_args = encode(args, item.arguments.map(x => x.type))
-						return new Uint8Array([module_index - 1, item.id, ...encoded_args])
+						return new Uint8Array([moduleDispatch.index, item.id, ...encoded_args])
 					}, [bondArgs], [], 3, 3, undefined, true)
 				}
 				c[camel(item.name)].help = item.arguments.map(a => a.name)
@@ -114,7 +117,7 @@ function initialiseFromMetadata (m) {
 		runtime[m.prefix] = o
 		calls[m.prefix] = c
 	})
-	m.modules.forEach(m => {
+	md.modules.forEach(m => {
 		if (m.storage) {
 			try {
 				require(`./srml/${m.prefix}`).augment(runtime, chain)
@@ -128,6 +131,8 @@ function initialiseFromMetadata (m) {
 	})
 	onRuntimeInit.forEach(f => { if (f) f() })
 	onRuntimeInit = null
+
+	runtime.metadata.trigger(md)
 
 	console.log("initialiseFromMetadata DONE")
 }
