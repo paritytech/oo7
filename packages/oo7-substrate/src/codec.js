@@ -191,7 +191,7 @@ function decode(input, type) {
 					res = leToNumber(input.data.slice(0, 2)) >> 2;
 					len = 2;
 				} else if (input.data[0] % 4 == 2) {
-					res = leToNumber(inpuzt.data.slice(0, 4)) >> 2;
+					res = leToNumber(input.data.slice(0, 4)) >> 2;
 					len = 4;
 				} else {
 					let n = (input.data[0] >> 2) + 4;
