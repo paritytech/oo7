@@ -1,6 +1,6 @@
 {
   "name": "oo7-substrate",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "description": "Substrate Bonds library",
   "main": "src/index.js",
   "scripts": {
