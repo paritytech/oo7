@@ -45,8 +45,16 @@ const transforms = {
 
 	Transaction: { version: 'u8', sender: 'Address', signature: 'Signature', index: 'Index', era: 'TransactionEra', call: 'Call' },
 	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
-	EventRecord: { phase: 'Phase', event: 'Event' }
+	EventRecord: { phase: 'Phase', event: 'Event' },
+
+	ParaId: 'u32'
 };
+
+function addCodecTransform(type, transform) {
+	if (!transforms[type]) {
+		transforms[type] = transform
+	}
+}
 
 var decodePrefix = '';
 
@@ -116,17 +124,10 @@ function decode(input, type) {
 		res._type = type;
 	} else {
 		switch (type) {
-/*			case 'Call':
+			case 'Call':
 			case 'Proposal': {
-				let c = Calls[input.data[0]];
-				res = type === 'Call' ? new Call : new Proposal;
-				res.module = c.name;
-				c = c[type == 'Call' ? 'calls' : 'priv_calls'][input.data[1]];
-				input.data = input.data.slice(2);
-				res.name = c.name;
-				res.params = c.params.map(p => ({ name: p.name, type: p.type, value: decode(input, p.type) }));
-				break;
-			}*/
+				throw "Cannot represent Call/Proposal"
+			}
 			case 'Event': {
 				let events = metadata().outerEvent.events
 				let moduleIndex = decode(input, 'u8')
@@ -322,8 +323,8 @@ function encode(value, type = null) {
 
 	if (transforms[type]) {
 		let transform = transforms[type]
-		if (transform instanceof Array) {
-			// just a tuple
+		if (transform instanceof Array || typeof transform == 'string') {
+			// just a tuple or string
 			return encode(value, transform)
 		} else if (!transform._enum) {
 			// a struct
@@ -381,7 +382,8 @@ function encode(value, type = null) {
 		}
 	}
 
-	if (typeof value == 'number') {
+	if (typeof value == 'number' || (typeof value == 'string' && +value + '' == value)) {
+		value = +value
 		switch (type) {
 			case 'Balance':
 			case 'u128':
@@ -390,7 +392,6 @@ function encode(value, type = null) {
 			case 'u64':
 			return toLE(value, 8)
 			case 'AccountIndex':
-			case 'ParaId': 
 			case 'u32':
 				return toLE(value, 4)
 			case 'u16':
@@ -447,6 +448,7 @@ function encode(value, type = null) {
 	if (typeof value == 'object' && value instanceof Uint8Array) {
 		switch (type) {
 			case 'Call':
+			case 'Proposal':
 				break
 			default:
 				console.warn(`Value passed apparently pre-encoded without whitelisting ${type}`)
@@ -457,4 +459,4 @@ function encode(value, type = null) {
 	throw `Value cannot be encoded as type: ${value}, ${type}`
 }
 
-module.exports = { decode, encode }
+module.exports = { decode, encode, addCodecTransform }
