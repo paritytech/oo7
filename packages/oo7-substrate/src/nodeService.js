@@ -62,6 +62,7 @@ class NodeService {
 			let onceOpen = that.onceOpen;
 			that.onceOpen = []
 			window.setTimeout(() => {
+//				console.warn("Proceessing deferred requests...")
 				onceOpen.forEach(f => f())
 			}, 0)
 		}
@@ -107,6 +108,7 @@ class NodeService {
 		let that = this
 		let doSend = () => new Promise((resolve, reject) => {
 			let id = '' + this.index++;
+//			console.warn("Executing request", method, params, id)
 			let msg = {
 				"jsonrpc": "2.0",
 				"id": id,
@@ -116,6 +118,7 @@ class NodeService {
 			that.ws.send(JSON.stringify(msg))
 	
 			that.onReply[id] = msg => {
+//				console.warn("Processing request reply", method, params, id)
 				if (msg.error) {
 					reject(msg.error)
 				} else {
@@ -124,7 +127,11 @@ class NodeService {
 			}
 		})
 
-		if (this.ws.readyState == 0) {
+		if (this.ws.readyState === 1) {
+//			console.warn("Sending request now", method, params)
+			return doSend()
+		} else {
+//			console.warn("Defering request until connected", method, params)
 			// still connecting
 			return new Promise(resolve => {
 				that.onceOpen.push(() => {
@@ -132,8 +139,6 @@ class NodeService {
 					resolve(res)
 				})
 			})
-		} else {
-			return doSend()
 		}
 	}
 

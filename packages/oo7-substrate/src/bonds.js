@@ -21,7 +21,8 @@ let system = (() => {
 	let name = new TransformBond(() => nodeService().request('system_name')).subscriptable()
 	let version = new TransformBond(() => nodeService().request('system_version')).subscriptable()
 	let chain = new TransformBond(() => nodeService().request('system_chain')).subscriptable()
-	return { name, version, chain }
+	let properties = new TransformBond(() => nodeService().request('system_properties')).subscriptable()
+	return { name, version, chain, properties }
 })()
 
 let version = (new SubscriptionBond('state_runtimeVersion', [], r => {
