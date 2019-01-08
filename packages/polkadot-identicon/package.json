@@ -1,6 +1,6 @@
 {
   "name": "polkadot-identicon",
-  "version": "1.1.18",
+  "version": "1.1.19",
   "description": "A Polkadot-themed SS58 identicon Bonded React component",
   "main": "lib/index.js",
   "files": [
@@ -33,7 +33,7 @@
     "blake2js": "^1.0.0",
     "oo7": "^0.7.6",
     "oo7-react": "^0.8.7",
-    "oo7-substrate": "^0.3.17",
+    "oo7-substrate": "^0.3.18",
     "react": "^16.4.2",
     "ss58": "^1.0.0"
   },
