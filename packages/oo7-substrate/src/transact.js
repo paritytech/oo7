@@ -25,7 +25,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 		let e = encode([
 			index, call, era, checkpoint
 		], [
-			'Index', 'Call', 'TransactionEra', 'Hash'
+			'Compact<Index>', 'Call', 'TransactionEra', 'Hash'
 		])
 	
 		let signature = secretStore().sign(senderAccount, e)

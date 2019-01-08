@@ -37,8 +37,6 @@ let version = (new SubscriptionBond('state_runtimeVersion', [], r => {
 	}
 })).subscriptable()
 
-setTimeout(() => version.tie(() => initRuntime(null, true)), 0)
-
 let runtime = {
 	version, 
 	metadata: new Bond,
@@ -129,31 +127,26 @@ function initialiseFromMetadata (md) {
 			}
 		}
 	})
-	onRuntimeInit.forEach(f => { if (f) f() })
-	onRuntimeInit = null
+	if (onRuntimeInit !== null) {
+		onRuntimeInit.forEach(f => { if (f) f() })
+		onRuntimeInit = null
+	}
 
 	runtime.metadata.trigger(md)
 
 	console.log("initialiseFromMetadata DONE")
 }
 
-function initRuntime (callback = null, force = false) {
+function initRuntime (callback = null) {
 	if (onRuntimeInit instanceof Array) {
 		onRuntimeInit.push(callback)
-		if (onRuntimeInit.length === 1) {
+		version.tie(() => {
+			console.info("Initialising runtime")
 			nodeService().request('state_getMetadata')
 				.then(blob => decode(hexToBytes(blob), 'RuntimeMetadata'))
 				.then(initialiseFromMetadata)
-		}
+		})
 	} else {
-		if (force) {
-			// reinitialise runtime
-			console.info("Reinitialising runtime")
-			onRuntimeInit = [callback]
-			nodeService().request('state_getMetadata')
-				.then(blob => decode(hexToBytes(blob), 'RuntimeMetadata'))
-				.then(initialiseFromMetadata)
-		}
 		// already inited runtime
 		if (callback) {
 			callback()

@@ -43,7 +43,7 @@ const transforms = {
 	NewAccountOutcome: { _enum: [ 'NoHint', 'GoodHint', 'BadHint' ] },
 	UpdateBalanceOutcome: { _enum: [ 'Updated', 'AccountKilled' ] },
 
-	Transaction: { version: 'u8', sender: 'Address', signature: 'Signature', index: 'Index', era: 'TransactionEra', call: 'Call' },
+	Transaction: { version: 'u8', sender: 'Address', signature: 'Signature', index: 'Compact<Index>', era: 'TransactionEra', call: 'Call' },
 	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
 	EventRecord: { phase: 'Phase', event: 'Event' },
 
@@ -350,6 +350,21 @@ function encode(value, type = null) {
 	if (type == 'Vec<u8>') {
 		if (typeof value == 'object' && value instanceof Uint8Array) {
 			return new Uint8Array([...encode(value.length, 'Compact<u32>'), ...value])
+		}
+	}
+
+	let match_vec = type.match(/^Vec<(.*)>$/);
+	if (match_vec) {
+		if (value instanceof Array) {
+			let res = new Uint8Array([...encode(value.length, 'Compact<u32>')])
+			value.forEach(v => {
+				let x = encode(v, match_vec[1])
+				r = new Uint8Array(res.length + x.length)
+				r.set(res)
+				r.set(x, res.length)
+				res = r
+			})
+			return res
 		}
 	}
 
