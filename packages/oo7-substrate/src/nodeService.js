@@ -1,3 +1,5 @@
+const { Bond } = require('oo7')
+
 const subscriptionKey = {
 	author_submitAndWatchExtrinsic: {
 		notification: 'author_extrinsicUpdate',
@@ -44,6 +46,7 @@ class NodeService {
 		this.uriIndex = 0
 		this.backoff = 0
 		this.uri = uri
+		this.status = new Bond
 		this.start(uri[0])
 	}
 
@@ -65,6 +68,7 @@ class NodeService {
 //				console.warn("Proceessing deferred requests...")
 				onceOpen.forEach(f => f())
 			}, 0)
+			that.status.trigger({connected: uri})
 		}
 		this.ws.onmessage = function (msg) {
 			if (that.reconnect) {
@@ -83,12 +87,13 @@ class NodeService {
 			// epect a message every 10 seconds or we reconnect.
 			that.reconnect = window.setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
 		}
-		this.ws.onerror = () => {
+		this.ws.onerror = e => {
 			window.setTimeout(() => {
 				that.uriIndex = (that.uriIndex + 1) % that.uri.length
 				that.start(that.uri[that.uriIndex])
 			}, that.backoff)
 			that.backoff = Math.min(30000, that.backoff + 1000)
+			that.status.trigger({error: e})
 		}
 	}
 

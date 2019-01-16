@@ -60,7 +60,7 @@ function post(tx) {
 		let senderIsIndex = typeof sender === 'number' || sender instanceof AccountIndex
 
 		let senderAccount = senderIsIndex
-			? runtime.balances.lookupIndex(sender)
+			? runtime.indices.lookup(sender)
 			: sender
 		if (senderIsIndex && !compact) {
 			sender = senderAccount

@@ -1,5 +1,5 @@
 const { camel } = require('change-case');
-const { Bond, TransformBond } = require('oo7')
+const { Bond, TransformBond, TimeBond } = require('oo7')
 const { nodeService } = require('./nodeService')
 const { SubscriptionBond } = require('./subscriptionBond')
 const { BlockNumber, Hash } = require('./types');
@@ -13,16 +13,21 @@ let chain = (() => {
 	let finalisedHead = new SubscriptionBond('chain_finalisedHead').subscriptable()
 	let height = head.map(h => new BlockNumber(h.number))
 	let header = hashBond => new TransformBond(hash => nodeService().request('chain_getHeader', [hash]), [hashBond]).subscriptable()
+	let block = hashBond => new TransformBond(hash => nodeService().request('chain_getBlock', [hash]), [hashBond]).subscriptable()
 	let hash = numberBond => new TransformBond(number => nodeService().request('chain_getBlockHash', [number]), [numberBond])
-	return { head, finalisedHead, height, header, hash }
+	return { head, finalisedHead, height, header, hash, block }
 })()
 
 let system = (() => {
+	let time = new TimeBond
 	let name = new TransformBond(() => nodeService().request('system_name')).subscriptable()
 	let version = new TransformBond(() => nodeService().request('system_version')).subscriptable()
 	let chain = new TransformBond(() => nodeService().request('system_chain')).subscriptable()
 	let properties = new TransformBond(() => nodeService().request('system_properties')).subscriptable()
-	return { name, version, chain, properties }
+	let health = new TransformBond(() => nodeService().request('system_health'), [], [time]).subscriptable()
+	let peers = new TransformBond(() => nodeService().request('system_peers'), [], [time]).subscriptable()
+	let pendingTransactions = new TransformBond(() => nodeService().request('author_pendingExtrinsics')).subscriptable()
+	return { name, version, chain, properties, pendingTransactions, health, peers }
 })()
 
 let version = (new SubscriptionBond('state_runtimeVersion', [], r => {
@@ -53,7 +58,8 @@ let runtime = {
 		let code = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':code'))]], r => hexToBytes(r.changes[0][1]))
 		let codeHash = new TransformBond(() => nodeService().request('state_getStorageHash', ['0x' + bytesToHex(stringToBytes(":code"))]).then(hexToBytes), [], [version])
 		let codeSize = new TransformBond(() => nodeService().request('state_getStorageSize', ['0x' + bytesToHex(stringToBytes(":code"))]), [], [version])
-		return { authorityCount, authorities, code, codeHash, codeSize, version }
+		let heapPages = new SubscriptionBond('state_storage', [['0x' + bytesToHex(stringToBytes(':heappages'))]], r => decode(hexToBytes(r.changes[0][1]), 'u64'))
+		return { authorityCount, authorities, code, codeHash, codeSize, version, heapPages }
 	})()
 }
 

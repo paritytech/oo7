@@ -62,7 +62,7 @@ module.exports = {
 	secretStore, addressBook,
 	post,
 	denominationInfo,
-	setNodeUri,
+	nodeService, setNodeUri,
 	metadata,
 	// bonds
 	initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp

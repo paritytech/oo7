@@ -47,6 +47,7 @@ const transforms = {
 	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
 	EventRecord: { phase: 'Phase', event: 'Event' },
 
+	KeyValue: '(Vec<u8>, Vec<u8>)',
 	ParaId: 'u32'
 };
 
@@ -230,10 +231,6 @@ function decode(input, type) {
 				input.data = input.data.slice(1);
 				break;
 			}
-			case 'KeyValue': {
-				res = decode(input, '(Vec<u8>, Vec<u8>)');
-				break;
-			}
 			case 'Vec<bool>': {
 				let size = decode(input, 'Compact<u32>');
 				res = [...input.data.slice(0, size)].map(a => !!a);
@@ -366,6 +363,11 @@ function encode(value, type = null) {
 			})
 			return res
 		}
+	}
+
+	let t = type.match(/^\((.*)\)$/)
+	if (t) {
+		return encode(value, t[1].split(','))
 	}
 
 	if (type == 'Address' || type == 'RawAddress<AccountId,AccountIndex>' || type == 'Address<AccountId,AccountIndex>') {
