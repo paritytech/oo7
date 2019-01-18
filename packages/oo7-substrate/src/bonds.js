@@ -12,10 +12,12 @@ let chain = (() => {
 	let head = new SubscriptionBond('chain_newHead').subscriptable()
 	let finalisedHead = new SubscriptionBond('chain_finalisedHead').subscriptable()
 	let height = head.map(h => new BlockNumber(h.number))
+	let finalisedHeight = finalisedHead.map(h => new BlockNumber(h.number))
+	let lag = Bond.all([height, finalisedHeight]).map(([h, f]) => new BlockNumber(h - f))
 	let header = hashBond => new TransformBond(hash => nodeService().request('chain_getHeader', [hash]), [hashBond]).subscriptable()
 	let block = hashBond => new TransformBond(hash => nodeService().request('chain_getBlock', [hash]), [hashBond]).subscriptable()
 	let hash = numberBond => new TransformBond(number => nodeService().request('chain_getBlockHash', [number]), [numberBond])
-	return { head, finalisedHead, height, header, hash, block }
+	return { head, finalisedHead, height, finalisedHeight, header, hash, block, lag }
 })()
 
 let system = (() => {
