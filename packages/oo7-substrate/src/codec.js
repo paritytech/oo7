@@ -48,6 +48,15 @@ const transforms = {
 	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
 	EventRecord: { phase: 'Phase', event: 'Event' },
 
+	"<LookupasStaticLookup>::Source": 'Address',
+	"RawAddress<AccountId,AccountIndex>": 'Address',
+	"Address<AccountId,AccountIndex>": 'Address',
+	ParaId: 'u32',
+	VoteIndex: 'u32',
+	PropIndex: 'u32',
+	ReferendumIndex: 'u32',
+	Index: 'u64',
+
 	KeyValue: '(Vec<u8>, Vec<u8>)',
 	ParaId: 'u32'
 };
@@ -220,17 +229,12 @@ function decode(input, type) {
 				res = leToNumber(input.data.slice(0, 2));
 				input.data = input.data.slice(2);
 				break;
-			case 'u32':
-			case 'ParaId': 
-			case 'VoteIndex':
-			case 'PropIndex':
-			case 'ReferendumIndex': {
+			case 'u32': {
 				res = leToNumber(input.data.slice(0, 4));
 				input.data = input.data.slice(4);
 				break;
 			}
-			case 'u64':
-			case 'Index': {
+			case 'u64': {
 				res = leToNumber(input.data.slice(0, 8));
 				input.data = input.data.slice(8);
 				break;
@@ -379,7 +383,7 @@ function encode(value, type = null) {
 		return encode(value, t[1].split(','))
 	}
 
-	if (type == 'Address' || type == 'RawAddress<AccountId,AccountIndex>' || type == 'Address<AccountId,AccountIndex>') {
+	if (type == 'Address') {
 		if (typeof value == 'string') {
 			value = ss58Decode(value)
 		}
@@ -414,9 +418,8 @@ function encode(value, type = null) {
 			case 'Balance':
 			case 'u128':
 				return toLE(value, 16)
-			case 'Index':
 			case 'u64':
-			return toLE(value, 8)
+				return toLE(value, 8)
 			case 'AccountIndex':
 			case 'u32':
 				return toLE(value, 4)
