@@ -1,6 +1,7 @@
+const { TextDecoder } = require('text-encoding')
 const { ss58Decode } = require('./ss58')
 const { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra } = require('./types')
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill } = require('./types')
 const { toLE, leToNumber, bytesToHex } = require('./utils')
 const { metadata } = require('./metadata')
 
@@ -181,6 +182,14 @@ function decode(input, type) {
 			}
 			case 'SlashPreference': {
 				res = new SlashPreference(decode(input, 'u32'));
+				break;
+			}
+			case 'Perbill': {
+				res = new Perbill(decode(input, 'u32') / 1000000000.0);
+				break;
+			}
+			case 'Permill': {
+				res = new Permill(decode(input, 'u32') / 1000000.0);
 				break;
 			}
 			case 'Compact': {
@@ -422,6 +431,14 @@ function encode(value, type = null) {
 
 	if (value instanceof AccountIndex && type == 'AccountIndex') {
 		return toLE(value, 4)
+	}
+
+	if ((value instanceof Perbill || typeof value === 'number') && type == 'Perbill') {
+		return toLE(value * 1000000000, 4)
+	}
+
+	if ((value instanceof Permill || typeof value === 'number') && type == 'Permill') {
+		return toLE(value * 1000000, 4)
 	}
 
 	if (value instanceof Uint8Array) {

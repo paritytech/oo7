@@ -40,7 +40,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 			call
 		}), 'Vec<u8>')
 		console.log("signed:", bytesToHex(signedData))
-		window.setTimeout(() => resolve(signedData), 1000)
+		setTimeout(() => resolve(signedData), 1000)
 	})
 }
 

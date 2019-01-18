@@ -76,7 +76,7 @@ let runtimeUp = new RuntimeUp
 let onRuntimeInit = []
 
 function initialiseFromMetadata (md) {
-	console.log("initialiseFromMetadata", md)
+//	console.log("initialiseFromMetadata", md)
 	setMetadata(md)
 	md.modules.forEach((m) => {
 		let o = {}
@@ -140,15 +140,13 @@ function initialiseFromMetadata (md) {
 	}
 
 	runtime.metadata.trigger(md)
-
-	console.log("initialiseFromMetadata DONE")
 }
 
 function initRuntime (callback = null) {
 	if (onRuntimeInit instanceof Array) {
 		onRuntimeInit.push(callback)
 		version.tie(() => {
-			console.info("Initialising runtime")
+//			console.info("Initialising runtime")
 			nodeService().request('state_getMetadata')
 				.then(blob => decode(hexToBytes(blob), 'RuntimeMetadata'))
 				.then(initialiseFromMetadata)

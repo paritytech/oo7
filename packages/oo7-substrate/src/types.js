@@ -45,6 +45,14 @@ class SlashPreference extends Number {
 	toJSON() { return { _type: 'SlashPreference', data: this+0 } }
 }
 
+class Perbill extends Number {
+	toJSON() { return { _type: 'Perbill', data: this+0 } }
+}
+
+class Permill extends Number {
+	toJSON() { return { _type: 'Permill', data: this+0 } }
+}
+
 class Moment extends Date {
 	constructor(seconds) {
 		super(seconds * 1000)
@@ -89,6 +97,8 @@ function reviver(key, bland) {
 			case 'Hash': return new Hash(bland.data);
 			case 'VoteThreshold': return new VoteThreshold(bland.data);
 			case 'SlashPreference': return new SlashPreference(bland.data);
+			case 'Perbill': return new Perbill(bland.data);
+			case 'Permill': return new Permill(bland.data);
 			case 'Moment': return new Moment(bland.data);
 			case 'Tuple': return new Tuple(bland.data);
 			case 'Balance': return new Balance(bland.data);
@@ -100,4 +110,4 @@ function reviver(key, bland) {
 }
 
 module.exports = { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra, reviver }
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver }

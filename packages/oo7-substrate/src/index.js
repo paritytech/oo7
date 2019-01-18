@@ -1,6 +1,6 @@
 const nacl = require('tweetnacl')
 const { ss58Decode, ss58Encode, setNetworkDefault } = require('./ss58')
-const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, reviver } = require('./types')
+const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, Permill, Perbill, reviver } = require('./types')
 const { decode, encode, addCodecTransform } = require('./codec')
 const { pretty } = require('./pretty')
 const { post } = require('./transact')
@@ -58,6 +58,7 @@ module.exports = {
 	stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, reviver, 
 	// types
 	AccountId, AccountIndex, TransactionEra, Hash, VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8,
+	Permill, Perbill,
 	pretty, encode, decode, addCodecTransform,
 	secretStore, addressBook,
 	post,

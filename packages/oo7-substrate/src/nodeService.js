@@ -1,4 +1,5 @@
 const { Bond } = require('oo7')
+const WebSocket = require('isomorphic-ws')
 
 const subscriptionKey = {
 	author_submitAndWatchExtrinsic: {
@@ -64,7 +65,7 @@ class NodeService {
 			that.backoff = 0
 			let onceOpen = that.onceOpen;
 			that.onceOpen = []
-			window.setTimeout(() => {
+			setTimeout(() => {
 //				console.warn("Proceessing deferred requests...")
 				onceOpen.forEach(f => f())
 			}, 0)
@@ -72,23 +73,24 @@ class NodeService {
 		}
 		this.ws.onmessage = function (msg) {
 			if (that.reconnect) {
-				window.clearTimeout(that.reconnect)
+				clearTimeout(that.reconnect)
 			}
 
 			let d = JSON.parse(msg.data)
-//			console.log("Message from node", d)
 			if (d.id) {
 				that.onReply[d.id](d)
 				delete that.onReply[d.id];
 			} else if (d.method && d.params && that.subscriptions[d.params.subscription]) {
 				that.subscriptions[d.params.subscription].callback(d.params.result, d.method)
+			} else {
+				console.error("Subscription reply without recognised ID", that.subscriptions)
 			}
 
 			// epect a message every 10 seconds or we reconnect.
-			that.reconnect = window.setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
+			that.reconnect = setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
 		}
 		this.ws.onerror = e => {
-			window.setTimeout(() => {
+			setTimeout(() => {
 				that.uriIndex = (that.uriIndex + 1) % that.uri.length
 				that.start(that.uri[that.uriIndex])
 			}, that.backoff)
@@ -109,11 +111,11 @@ class NodeService {
 		})
 	}
 
-	request (method, params = []) {
+	req (method, params, callback) {
 		let that = this
-		let doSend = () => new Promise((resolve, reject) => {
+		let doSend = () => {
 			let id = '' + this.index++;
-//			console.warn("Executing request", method, params, id)
+//			console.warn("Executing request", method, params, id, callback)
 			let msg = {
 				"jsonrpc": "2.0",
 				"id": id,
@@ -122,45 +124,55 @@ class NodeService {
 			};
 			that.ws.send(JSON.stringify(msg))
 	
-			that.onReply[id] = msg => {
-//				console.warn("Processing request reply", method, params, id)
+			that.onReply[id] = callback
+		}
+
+		if (this.ws.readyState === 1) {
+			doSend(callback)
+		} else {
+//			console.warn("Defering request until connected", method, params)
+			that.onceOpen.push(() => {
+				doSend(callback)
+			})
+		}
+	}
+
+	request (method, params = []) {
+		let that = this
+		return new Promise((resolve, reject) => {
+			that.req(method, params, msg => {
+//				console.warn("Processing request reply", method, params, msg)
 				if (msg.error) {
 					reject(msg.error)
 				} else {
 					resolve(msg.result)
 				}
-			}
-		})
-
-		if (this.ws.readyState === 1) {
-//			console.warn("Sending request now", method, params)
-			return doSend()
-		} else {
-//			console.warn("Defering request until connected", method, params)
-			// still connecting
-			return new Promise(resolve => {
-				that.onceOpen.push(() => {
-					let res = doSend()
-					resolve(res)
-				})
 			})
-		}
+		})
 	}
 
 	subscribe (what, params, callback, errorHandler, extId = null) {
 		let that = this
-		return this.request(subscriptionKey[what].subscribe, params).then(id => {
-			if (that.cancelations[extId]) {
-//				console.log('Delayed unsubscription of', extId)
-				delete that.cancelations[extId]
-				this.request(subscriptionKey[what].unsubscribe, [id]).catch(errorHandler)
-			} else {
-				that.subscriptions[id] = { what, params, callback }
-				extId = extId || id
-				that.ids[extId] = id
-				return extId
-			}
-		}).catch(errorHandler)
+		return new Promise((resolve, reject) => {
+			this.req(subscriptionKey[what].subscribe, params, msg => {
+				if (msg.error) {
+					errorHandler(msg.error)
+				} else {
+					let id = msg.result
+					if (that.cancelations[extId]) {
+//						console.log('Delayed unsubscription of', extId)
+						delete that.cancelations[extId]
+						this.req(subscriptionKey[what].unsubscribe, [id], ()=>{}, errorHandler)
+						reject()
+					} else {
+						that.subscriptions[id] = { what, params, callback }
+						extId = extId || id
+						that.ids[extId] = id
+						resolve(extId)
+					}
+				}
+			})
+		})
 	}
 
 	unsubscribe (extId) {
@@ -178,9 +190,8 @@ class NodeService {
 		delete this.ids[extId]
 		let unsubscribe = subscriptionKey[this.subscriptions[id].what].unsubscribe
 
-		return this.request(unsubscribe, [id]).then(result => {
+		this.req(unsubscribe, [id], () => {
 			delete that.subscriptions[id]
-			return result
 		})
 	}
 	
