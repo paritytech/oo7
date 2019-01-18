@@ -1,6 +1,6 @@
 {
   "name": "oo7-substrate",
-  "version": "0.3.20",
+  "version": "0.4.0",
   "description": "Substrate Bonds library",
   "main": "src/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "change-case": "^3.0.2",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-ws": "^4.0.1",
-    "oo7": "^0.7.7",
+    "oo7": "^0.7.8",
     "ss58": "^1.0.2",
     "text-encoding": "^0.7.0",
     "text-encoding-polyfill": "^0.6.7",
