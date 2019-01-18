@@ -83,7 +83,8 @@ class NodeService {
 			} else if (d.method && d.params && that.subscriptions[d.params.subscription]) {
 				that.subscriptions[d.params.subscription].callback(d.params.result, d.method)
 			} else {
-				console.error("Subscription reply without recognised ID", d, that.subscriptions)
+				console.error("Subscription reply without recognised ID", d, that.subscriptions, ". Unsubscribing again.")
+				that.req(unsubscribe, [d.params.subscription], () => {})
 			}
 
 			// epect a message every 10 seconds or we reconnect.
