@@ -88,14 +88,14 @@ function initialiseFromMetadata (md) {
 			m.storage.items.forEach(item => {
 				switch (item.type.option) {
 					case 'Plain': {
-						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value)
+						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value, [], item.default)
 						break
 					}
 					case 'Map': {
 						let keyType = item.type.value.key
 						let valueType = item.type.value.value
 						o[camel(item.name)] = keyBond => new TransformBond(
-							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType)),
+							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), item.default),
 							[keyBond]
 						).subscriptable()
 						break
