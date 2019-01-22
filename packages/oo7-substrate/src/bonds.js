@@ -34,13 +34,18 @@ let system = (() => {
 
 let version = (new SubscriptionBond('state_runtimeVersion', [], r => {
 	let apis = {}
-	r.apis.forEach(([id, version]) => apis[String.fromCharCode.apply(null, id)] = version)
+	r.apis.forEach(([id, version]) => {
+		if (typeof id !== 'string') {
+			id = String.fromCharCode.apply(null, id)
+		}
+		apis[id] = version
+	})
 	return {
-		authoringVersion: r.authoring_version,
-		implName: r.impl_name,
-		implVersion: r.impl_version,
-		specName: r.spec_name,
-		specVersion: r.spec_version,
+		authoringVersion: r.authoringVersion,
+		implName: r.implName,
+		implVersion: r.implVersion,
+		specName: r.specName,
+		specVersion: r.specVersion,
 		apis
 	}
 })).subscriptable()
@@ -106,6 +111,7 @@ function initialiseFromMetadata (md) {
 		let moduleDispatch = md.outerDispatch.calls.find(c => c.prefix == m.prefix)
 		if (m.module && m.module.call && moduleDispatch) {
 			m.module.call.functions.forEach(item => {
+				console.log(item)
 				if (item.arguments.length > 0 && item.arguments[0].name == 'origin' && item.arguments[0].type == 'Origin') {
 					item.arguments = item.arguments.slice(1)
 				}
