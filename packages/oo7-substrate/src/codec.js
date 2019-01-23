@@ -2,7 +2,7 @@ const { TextDecoder } = require('text-encoding')
 const { ss58Decode } = require('./ss58')
 const { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill } = require('./types')
-const { toLE, leToNumber, bytesToHex } = require('./utils')
+const { toLE, leToNumber, leToSigned, bytesToHex } = require('./utils')
 const { metadata } = require('./metadata')
 
 const transforms = {
@@ -239,6 +239,35 @@ function decode(input, type) {
 				input.data = input.data.slice(8);
 				break;
 			}
+			case 'u128': {
+				res = leToNumber(input.data.slice(0, 16));
+				input.data = input.data.slice(16);
+				break;
+			}
+			case 'i8': {
+				res = leToSigned(input.data.slice(0, 1));
+				input.data = input.data.slice(1);
+				break;
+			}
+			case 'i16':
+				res = leToSigned(input.data.slice(0, 2));
+				input.data = input.data.slice(2);
+				break;
+			case 'i32': {
+				res = leToSigned(input.data.slice(0, 4));
+				input.data = input.data.slice(4);
+				break;
+			}
+			case 'i64': {
+				res = leToSigned(input.data.slice(0, 8));
+				input.data = input.data.slice(8);
+				break;
+			}
+			case 'i128': {
+				res = leToSigned(input.data.slice(0, 16));
+				input.data = input.data.slice(16);
+				break;
+			}
 			case 'bool': {
 				res = !!input.data[0];
 				input.data = input.data.slice(1);
@@ -417,15 +446,20 @@ function encode(value, type = null) {
 		switch (type) {
 			case 'Balance':
 			case 'u128':
+			case 'i128':
 				return toLE(value, 16)
 			case 'u64':
+			case 'i64':
 				return toLE(value, 8)
 			case 'AccountIndex':
 			case 'u32':
+			case 'i32':
 				return toLE(value, 4)
 			case 'u16':
+			case 'i16':
 				return toLE(value, 2)
 			case 'u8':
+			case 'i8':
 				return toLE(value, 1)
 			default:
 				break
