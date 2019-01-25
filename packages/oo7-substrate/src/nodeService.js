@@ -78,7 +78,7 @@ class NodeService {
 			}
 
 			let d = JSON.parse(msg.data)
-			console.log('Incoming:', d);
+//			console.log('Incoming:', d);
 			if (d.id) {
 				that.onReply[d.id](d)
 				delete that.onReply[d.id];
@@ -87,11 +87,11 @@ class NodeService {
 			} else if (that.pendingCancelations[d.params.subscription]) {
 				// Ok; this message was sent by them before they heard that we wanted to unsubscribe.
 			} else {
-				console.error("Subscription reply without recognised ID", d, that.subscriptions)
+				console.warn("Subscription reply without recognised ID", d.params.subscription)
 			}
 
 			// epect a message every 10 seconds or we reconnect.
-			that.reconnect = setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
+			that.reconnect = setTimeout(() => { console.log('Reconnecting.'); that.start() }, 60000)
 		}
 		this.ws.onerror = e => {
 			setTimeout(() => {
@@ -158,16 +158,16 @@ class NodeService {
 	subscribe (what, params, callback, errorHandler, ourId = null) {
 		let that = this
 		return new Promise((resolve, reject) => {
-			console.log('Subscribing', ourId)
+//			console.log('Subscribing', ourId)
 			this.req(subscriptionKey[what].subscribe, params, msg => {
 				if (msg.error) {
-					console.log('Error subscribing', ourId)
+//					console.log('Error subscribing', ourId)
 					errorHandler(msg.error)
 				} else {
 					let theirId = msg.result
-					console.log('Subscribed', 'ourId=', ourId, 'theirId=', theirId)
+//					console.log('Subscribed', 'ourId=', ourId, 'theirId=', theirId)
 					if (that.cancelations[ourId]) {
-						console.log('Delayed unsubscription of', ourId)
+//						console.log('Delayed unsubscription of', ourId)
 						that.pendingCancelations[theirId] = ourId
 						this.req(subscriptionKey[what].unsubscribe, [theirId], () => {
 							delete that.pendingCancelations[theirId]
@@ -190,7 +190,7 @@ class NodeService {
 		let that = this
 
 		if (this.theirIds[ourId] == null) {
-			console.log('Resubscription not yet complete. Defering unsubscribe', ourId)
+//			console.log('Resubscription not yet complete. Defering unsubscribe', ourId)
 			this.cancelations[ourId] = true
 			return
 		}
@@ -200,7 +200,7 @@ class NodeService {
 		}
 		let unsubscribe = subscriptionKey[this.subscriptions[theirId].what].unsubscribe
 
-		console.log('Unsubscribing', ourId, theirId, this.subscriptions[theirId].what, unsubscribe)
+//		console.log('Unsubscribing', ourId, theirId, this.subscriptions[theirId].what, unsubscribe)
 		this.req(unsubscribe, [theirId], () => {
 			delete that.theirIds[ourId]
 			delete that.subscriptions[theirId]
