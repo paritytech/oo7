@@ -40,7 +40,8 @@ class NodeService {
 	constructor (uri) {
 		this.subscriptions = {}
 		this.cancelations = {}
-		this.ids = {}
+		this.pendingCancelations = {}
+		this.theirIds = {}
 		this.onReply = {}
 		this.onceOpen = []
 		this.index = 1
@@ -77,14 +78,16 @@ class NodeService {
 			}
 
 			let d = JSON.parse(msg.data)
+			console.log('Incoming:', d);
 			if (d.id) {
 				that.onReply[d.id](d)
 				delete that.onReply[d.id];
 			} else if (d.method && d.params && that.subscriptions[d.params.subscription]) {
 				that.subscriptions[d.params.subscription].callback(d.params.result, d.method)
+			} else if (that.pendingCancelations[d.params.subscription]) {
+				// Ok; this message was sent by them before they heard that we wanted to unsubscribe.
 			} else {
-				console.error("Subscription reply without recognised ID", d, that.subscriptions, ". Unsubscribing again.")
-				that.req(unsubscribe, [d.params.subscription], () => {})
+				console.error("Subscription reply without recognised ID", d, that.subscriptions)
 			}
 
 			// epect a message every 10 seconds or we reconnect.
@@ -104,11 +107,11 @@ class NodeService {
 		let that = this
 		let subs = this.subscriptions
 		this.subscriptions = {}
-		let ids = this.ids
-		this.ids = {}
-		Object.keys(ids).forEach(id => {
-			let sub = subs[ids[id]]
-			that.subscribe(sub.what, sub.params, sub.callback, console.warn, id)
+		let theirIds = this.theirIds
+		this.theirIds = {}
+		Object.keys(theirIds).forEach(ourId => {
+			let sub = subs[theirIds[ourId]]
+			that.subscribe(sub.what, sub.params, sub.callback, console.warn, ourId)
 		})
 	}
 
@@ -152,47 +155,55 @@ class NodeService {
 		})
 	}
 
-	subscribe (what, params, callback, errorHandler, extId = null) {
+	subscribe (what, params, callback, errorHandler, ourId = null) {
 		let that = this
 		return new Promise((resolve, reject) => {
+			console.log('Subscribing', ourId)
 			this.req(subscriptionKey[what].subscribe, params, msg => {
 				if (msg.error) {
+					console.log('Error subscribing', ourId)
 					errorHandler(msg.error)
 				} else {
-					let id = msg.result
-					if (that.cancelations[extId]) {
-//						console.log('Delayed unsubscription of', extId)
-						delete that.cancelations[extId]
-						this.req(subscriptionKey[what].unsubscribe, [id], ()=>{}, errorHandler)
-						reject()
+					let theirId = msg.result
+					console.log('Subscribed', 'ourId=', ourId, 'theirId=', theirId)
+					if (that.cancelations[ourId]) {
+						console.log('Delayed unsubscription of', ourId)
+						that.pendingCancelations[theirId] = ourId
+						this.req(subscriptionKey[what].unsubscribe, [theirId], () => {
+							delete that.pendingCancelations[theirId]
+							delete that.cancelations[ourId]
+						}, errorHandler)
 					} else {
-						that.subscriptions[id] = { what, params, callback }
-						extId = extId || id
-						that.ids[extId] = id
-						resolve(extId)
+						that.subscriptions[theirId] = { what, params, callback }
+						ourId = ourId || theirId
+						that.theirIds[ourId] = theirId
 					}
+					// We resolve to our ID regardless which should be safe since
+					// unsubscribes of old IDs are no-ops.
+					resolve(ourId)
 				}
 			})
 		})
 	}
 
-	unsubscribe (extId) {
+	unsubscribe (ourId) {
 		let that = this
 
-		if (!this.ids[extId]) {
-//			console.log('Resubscription not yet complete. Defering unsubscribe', extId)
-			this.cancelations[extId] = true
+		if (this.theirIds[ourId] == null) {
+			console.log('Resubscription not yet complete. Defering unsubscribe', ourId)
+			this.cancelations[ourId] = true
 			return
 		}
-		let id = this.ids[extId]
-		if (!this.subscriptions[id]) {
+		let theirId = this.theirIds[ourId]
+		if (!this.subscriptions[theirId]) {
 			throw 'Invalid subscription id'
 		}
-		delete this.ids[extId]
-		let unsubscribe = subscriptionKey[this.subscriptions[id].what].unsubscribe
+		let unsubscribe = subscriptionKey[this.subscriptions[theirId].what].unsubscribe
 
-		this.req(unsubscribe, [id], () => {
-			delete that.subscriptions[id]
+		console.log('Unsubscribing', ourId, theirId, this.subscriptions[theirId].what, unsubscribe)
+		this.req(unsubscribe, [theirId], () => {
+			delete that.theirIds[ourId]
+			delete that.subscriptions[theirId]
 		})
 	}
 	

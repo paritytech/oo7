@@ -41,5 +41,6 @@
     "babel-cli": "^6.26.0",
     "babel-preset-react": "^6.24.1",
     "watch": "^1.0.2"
-  }
+  },
+  "gitHead": "c2608abd7bca953cdb058053b35b105a9ecf0d5a"
 }
