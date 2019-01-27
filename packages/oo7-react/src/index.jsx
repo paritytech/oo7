@@ -52,7 +52,7 @@ class InjectedCacheWaiter extends React.Component {
  * value of the prop's {@link Bond}.
  *
  * The props that are {@link Bond}-aware must be enumerated at construction. Props
- * not named there will just pass the {@link Bond} object through transparetnly.
+ * not named there will just pass the {@link Bond} object through transparently.
  *
  * In addition to the normal {ReactiveComponent#render} function which can be used
  * normally, there are also {ReactiveComponent#readyRender} and {ReactiveComponent#unreadyRender},
