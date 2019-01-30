@@ -83,14 +83,15 @@ let runtimeUp = new RuntimeUp
 let onRuntimeInit = []
 
 function initialiseFromMetadata (md) {
-//	console.log("initialiseFromMetadata", md)
+	console.log("initialiseFromMetadata", md)
 	setMetadata(md)
+	let callIndex = 0;
 	md.modules.forEach((m) => {
 		let o = {}
 		let c = {}
 		if (m.storage) {
-			let storePrefix = m.storage.prefix
-			m.storage.items.forEach(item => {
+			let storePrefix = m.prefix
+			m.storage.forEach(item => {
 				switch (item.type.option) {
 					case 'Plain': {
 						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value, [], item.default)
@@ -108,10 +109,10 @@ function initialiseFromMetadata (md) {
 				}
 			})
 		}
-		let moduleDispatch = md.outerDispatch.calls.find(c => c.prefix == m.prefix)
-		if (m.module && m.module.call && moduleDispatch) {
-			m.module.call.functions.forEach(item => {
-				console.log(item)
+		if (m.calls) {
+			let thisCallIndex = callIndex
+			callIndex++
+			m.calls.forEach((item, id) => {
 				if (item.arguments.length > 0 && item.arguments[0].name == 'origin' && item.arguments[0].type == 'Origin') {
 					item.arguments = item.arguments.slice(1)
 				}
@@ -121,19 +122,21 @@ function initialiseFromMetadata (md) {
 					}
 					return new TransformBond(args => {
 						let encoded_args = encode(args, item.arguments.map(x => x.type))
-						return new Uint8Array([moduleDispatch.index, item.id, ...encoded_args])
+						let res = new Uint8Array([thisCallIndex, id, ...encoded_args]);
+						console.log(`Encoding call ${m.name}.${item.name} (${thisCallIndex}.${id}): ${bytesToHex(res)}`)
+						return res
 					}, [bondArgs], [], 3, 3, undefined, true)
 				}
 				c[camel(item.name)].help = item.arguments.map(a => a.name)
-			})
+			})				
 		}
-		runtime[m.prefix] = o
-		calls[m.prefix] = c
+		runtime[camel(m.name)] = o
+		calls[camel(m.name)] = c
 	})
 	md.modules.forEach(m => {
 		if (m.storage) {
 			try {
-				require(`./srml/${m.prefix}`).augment(runtime, chain)
+				require(`./srml/${m.name}`).augment(runtime, chain)
 			}
 			catch (e) {
 				if (!e.toString().startsWith('Error: Cannot find module')) {
@@ -150,13 +153,35 @@ function initialiseFromMetadata (md) {
 	runtime.metadata.trigger(md)
 }
 
+function decodeMetadata(bytes) {
+	let input = { data: bytes }
+	let head = decode(input, 'MetadataHead')
+	if (head.magic === 0x6174656d) {
+		if (head.version == 1) {
+			return decode(input, 'MetadataBody')
+		} else {
+			throw `Metadata version ${head.version} not supported`
+		}
+	} else {
+		let md = decode(bytes, 'Legacy_RuntimeMetadata')
+		md.modules = md.modules.map(m => {
+			m.name = m.prefix
+			m.prefix = m.storage ? m.storage.prefix : null
+			m.storage = m.storage ? m.storage.items : null
+			m.calls = m.module && m.module.call ? m.module.call.functions : null
+			return m
+		})
+		return md
+	}
+}
+
 function initRuntime (callback = null) {
 	if (onRuntimeInit instanceof Array) {
 		onRuntimeInit.push(callback)
 		version.tie(() => {
 //			console.info("Initialising runtime")
 			nodeService().request('state_getMetadata')
-				.then(blob => decode(hexToBytes(blob), 'RuntimeMetadata'))
+				.then(blob => decodeMetadata(hexToBytes(blob)))
 				.then(initialiseFromMetadata)
 		})
 	} else {

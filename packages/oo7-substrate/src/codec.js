@@ -6,17 +6,17 @@ const { toLE, leToNumber, leToSigned, bytesToHex } = require('./utils')
 const { metadata } = require('./metadata')
 
 const transforms = {
-	RuntimeMetadata: { outerEvent: 'OuterEventMetadata', modules: 'Vec<RuntimeModuleMetadata>', outerDispatch: 'OuterDispatchMetadata' },
-	OuterDispatchMetadata: { name: 'String', calls: 'Vec<OuterDispatchCall>' },
-	OuterDispatchCall: { name: 'String', prefix: 'String', index: 'u16' },
-	RuntimeModuleMetadata: { prefix: 'String', module: 'ModuleMetadata', storage: 'Option<StorageMetadata>' },
-	StorageFunctionModifier: { _enum: [ 'Optional', 'Default' ] },
-	StorageFunctionTypeMap: { key: 'Type', value: 'Type' },
-	StorageFunctionType: { _enum: { Plain: 'Type', Map: 'StorageFunctionTypeMap' } },
-	StorageFunctionMetadata: {
+	Legacy_RuntimeMetadata: { outerEvent: 'Legacy_OuterEventMetadata', modules: 'Vec<Legacy_RuntimeModuleMetadata>', outerDispatch: 'Legacy_OuterDispatchMetadata' },
+	Legacy_OuterDispatchMetadata: { name: 'String', calls: 'Vec<Legacy_OuterDispatchCall>' },
+	Legacy_OuterDispatchCall: { name: 'String', prefix: 'String', index: 'u16' },
+	Legacy_RuntimeModuleMetadata: { prefix: 'String', module: 'Legacy_ModuleMetadata', storage: 'Option<Legacy_StorageMetadata>' },
+	Legacy_StorageFunctionModifier: { _enum: [ 'Optional', 'Default' ] },
+	Legacy_StorageFunctionTypeMap: { key: 'Type', value: 'Type' },
+	Legacy_StorageFunctionType: { _enum: { Plain: 'Type', Map: 'Legacy_StorageFunctionTypeMap' } },
+	Legacy_StorageFunctionMetadata: {
 		name: 'String',
-		modifier: 'StorageFunctionModifier',
-		type: 'StorageFunctionType',
+		modifier: 'Legacy_StorageFunctionModifier',
+		type: 'Legacy_StorageFunctionType',
 		default: 'Vec<u8>',
 		documentation: 'Vec<String>',
 		_post: x => {
@@ -33,13 +33,55 @@ const transforms = {
 			}
 		}
 	},
-	StorageMetadata: { prefix: 'String', items: 'Vec<StorageFunctionMetadata>' },
-	EventMetadata: { name: 'String', arguments: 'Vec<Type>', documentation: 'Vec<String>' },
-	OuterEventMetadata: { name: 'String', events: 'Vec<(String, Vec<EventMetadata>)>' },
-	ModuleMetadata: { name: 'String', call: 'CallMetadata' },
-	CallMetadata: { name: 'String', functions: 'Vec<FunctionMetadata>' },
-	FunctionMetadata: { id: 'u16', name: 'String', arguments: 'Vec<FunctionArgumentMetadata>', documentation: 'Vec<String>' },
-	FunctionArgumentMetadata: { name: 'String', type: 'Type' },
+	Legacy_StorageMetadata: { prefix: 'String', items: 'Vec<Legacy_StorageFunctionMetadata>' },
+	Legacy_EventMetadata: { name: 'String', arguments: 'Vec<Type>', documentation: 'Vec<String>' },
+	Legacy_OuterEventMetadata: { name: 'String', events: 'Vec<(String, Vec<Legacy_EventMetadata>)>' },
+	Legacy_ModuleMetadata: { name: 'String', call: 'Legacy_CallMetadata' },
+	Legacy_CallMetadata: { name: 'String', functions: 'Vec<Legacy_FunctionMetadata>' },
+	Legacy_FunctionMetadata: { id: 'u16', name: 'String', arguments: 'Vec<Legacy_FunctionArgumentMetadata>', documentation: 'Vec<String>' },
+	Legacy_FunctionArgumentMetadata: { name: 'String', type: 'Type' },
+
+	MetadataHead: { magic: 'u32', version: 'u8' },
+	MetadataBody: { modules: 'Vec<MetadataModule>' },
+	MetadataModule: { 
+		name: 'String',
+		prefix: 'String',
+		storage: 'Option<Vec<MetadataStorage>>',
+		calls: 'Option<Vec<MetadataCall>>', 
+		events: 'Option<Vec<MetadataEvent>>',
+	},
+	MetadataStorage: {
+		name: 'String',
+		modifier: { _enum: [ 'Optional', 'Default' ] },
+		type: { _enum: { Plain: 'Type', Map: { key: 'Type', value: 'Type' } } },
+		default: 'Vec<u8>',
+		documentation: 'Docs',
+		_post: x => {
+			try {
+				if (x.default) {
+					x.default = decode(
+						x.default,
+						x.type.option === 'Plain' ? x.type.value : x.type.value.value
+					)
+				}
+			}
+			catch (e) {
+				x.default = null
+			}
+		}
+	},
+	MetadataCall: {
+		name: 'String',
+		arguments: 'Vec<MetadataCallArg>',
+		documentation: 'Docs',
+	},
+	MetadataCallArg: { name: 'String', type: 'Type' },
+	MetadataEvent: {
+		name: 'String',
+		arguments: 'Vec<Type>',
+		documentation: 'Docs',
+	},
+	Docs: 'Vec<String>',
 
 	NewAccountOutcome: { _enum: [ 'NoHint', 'GoodHint', 'BadHint' ] },
 	UpdateBalanceOutcome: { _enum: [ 'Updated', 'AccountKilled' ] },
@@ -70,12 +112,37 @@ function addCodecTransform(type, transform) {
 var decodePrefix = '';
 
 function decode(input, type) {
-//	console.log("Decode", input, type);		
 	if (typeof input.data === 'undefined') {
 		input = { data: input };
 	}
 	if (typeof type === 'object') {
-		return type.map(t => decode(input, t));
+		let res = {};
+		if (type instanceof Array) {
+			// just a tuple
+			res = new Tuple(type.map(t => decode(input, t)));
+		} else if (!type._enum) {
+			// a struct
+			Object.keys(type).forEach(k => {
+				if (k != '_post') {
+					res[k] = decode(input, type[k])
+				}
+			});
+		} else if (type._enum instanceof Array) {
+			// simple enum
+			let n = input.data[0];
+			input.data = input.data.slice(1);
+			res = { option: type._enum[n] };
+		} else if (type._enum) {
+			// enum
+			let n = input.data[0];
+			input.data = input.data.slice(1);
+			let option = Object.keys(type._enum)[n];
+			res = { option, value: typeof type._enum[option] === 'undefined' ? undefined : decode(input, type._enum[option]) };
+		}
+		if (type._post) {
+			type._post(res)
+		}
+		return res;
 	}
 	type = type.replace(/ /g, '').replace(/^(T::)+/, '');
 	if (type == 'EventRecord<Event>') {
@@ -102,36 +169,7 @@ function decode(input, type) {
 	let res;
 	let transform = transforms[type];
 	if (transform) {
-		if (typeof transform == 'string') {
-			res = decode(input, transform);
-		} else if (typeof transform == 'object') {
-			if (transform instanceof Array) {
-				// just a tuple
-				res = new Tuple(...decode(input, transform));
-			} else if (!transform._enum) {
-				// a struct
-				res = {};
-				Object.keys(transform).forEach(k => {
-					if (k != '_post') {
-						res[k] = decode(input, transform[k])
-					}
-				});
-			} else if (transform._enum instanceof Array) {
-				// simple enum
-				let n = input.data[0];
-				input.data = input.data.slice(1);
-				res = { option: transform._enum[n] };
-			} else if (transform._enum) {
-				// enum
-				let n = input.data[0];
-				input.data = input.data.slice(1);
-				let option = Object.keys(transform._enum)[n];
-				res = { option, value: typeof transform._enum[option] === 'undefined' ? undefined : decode(input, transform._enum[option]) };
-			}
-		}
-		if (transform._post) {
-			transform._post(res)
-		}
+		res = decode(input, transform);
 		res._type = type;
 	} else {
 		switch (type) {
