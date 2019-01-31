@@ -1,4 +1,5 @@
 const { Bond } = require('oo7')
+const { blake2b } = require('blakejs')
 const { SubscriptionBond } = require('./subscriptionBond')
 const { encode } = require('./codec')
 const { secretStore } = require('./secretStore')
@@ -27,6 +28,15 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 		], [
 			'Compact<Index>', 'Call', 'TransactionEra', 'Hash'
 		])
+
+		let legacy = runtime.version.isReady() && (
+			runtime.version._value.specName == 'node' && runtime.version._value.specVersion < 17
+			|| runtime.version._value.specName == 'polkadot' && runtime.version._value.specVersion < 107
+		)
+		if (!legacy && e.length > 256) {
+			console.log(`Oversize transaction (length ${e.length} bytes). Hashing.`)
+			e = blake2b(e)
+		}
 	
 		let signature = secretStore().sign(senderAccount, e)
 		console.log("encoding transaction", sender, index, era, call);
