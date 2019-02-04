@@ -49,7 +49,6 @@ if (typeof window !== 'undefined') {
 	window.post = post
 	window.AccountId = AccountId
 	window.AccountIndex = AccountIndex
-	window.storageKey = storageKey
 }
 
 module.exports = {
