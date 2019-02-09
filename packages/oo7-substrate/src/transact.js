@@ -35,7 +35,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 		)
 		if (!legacy && e.length > 256) {
 			console.log(`Oversize transaction (length ${e.length} bytes). Hashing.`)
-			e = blake2b(e)
+			e = blake2b(e, null, 32)
 		}
 	
 		let signature = secretStore().sign(senderAccount, e)
