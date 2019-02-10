@@ -5,6 +5,7 @@ const { encode } = require('./codec')
 const { secretStore } = require('./secretStore')
 const { TransactionEra, AccountIndex } = require('./types')
 const { runtimeUp, runtime, chain } = require('./bonds')
+const { bytesToHex } = require('./utils')
 
 class TransactionBond extends SubscriptionBond {
 	constructor (data) {

@@ -1,4 +1,4 @@
-const { VecU8 } = require('./types')
+const { VecU8, toLE } = require('./types')
 
 function stringToSeed(s) {
 	if (s.match(/^0x[0-9a-fA-F]{64}$/)) {
@@ -56,24 +56,6 @@ function leHexToNumber(le) {
 		be = le.substr(i, 2) + be;
 	}
 	return Number.parseInt(be, 16);
-}
-
-function toLE(val, bytes) {
-	let flip = false;
-	if (val < 0) {
-		val = -val - 1;
-		flip = true;
-	}
-
-	let r = new VecU8(bytes);
-	for (var o = 0; o < bytes; ++o) {
-		r[o] = val % 256;
-		if (flip) {
-			r[o] = ~r[o] & 0xff;
-		}
-		val /= 256;
-	}
-	return r;
 }
 
 function leToNumber(le) {
