@@ -1,21 +1,3 @@
-function toLE(val, bytes) {
-	let flip = false;
-	if (val < 0) {
-		val = -val - 1;
-		flip = true;
-	}
-
-	let r = new VecU8(bytes);
-	for (var o = 0; o < bytes; ++o) {
-		r[o] = val % 256;
-		if (flip) {
-			r[o] = ~r[o] & 0xff;
-		}
-		val /= 256;
-	}
-	return r;
-}
-
 class VecU8 extends Uint8Array {
 	toJSON() {
 		return { _type: 'VecU8', data: Array.from(this) }
@@ -127,4 +109,4 @@ function reviver(key, bland) {
 }
 
 module.exports = { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver, toLE }
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver }
