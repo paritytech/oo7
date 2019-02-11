@@ -1,3 +1,5 @@
+const { toLE } = require('./utils')
+
 class VecU8 extends Uint8Array {
 	toJSON() {
 		return { _type: 'VecU8', data: Array.from(this) }
