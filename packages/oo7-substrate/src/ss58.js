@@ -1,7 +1,7 @@
 const bs58 = require('bs58')
 const { blake2b } = require('blakejs')
 const { toLE, leToNumber } = require('./utils')
-const { AccountIndex } = require('./types')
+const { AccountIndex, AccountId } = require('./types')
 
 let defaultType = 42
 const KNOWN_TYPES = [0, 1, 42, 43, 68, 69]

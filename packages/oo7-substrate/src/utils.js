@@ -1,10 +1,8 @@
-const { VecU8 } = require('./types')
-
 function stringToSeed(s) {
 	if (s.match(/^0x[0-9a-fA-F]{64}$/)) {
-		return new VecU8(hexToBytes(s))
+		return hexToBytes(s)
 	}
-	var data = new VecU8(32);
+	var data = new Uint8Array(32);
 	data.fill(32);
 	for (var i = 0; i < s.length; i++){
 		data[i] = s.charCodeAt(i);
@@ -12,7 +10,7 @@ function stringToSeed(s) {
 	return data;
 }
 function stringToBytes(s) {
-	var data = new VecU8(s.length);
+	var data = new Uint8Array(s.length);
 	for (var i = 0; i < s.length; i++){
 		data[i] = s.charCodeAt(i);
 	}
@@ -20,14 +18,14 @@ function stringToBytes(s) {
 }
 function hexToBytes(str) {
 	if (!str) {
-		return new VecU8();
+		return new Uint8Array();
 	}
 	var a = [];
 	for (var i = str.startsWith('0x') ? 2 : 0, len = str.length; i < len; i += 2) {
 		a.push(parseInt(str.substr(i, 2), 16));
 	}
 
-	return new VecU8(a);
+	return new Uint8Array(a);
 }
 function bytesToHex(uint8arr) {
 	if (!uint8arr) {
@@ -65,7 +63,7 @@ function toLE(val, bytes) {
 		flip = true;
 	}
 
-	let r = new VecU8(bytes);
+	let r = new Uint8Array(bytes);
 	for (var o = 0; o < bytes; ++o) {
 		r[o] = val % 256;
 		if (flip) {

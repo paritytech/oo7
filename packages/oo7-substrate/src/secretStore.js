@@ -17,8 +17,9 @@ function seedFromPhrase(phrase) {
 }
 
 class SecretStore extends Bond {
-	constructor () {
+	constructor (storage) {
 		super()
+		this._storage = storage || typeof localStorage === 'undefined' ? {} : localStorage
 		this._keys = []
 		this._load()
 	}
@@ -38,7 +39,7 @@ class SecretStore extends Bond {
 	}
 
 	find (identifier) {
-		if (this._keys.indexOf(identifier) !== -1) { 
+		if (this._keys.indexOf(identifier) !== -1) {
 			return identifier
 		}
 		if (identifier instanceof Uint8Array && identifier.length == 32 || identifier instanceof AccountId) {
@@ -72,10 +73,10 @@ class SecretStore extends Bond {
 	}
 
 	_load () {
-		if (localStorage.secretStore) {
-			this._keys = JSON.parse(localStorage.secretStore).map(({seed, phrase, name}) => ({ phrase, name, seed: hexToBytes(seed) }))
-		} else if (localStorage.secretStore2) {
-			this._keys = JSON.parse(localStorage.secretStore2).map(({seed, name}) => ({ phrase: seed, name }))
+		if (this._storage.secretStore) {
+			this._keys = JSON.parse(this._storage.secretStore).map(({seed, phrase, name}) => ({ phrase, name, seed: hexToBytes(seed) }))
+		} else if (this._storage.secretStore2) {
+			this._keys = JSON.parse(this._storage.secretStore2).map(({seed, name}) => ({ phrase: seed, name }))
 		} else {
 			this._keys = [{
 				name: 'Default',
@@ -100,16 +101,16 @@ class SecretStore extends Bond {
 		})
 		this._byAddress = byAddress
 		this._byName = byName
-		localStorage.secretStore = JSON.stringify(this._keys.map(k => ({seed: bytesToHex(k.seed), phrase: k.phrase, name: k.name})))
+		this._storage.secretStore = JSON.stringify(this._keys.map(k => ({seed: bytesToHex(k.seed), phrase: k.phrase, name: k.name})))
 		this.trigger({keys: this._keys, byAddress: this._byAddress, byName: this._byName})
 	}
 }
 
 let s_secretStore = null;
 
-function secretStore() {
+function secretStore(storage) {
 	if (s_secretStore === null) {
-		s_secretStore = new SecretStore;
+		s_secretStore = new SecretStore(storage);
 	}
 	return s_secretStore;
 }

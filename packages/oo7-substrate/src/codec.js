@@ -2,7 +2,7 @@ const { TextDecoder } = require('text-encoding')
 const { ss58Decode } = require('./ss58')
 const { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill } = require('./types')
-const { toLE, leToNumber, leToSigned, bytesToHex } = require('./utils')
+const { toLE, leToNumber, leToSigned, bytesToHex, hexToBytes } = require('./utils')
 const { metadata } = require('./metadata')
 
 const transforms = {

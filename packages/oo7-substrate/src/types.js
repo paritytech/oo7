@@ -1,3 +1,4 @@
+const { toLE } = require('./utils')
 
 class VecU8 extends Uint8Array {
 	toJSON() {
