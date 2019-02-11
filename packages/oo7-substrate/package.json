@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/polkadot-js/oo7-substrate.git"
+    "url": "git+https://github.com/paritytech/oo7.git"
   },
   "keywords": [
     "polkadot",
@@ -19,9 +19,9 @@
   "author": "Parity Technologies <admin@parity.io>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/polkadot-js/oo7-substrate/issues"
+    "url": "https://github.com/paritytech/oo7/issues"
   },
-  "homepage": "https://github.com/polkadot-js/oo7-substrate#readme",
+  "homepage": "https://github.com/paritytech/oo7/tree/master/packages/oo7-substrate#readme",
   "dependencies": {
     "base-x": "^3.0.4",
     "bip39": "^2.5.0",
