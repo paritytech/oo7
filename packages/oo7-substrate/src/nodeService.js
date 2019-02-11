@@ -32,8 +32,13 @@ const subscriptionKey = {
 let uri = ['ws://127.0.0.1:9944']
 
 function setNodeUri(u) {
+	if (uri === u) return
 	uri = u
-	// TODO: reconnect in NodeService and rejig all subscriptions
+	if (!s_nodeService) return // prevent instanciating
+	s_nodeService.uri = u
+	s_nodeService.uriIndex = 0
+	s_nodeService.uriChanged = true
+	s_nodeService.start()
 }
 
 class NodeService {
@@ -93,7 +98,11 @@ class NodeService {
 			// epect a message every 10 seconds or we reconnect.
 			that.reconnect = setTimeout(() => { console.log('Reconnecting.'); that.start() }, 60000)
 		}
-		this.ws.onerror = e => {
+		this.ws.onerror = (err) => {
+			if (that.uriChanged) {
+				delete that.uriChanged
+				return // no reconnection if uri changed
+			}
 			setTimeout(() => {
 				that.uriIndex = (that.uriIndex + 1) % that.uri.length
 				that.start(that.uri[that.uriIndex])
@@ -215,7 +224,7 @@ class NodeService {
 let s_nodeService = null;
 
 function nodeService() {
-	if (s_nodeService === null) {
+	if (!s_nodeService) {
 		s_nodeService = new NodeService(uri);
 	}
 	return s_nodeService;
