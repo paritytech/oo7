@@ -28,6 +28,8 @@ function setNodeUri(u) {
 	uri = u
 	if (!s_nodeService) return // prevent instanciating
 	s_nodeService.uri = u
+	s_nodeService.uriIndex = 0
+	s_nodeService.uriChanged = true
 	s_nodeService.start()
 }
 
@@ -79,7 +81,10 @@ class NodeService {
 			that.reconnect = window.setTimeout(() => { console.log('Reconnecting.'); that.start() }, 30000)
 		}
 		this.ws.onerror = (err) => {
-			if (err.target.url !== that.uri[that.uriIndex]) return // no reconnection if uri changed
+			if (that.uriChanged) {
+				delete that.uriChanged
+				return // no reconnection if uri changed
+			}
 			window.setTimeout(() => {
 				that.uriIndex = (that.uriIndex + 1) % that.uri.length
 				that.start(that.uri[that.uriIndex])
