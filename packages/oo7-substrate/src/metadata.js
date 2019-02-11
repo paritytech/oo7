@@ -1,3 +1,11 @@
-let metadata = { set: m => { metadata = m } }
+let _metadata = null;
 
-module.exports = metadata
+function setMetadata(m) {
+    _metadata = m
+}
+
+function metadata() {
+    return _metadata
+}
+
+module.exports = { metadata, setMetadata }

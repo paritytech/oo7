@@ -17,6 +17,12 @@ class Hash extends Uint8Array {
 	}
 }
 
+class Signature extends Uint8Array {
+	toJSON() {
+		return { _type: "Signature", data: Array.from(this) }
+	}
+}
+
 class VoteThreshold extends String {
 	toJSON() {
 		return { _type: 'VoteThreshold', data: this + ''}
@@ -43,6 +49,14 @@ class Tuple extends Array {
 
 class SlashPreference extends Number {
 	toJSON() { return { _type: 'SlashPreference', data: this+0 } }
+}
+
+class Perbill extends Number {
+	toJSON() { return { _type: 'Perbill', data: this+0 } }
+}
+
+class Permill extends Number {
+	toJSON() { return { _type: 'Permill', data: this+0 } }
 }
 
 class Moment extends Date {
@@ -87,8 +101,11 @@ function reviver(key, bland) {
 			case 'VecU8': return new VecU8(bland.data);
 			case 'AccountId': return new AccountId(bland.data);
 			case 'Hash': return new Hash(bland.data);
+			case 'Signature': return new Signature(bland.data);
 			case 'VoteThreshold': return new VoteThreshold(bland.data);
 			case 'SlashPreference': return new SlashPreference(bland.data);
+			case 'Perbill': return new Perbill(bland.data);
+			case 'Permill': return new Permill(bland.data);
 			case 'Moment': return new Moment(bland.data);
 			case 'Tuple': return new Tuple(bland.data);
 			case 'Balance': return new Balance(bland.data);
@@ -99,5 +116,5 @@ function reviver(key, bland) {
 	return bland;
 }
 
-module.exports = { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra, reviver }
+module.exports = { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver }

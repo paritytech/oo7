@@ -1,7 +1,7 @@
 const nacl = require('tweetnacl')
 const { ss58Decode, ss58Encode, setNetworkDefault } = require('./ss58')
-const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, reviver } = require('./types')
-const { decode, encode } = require('./codec')
+const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, Permill, Perbill, reviver } = require('./types')
+const { decode, encode, addCodecTransform } = require('./codec')
 const { pretty } = require('./pretty')
 const { post } = require('./transact')
 const { secretStore } = require('./secretStore')
@@ -11,6 +11,7 @@ const { storageKey } = require('./storageBond')
 const { initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
 const { nodeService, setNodeUri } = require('./nodeService')
 const denominationInfo = require('./denominationInfo')
+const { metadata } = require('./metadata')
 
 function tally(x) {
 	var r = [0, 0]
@@ -41,6 +42,7 @@ if (typeof window !== 'undefined') {
 	window.encode = encode
 	window.decode = decode
 	window.pretty = pretty
+	window.addCodecTransform = addCodecTransform
 	window.nodeService = nodeService
 	window.secretStore = secretStore
 	window.nacl = nacl
@@ -56,11 +58,13 @@ module.exports = {
 	stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, reviver, 
 	// types
 	AccountId, AccountIndex, TransactionEra, Hash, VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8,
-	pretty, encode, decode,
+	Permill, Perbill,
+	pretty, encode, decode, addCodecTransform,
 	secretStore, addressBook,
 	post,
 	denominationInfo,
-	setNodeUri,
+	nodeService, setNodeUri,
+	metadata,
 	// bonds
 	initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp
 }

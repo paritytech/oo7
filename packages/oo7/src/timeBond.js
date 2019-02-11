@@ -25,7 +25,7 @@ var privateTestIntervals = {};
  * @example
  * let b = new TimeBond;
  * b.log(); // logs 1497080209000
- * window.setTimeout(() => b.log(), 1000); // logs 1497080210000
+ * setTimeout(() => b.log(), 1000); // logs 1497080210000
  */
 class TimeBond extends Bond {
 	constructor () {

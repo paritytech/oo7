@@ -4,6 +4,14 @@ const { Balance } = require('../types')
 const balancesModule = require('./balances')
 const sessionModule = require('./session')
 
+function compareAccountId(a, b) {
+	return a.length === b.length && a.every((v, i) => b[i] === v)
+}
+
+function accountIdMemberOf(member, set) {
+	return set.find(item => compareAccountId(member, item)) !== undefined
+}
+
 function augment (runtime, chain) {
 	sessionModule.augment(runtime, chain)
 	balancesModule.augment(runtime, chain)
@@ -44,12 +52,13 @@ function augment (runtime, chain) {
 			session.sessionLength
 		])
 	
-	staking.validators = session.validators
-		.map(v => v.map(who => ({
+	staking.validators = Bond.all([staking.invulerables, session.validators])
+		.map(([inv, v]) => v.map(who => ({
 			who,
 			ownBalance: balances.totalBalance(who),
 			otherBalance: staking.currentNominatedBalance(who),
-			nominators: staking.currentNominatorsFor(who)
+			nominators: staking.currentNominatorsFor(who),
+			invulnerable: accountIdMemberOf(who, inv)
 		})), 2)
 		.map(v => v
 			.map(i => Object.assign({balance: i.ownBalance.add(i.otherBalance)}, i))

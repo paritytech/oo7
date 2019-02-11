@@ -59,9 +59,18 @@ function leHexToNumber(le) {
 }
 
 function toLE(val, bytes) {
+	let flip = false;
+	if (val < 0) {
+		val = -val - 1;
+		flip = true;
+	}
+
 	let r = new VecU8(bytes);
-	for (var o = 0; val > 0; ++o) {
+	for (var o = 0; o < bytes; ++o) {
 		r[o] = val % 256;
+		if (flip) {
+			r[o] = ~r[o] & 0xff;
+		}
 		val /= 256;
 	}
 	return r;
@@ -72,6 +81,21 @@ function leToNumber(le) {
 	let a = 1;
 	le.forEach(x => { r += x * a; a *= 256; });
 	return r;
+}
+
+function leToSigned(_le) {
+	let le = _le.slice();
+	let sign = 1;
+	let r = 0;
+	if ((le[le.length - 1] & 128) === 128) {
+		// biggest bit of biggest byte is on - we're negative - invert and add one
+		le = le.map(n => ~n & 0xff);
+		r = 1;
+		sign = -1;
+	}
+	let a = 1;
+	le.forEach(x => { r += x * a; a *= 256; });
+	return r * sign;
 }
 
 function injectChunkUtils() {
@@ -134,4 +158,4 @@ function siPrefix(pot) {
 	}
 }
 
-module.exports = { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, injectChunkUtils, siPrefix }
+module.exports = { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, leToSigned, injectChunkUtils, siPrefix }

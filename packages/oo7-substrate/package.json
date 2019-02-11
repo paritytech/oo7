@@ -1,14 +1,14 @@
 {
   "name": "oo7-substrate",
-  "version": "0.3.9",
+  "version": "0.4.13",
   "description": "Substrate Bonds library",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified yet\""
+    "test": "mocha --reporter spec"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/polkadot-js/oo7-substrate.git"
+    "url": "git+https://github.com/paritytech/oo7.git"
   },
   "keywords": [
     "polkadot",
@@ -19,9 +19,9 @@
   "author": "Parity Technologies <admin@parity.io>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/polkadot-js/oo7-substrate/issues"
+    "url": "https://github.com/paritytech/oo7/issues"
   },
-  "homepage": "https://github.com/polkadot-js/oo7-substrate#readme",
+  "homepage": "https://github.com/paritytech/oo7/tree/master/packages/oo7-substrate#readme",
   "dependencies": {
     "base-x": "^3.0.4",
     "bip39": "^2.5.0",
@@ -29,9 +29,18 @@
     "bs58": "^4.0.1",
     "change-case": "^3.0.2",
     "isomorphic-fetch": "^2.2.1",
-    "oo7": "^0.7.2",
+    "isomorphic-ws": "^4.0.1",
+    "oo7": "^0.7.9",
     "ss58": "^1.0.2",
+    "text-encoding": "^0.7.0",
+    "text-encoding-polyfill": "^0.6.7",
     "tweetnacl": "^1.0.0",
+    "ws": "^6.1.2",
     "xxhashjs": "^0.2.2"
-  }
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  },
+  "gitHead": "c2608abd7bca953cdb058053b35b105a9ecf0d5a"
 }
