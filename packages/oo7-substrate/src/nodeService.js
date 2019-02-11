@@ -108,7 +108,7 @@ class NodeService {
 				that.start(that.uri[that.uriIndex])
 			}, that.backoff)
 			that.backoff = Math.min(30000, that.backoff + 1000)
-			that.status.trigger({error: e})
+			that.status.trigger({error: err})
 		}
 	}
 
