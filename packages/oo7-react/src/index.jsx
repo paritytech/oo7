@@ -247,9 +247,8 @@ class ReactiveComponent extends React.Component {
 class If extends ReactiveComponent {
 	constructor () { super (['condition']) }
 	render () {
-		return this.state.condition ?
-			this.props.then :
-			this.props.else || (<span/>)
+		let x = (this.state.condition ? this.props.then : this.props.else) || (<span/>)
+		return typeof x === 'function' ? x() : x
 	}
 }
 

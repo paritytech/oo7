@@ -584,7 +584,7 @@ class Bonds {
 		this.hashContent = null;
 		this.gasPriceHistogram = null;
 		this.accountsInfo = null;
-		this.allAccontsInfo = null;
+		this.allAccountsInfo = null;
 		this.hardwareAccountsInfo = null;
 		this.mode = null;
 

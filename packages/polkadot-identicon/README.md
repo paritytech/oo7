@@ -21,7 +21,7 @@ render () {
 	return (
 		<Identicon
 			className='my-class'
-			id={address}
+			account={address}
 			size={size}
 		/>
 	);

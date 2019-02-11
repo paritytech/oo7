@@ -2,7 +2,7 @@ import React from 'react';
 
 export type IdenticonProps = {
 	className?: string,
-	id: string | Uint8Array,
+	account: string | Uint8Array,
 	sixPoint?: boolean,
 	size: number,
 	style?: { [index: string]: any }

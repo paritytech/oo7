@@ -10,8 +10,11 @@ function storageKey(prefixString, arg) {
 }
 
 class StorageBond extends SubscriptionBond {
-	constructor (prefix, type, args = []) {
-		super('state_storage', [[ storageKey(prefix, args) ]], r => decode(hexToBytes(r.changes[0][1]), type))
+	constructor (prefix, type, args = [], defaultValue = null) {
+		super('state_storage', [[ storageKey(prefix, args) ]], r => {
+			let raw = hexToBytes(r.changes[0][1]);
+			return raw.length > 0 ? decode(raw, type) : defaultValue
+		})			
 	}
 }
 

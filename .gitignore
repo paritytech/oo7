@@ -1,5 +1,7 @@
 /docs
 
+*.tgz
+
 # Logs
 logs
 *.log
