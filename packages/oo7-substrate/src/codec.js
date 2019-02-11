@@ -1,6 +1,6 @@
 const { TextDecoder } = require('text-encoding')
 const { ss58Decode } = require('./ss58')
-const { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
+const { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill } = require('./types')
 const { toLE, leToNumber, leToSigned, bytesToHex } = require('./utils')
 const { metadata } = require('./metadata')
@@ -195,6 +195,11 @@ function decode(input, type) {
 			case 'Hash': {
 				res = new Hash(input.data.slice(0, 32));
 				input.data = input.data.slice(32);
+				break;
+			}
+			case 'Signature': {
+				res = new Signature(input.data.slice(0,64));
+				input.data = input.data.slice(64);
 				break;
 			}
 			case 'Balance': {

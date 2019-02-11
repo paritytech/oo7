@@ -17,6 +17,12 @@ class Hash extends Uint8Array {
 	}
 }
 
+class Signature extends Uint8Array {
+	toJSON() {
+		return { _type: "Signature", data: Array.from(this) }
+	}
+}
+
 class VoteThreshold extends String {
 	toJSON() {
 		return { _type: 'VoteThreshold', data: this + ''}
@@ -95,6 +101,7 @@ function reviver(key, bland) {
 			case 'VecU8': return new VecU8(bland.data);
 			case 'AccountId': return new AccountId(bland.data);
 			case 'Hash': return new Hash(bland.data);
+			case 'Signature': return new Signature(bland.data);
 			case 'VoteThreshold': return new VoteThreshold(bland.data);
 			case 'SlashPreference': return new SlashPreference(bland.data);
 			case 'Perbill': return new Perbill(bland.data);
@@ -109,5 +116,5 @@ function reviver(key, bland) {
 	return bland;
 }
 
-module.exports = { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
+module.exports = { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver }
