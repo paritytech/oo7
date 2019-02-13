@@ -6,6 +6,7 @@ const { secretStore } = require('./secretStore')
 const { TransactionEra, AccountIndex } = require('./types')
 const { runtimeUp, runtime, chain } = require('./bonds')
 const { bytesToHex } = require('./utils')
+const debug = require('debug')('transact')
 
 class TransactionBond extends SubscriptionBond {
 	constructor (data) {
@@ -23,7 +24,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 		} else if (!senderAccount) {
 			reject(`Invalid senderAccount when sender is account index`)
 		}
-		console.log("composing transaction", senderAccount, index, call, era, checkpoint);
+		debug("composing transaction %o", { senderAccount, index, call, era, checkpoint });
 		let e = encode([
 			index, call, era, checkpoint
 		], [
@@ -35,12 +36,12 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 			|| runtime.version._value.specName == 'polkadot' && runtime.version._value.specVersion < 107
 		)
 		if (!legacy && e.length > 256) {
-			console.log(`Oversize transaction (length ${e.length} bytes). Hashing.`)
+			debug(`Oversize transaction (length ${e.length} bytes). Hashing.`)
 			e = blake2b(e, null, 32)
 		}
-	
+
 		let signature = secretStore().sign(senderAccount, e)
-		console.log("encoding transaction", sender, index, era, call);
+		debug("encoding transaction %o", { sender, index, era, call });
 		let signedData = encode(encode({
 			_type: 'Transaction',
 			version: 0x81,
@@ -50,7 +51,7 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 			era,
 			call
 		}), 'Vec<u8>')
-		console.log("signed:", bytesToHex(signedData))
+		debug("signed:", bytesToHex(signedData))
 		setTimeout(() => resolve(signedData), 1000)
 	})
 }

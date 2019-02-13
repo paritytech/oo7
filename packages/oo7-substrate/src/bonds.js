@@ -7,6 +7,7 @@ const { decode, encode } = require('./codec');
 const { stringToBytes, hexToBytes, bytesToHex, toLE } = require('./utils')
 const { StorageBond } = require('./storageBond')
 const { setMetadata } = require('./metadata')
+const debug = require('debug')('bonds')
 
 let chain = (() => {
 	let head = new SubscriptionBond('chain_newHead').subscriptable()
@@ -83,7 +84,7 @@ let runtimeUp = new RuntimeUp
 let onRuntimeInit = []
 
 function initialiseFromMetadata (md) {
-	console.log("initialiseFromMetadata", md)
+	debug("initialiseFromMetadata %O", md)
 	setMetadata(md)
 	let callIndex = 0;
 	md.modules.forEach((m) => {
@@ -123,12 +124,12 @@ function initialiseFromMetadata (md) {
 					return new TransformBond(args => {
 						let encoded_args = encode(args, item.arguments.map(x => x.type))
 						let res = new Uint8Array([thisCallIndex, id, ...encoded_args]);
-						console.log(`Encoding call ${m.name}.${item.name} (${thisCallIndex}.${id}): ${bytesToHex(res)}`)
+						debug(`Encoding call ${m.name}.${item.name} (${thisCallIndex}.${id}): ${bytesToHex(res)}`)
 						return res
 					}, [bondArgs], [], 3, 3, undefined, true)
 				}
 				c[camel(item.name)].help = item.arguments.map(a => a.name)
-			})				
+			})
 		}
 		runtime[camel(m.name)] = o
 		calls[camel(m.name)] = c
