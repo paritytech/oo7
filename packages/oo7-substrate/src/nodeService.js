@@ -1,6 +1,6 @@
 const { Bond } = require('oo7')
 const WebSocket = require('isomorphic-ws')
-const debug = require('debug')('nodeService')
+const debug = require('debug')('oo7-substrate:nodeService')
 
 const subscriptionKey = {
 	author_submitAndWatchExtrinsic: {

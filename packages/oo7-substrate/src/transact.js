@@ -6,7 +6,7 @@ const { secretStore } = require('./secretStore')
 const { TransactionEra, AccountIndex } = require('./types')
 const { runtimeUp, runtime, chain } = require('./bonds')
 const { bytesToHex } = require('./utils')
-const debug = require('debug')('transact')
+const debug = require('debug')('oo7-substrate:transact')
 
 class TransactionBond extends SubscriptionBond {
 	constructor (data) {

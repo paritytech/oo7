@@ -4,7 +4,7 @@ const { generateMnemonic, mnemonicToSeed } = require('bip39')
 const { ss58Encode } = require('./ss58')
 const { AccountId } = require('./types')
 const { bytesToHex, hexToBytes } = require('./utils')
-const debug = require('debug')('secretStore')
+const debug = require('debug')('oo7-substrate:secretStore')
 
 let cache = {}
 

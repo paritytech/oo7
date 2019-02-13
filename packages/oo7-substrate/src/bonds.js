@@ -7,7 +7,7 @@ const { decode, encode } = require('./codec');
 const { stringToBytes, hexToBytes, bytesToHex, toLE } = require('./utils')
 const { StorageBond } = require('./storageBond')
 const { setMetadata } = require('./metadata')
-const debug = require('debug')('bonds')
+const debug = require('debug')('oo7-substrate:bonds')
 
 let chain = (() => {
 	let head = new SubscriptionBond('chain_newHead').subscriptable()
