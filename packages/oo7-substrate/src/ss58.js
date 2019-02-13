@@ -78,6 +78,7 @@ function ss58Decode(ss58, lookupIndex) {
 	let payload = a.slice(1, 1 + length)
 	let checksum = a.slice(1 + a.length)
 
+	let accountId
 	if (length === 32) {
 		accountId = payload
 	}
