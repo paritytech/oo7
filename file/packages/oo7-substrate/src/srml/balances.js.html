@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -95,15 +94,8 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/srml/balances.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { Bond, TransformBond } = require(&apos;oo7&apos;)
-const { ss58Encode } = require(&apos;../ss58&apos;)
-const { AccountId, AccountIndex, Balance } = require(&apos;../types&apos;)
-
-function fixedBond(b) {
-	r = new Bond
-	r.trigger(b)
-	return r
-}
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { Bond } = require(&apos;oo7&apos;)
+const { Balance } = require(&apos;../types&apos;)
 
 function augment(runtime, chain) {
 	let balances = runtime.balances
@@ -117,68 +109,6 @@ function augment(runtime, chain) {
 		.all([balances.freeBalance(who), balances.reservedBalance(who)])
 		.map(([f, r]) =&gt; new Balance(f + r));
 	balances.totalBalance = balances.balance;
-
-	balances.lookupIndex = indexBond =&gt; new TransformBond(index =&gt;
-		index instanceof AccountIndex || typeof(index) === &apos;number&apos;
-		? balances.enumSet(new AccountIndex(Math.floor(index / 64))).map(items =&gt; items[index % 64])
-		: null,
-		[indexBond]
-	)
-
-	balances.accounts = balances.nextEnumSet.map(last =&gt;
-		[...new Array(last + 1)].map((_, i) =&gt; balances.enumSet(i))
-	).map(sets =&gt; {
-		let res = {}
-		sets.forEach((items, i) =&gt; 
-			items.forEach((item, j) =&gt;
-				res[ss58Encode(item)] = i * 64 + j
-			)
-		)
-		return res
-	}).subscriptable()
-
-	balances.tryIndex = (id, whenNone = id) =&gt; new TransformBond((accounts, id, whenNone) =&gt; {
-		if (typeof id === &apos;string&apos;) {
-			id = ss58Decode(id)
-		}
-		if (id instanceof AccountId || (id instanceof Uint8Array &amp;&amp; id.length == 32)) {
-			let i = accounts[ss58Encode(id)]
-			return (typeof i === &apos;number&apos; || i instanceof AccountIndex)
-				? new AccountIndex(i)
-				: whenNone
-		} else {
-			return whenNone
-		}
-	}, [balances.accounts, id, whenNone], [], 3, 3, undefined, false)
-
-	balances.ss58Encode = (address, type, csLength, length) =&gt; new TransformBond((address, id, index, type, csLength, length) =&gt; {
-		if (address instanceof AccountIndex) {
-			index = address
-		}
-		if (address instanceof AccountId) {
-			id = address
-		}
-		if (!(id instanceof AccountId) || !(index instanceof AccountIndex || index instanceof AccountId)) {
-			return null
-		}
-		return ss58Encode(index, type || undefined, csLength || undefined, length || undefined, id)
-	}, [address, balances.lookupIndex(address), balances.tryIndex(address), type || null, csLength || null, length || null], [], 3, 3, undefined, false)
-
-	balances.ss58Decode = address =&gt; {
-		try {
-			let indexOrId = ss58Decode(address, index =&gt; { throw {index} })
-			if (indexOrId instanceof AccountId) {
-				return fixedBond(indexOrId)
-			} else {
-				return balances.lookupIndex(indexOrId)
-			}
-		}
-		catch (indexToLookup) {
-			return balances.lookupIndex(indexToLookup.index).map(id =&gt; {
-				return ss58Decode(address, id) === null ? null : id
-			})
-		}
-	}
 }
 
 module.exports = { augment }</code></pre>

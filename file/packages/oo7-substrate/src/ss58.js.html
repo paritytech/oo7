@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -97,7 +96,8 @@
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/ss58.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const bs58 = require(&apos;bs58&apos;)
 const { blake2b } = require(&apos;blakejs&apos;)
-const { toLE } = require(&apos;./utils&apos;)
+const { toLE, leToNumber } = require(&apos;./utils&apos;)
+const { AccountIndex, AccountId } = require(&apos;./types&apos;)
 
 let defaultType = 42
 const KNOWN_TYPES = [0, 1, 42, 43, 68, 69]
@@ -137,7 +137,7 @@ function ss58Encode(a, type = defaultType, checksumLength = null, length = null,
 	}
 	let hash = blake2b((type &amp; 1) ? accountId : new Uint8Array([type, ...payload]))
 	let complete = new Uint8Array([type, ...payload, ...hash.slice(0, checksumLength)])
-	return bs58.encode(complete)
+	return bs58.encode(Buffer.from(complete))
 }
 
 /// `lookupIndex` must be synchronous. If you can do that, then throw, catch outside the
@@ -174,6 +174,7 @@ function ss58Decode(ss58, lookupIndex) {
 	let payload = a.slice(1, 1 + length)
 	let checksum = a.slice(1 + a.length)
 
+	let accountId
 	if (length === 32) {
 		accountId = payload
 	}
@@ -197,7 +198,8 @@ function ss58Decode(ss58, lookupIndex) {
 	return result
 }
 
-module.exports = { ss58Decode, ss58Encode, setNetworkDefault }</code></pre>
+module.exports = { ss58Decode, ss58Encode, setNetworkDefault }
+</code></pre>
 
 </div>
 

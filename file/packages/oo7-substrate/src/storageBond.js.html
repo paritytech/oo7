@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -107,8 +106,11 @@ function storageKey(prefixString, arg) {
 }
 
 class StorageBond extends SubscriptionBond {
-	constructor (prefix, type, args = []) {
-		super(&apos;state_storage&apos;, [[ storageKey(prefix, args) ]], r =&gt; decode(hexToBytes(r.changes[0][1]), type))
+	constructor (prefix, type, args = [], defaultValue = null) {
+		super(&apos;state_storage&apos;, [[ storageKey(prefix, args) ]], r =&gt; {
+			let raw = hexToBytes(r.changes[0][1]);
+			return raw.length &gt; 0 ? decode(raw, type) : defaultValue
+		})			
 	}
 }
 

@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -95,13 +94,11 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/utils.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { VecU8 } = require(&apos;./types&apos;)
-
-function stringToSeed(s) {
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">function stringToSeed(s) {
 	if (s.match(/^0x[0-9a-fA-F]{64}$/)) {
-		return new VecU8(hexToBytes(s))
+		return hexToBytes(s)
 	}
-	var data = new VecU8(32);
+	var data = new Uint8Array(32);
 	data.fill(32);
 	for (var i = 0; i &lt; s.length; i++){
 		data[i] = s.charCodeAt(i);
@@ -109,7 +106,7 @@ function stringToSeed(s) {
 	return data;
 }
 function stringToBytes(s) {
-	var data = new VecU8(s.length);
+	var data = new Uint8Array(s.length);
 	for (var i = 0; i &lt; s.length; i++){
 		data[i] = s.charCodeAt(i);
 	}
@@ -117,14 +114,14 @@ function stringToBytes(s) {
 }
 function hexToBytes(str) {
 	if (!str) {
-		return new VecU8();
+		return new Uint8Array();
 	}
 	var a = [];
 	for (var i = str.startsWith(&apos;0x&apos;) ? 2 : 0, len = str.length; i &lt; len; i += 2) {
 		a.push(parseInt(str.substr(i, 2), 16));
 	}
 
-	return new VecU8(a);
+	return new Uint8Array(a);
 }
 function bytesToHex(uint8arr) {
 	if (!uint8arr) {
@@ -156,9 +153,18 @@ function leHexToNumber(le) {
 }
 
 function toLE(val, bytes) {
-	let r = new VecU8(bytes);
-	for (var o = 0; val &gt; 0; ++o) {
+	let flip = false;
+	if (val &lt; 0) {
+		val = -val - 1;
+		flip = true;
+	}
+
+	let r = new Uint8Array(bytes);
+	for (var o = 0; o &lt; bytes; ++o) {
 		r[o] = val % 256;
+		if (flip) {
+			r[o] = ~r[o] &amp; 0xff;
+		}
 		val /= 256;
 	}
 	return r;
@@ -169,6 +175,21 @@ function leToNumber(le) {
 	let a = 1;
 	le.forEach(x =&gt; { r += x * a; a *= 256; });
 	return r;
+}
+
+function leToSigned(_le) {
+	let le = _le.slice();
+	let sign = 1;
+	let r = 0;
+	if ((le[le.length - 1] &amp; 128) === 128) {
+		// biggest bit of biggest byte is on - we&apos;re negative - invert and add one
+		le = le.map(n =&gt; ~n &amp; 0xff);
+		r = 1;
+		sign = -1;
+	}
+	let a = 1;
+	le.forEach(x =&gt; { r += x * a; a *= 256; });
+	return r * sign;
 }
 
 function injectChunkUtils() {
@@ -231,7 +252,8 @@ function siPrefix(pot) {
 	}
 }
 
-module.exports = { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, injectChunkUtils, siPrefix }</code></pre>
+module.exports = { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, leToSigned, injectChunkUtils, siPrefix }
+</code></pre>
 
 </div>
 

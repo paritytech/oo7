@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -95,51 +94,170 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/codec.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { ss58Decode } = require(&apos;./ss58&apos;)
-const { VecU8, AccountId, Hash, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra } = require(&apos;./types&apos;)
-const { toLE, leToNumber, bytesToHex } = require(&apos;./utils&apos;)
-const metadata = require(&apos;./metadata&apos;)
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { TextDecoder } = require(&apos;text-encoding&apos;)
+const { ss58Decode } = require(&apos;./ss58&apos;)
+const { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill } = require(&apos;./types&apos;)
+const { toLE, leToNumber, leToSigned, bytesToHex, hexToBytes } = require(&apos;./utils&apos;)
+const { metadata } = require(&apos;./metadata&apos;)
 
 const transforms = {
-	RuntimeMetadata: { outerEvent: &apos;OuterEventMetadata&apos;, modules: &apos;Vec&lt;RuntimeModuleMetadata&gt;&apos; },
-	RuntimeModuleMetadata: { prefix: &apos;String&apos;, module: &apos;ModuleMetadata&apos;, storage: &apos;Option&lt;StorageMetadata&gt;&apos; },
-	StorageFunctionModifier: { _enum: [ &apos;None&apos;, &apos;Default&apos;, &apos;Required&apos; ] },
-	StorageFunctionTypeMap: { key: &apos;Type&apos;, value: &apos;Type&apos; },
-	StorageFunctionType: { _enum: { Plain: &apos;Type&apos;, Map: &apos;StorageFunctionTypeMap&apos; } },
-	StorageFunctionMetadata: { name: &apos;String&apos;, modifier: &apos;StorageFunctionModifier&apos;, type: &apos;StorageFunctionType&apos;, documentation: &apos;Vec&lt;String&gt;&apos; },
-	StorageMetadata: { prefix: &apos;String&apos;, items: &apos;Vec&lt;StorageFunctionMetadata&gt;&apos; },
-	EventMetadata: { name: &apos;String&apos;, arguments: &apos;Vec&lt;Type&gt;&apos;, documentation: &apos;Vec&lt;String&gt;&apos; },
-	OuterEventMetadata: { name: &apos;String&apos;, events: &apos;Vec&lt;(String, Vec&lt;EventMetadata&gt;)&gt;&apos; },
-	ModuleMetadata: { name: &apos;String&apos;, call: &apos;CallMetadata&apos; },
-	CallMetadata: { name: &apos;String&apos;, functions: &apos;Vec&lt;FunctionMetadata&gt;&apos; },
-	FunctionMetadata: { id: &apos;u16&apos;, name: &apos;String&apos;, arguments: &apos;Vec&lt;FunctionArgumentMetadata&gt;&apos;, documentation: &apos;Vec&lt;String&gt;&apos; },
-	FunctionArgumentMetadata: { name: &apos;String&apos;, type: &apos;Type&apos; },
+	Legacy_RuntimeMetadata: { outerEvent: &apos;Legacy_OuterEventMetadata&apos;, modules: &apos;Vec&lt;Legacy_RuntimeModuleMetadata&gt;&apos;, outerDispatch: &apos;Legacy_OuterDispatchMetadata&apos; },
+	Legacy_OuterDispatchMetadata: { name: &apos;String&apos;, calls: &apos;Vec&lt;Legacy_OuterDispatchCall&gt;&apos; },
+	Legacy_OuterDispatchCall: { name: &apos;String&apos;, prefix: &apos;String&apos;, index: &apos;u16&apos; },
+	Legacy_RuntimeModuleMetadata: { prefix: &apos;String&apos;, module: &apos;Legacy_ModuleMetadata&apos;, storage: &apos;Option&lt;Legacy_StorageMetadata&gt;&apos; },
+	Legacy_StorageFunctionModifier: { _enum: [ &apos;Optional&apos;, &apos;Default&apos; ] },
+	Legacy_StorageFunctionTypeMap: { key: &apos;Type&apos;, value: &apos;Type&apos; },
+	Legacy_StorageFunctionType: { _enum: { Plain: &apos;Type&apos;, Map: &apos;Legacy_StorageFunctionTypeMap&apos; } },
+	Legacy_StorageFunctionMetadata: {
+		name: &apos;String&apos;,
+		modifier: &apos;Legacy_StorageFunctionModifier&apos;,
+		type: &apos;Legacy_StorageFunctionType&apos;,
+		default: &apos;Vec&lt;u8&gt;&apos;,
+		documentation: &apos;Vec&lt;String&gt;&apos;,
+		_post: x =&gt; {
+			try {
+				if (x.default) {
+					x.default = decode(
+						x.default,
+						x.type.option === &apos;Plain&apos; ? x.type.value : x.type.value.value
+					)
+				}
+			}
+			catch (e) {
+				x.default = null
+			}
+		}
+	},
+	Legacy_StorageMetadata: { prefix: &apos;String&apos;, items: &apos;Vec&lt;Legacy_StorageFunctionMetadata&gt;&apos; },
+	Legacy_EventMetadata: { name: &apos;String&apos;, arguments: &apos;Vec&lt;Type&gt;&apos;, documentation: &apos;Vec&lt;String&gt;&apos; },
+	Legacy_OuterEventMetadata: { name: &apos;String&apos;, events: &apos;Vec&lt;(String, Vec&lt;Legacy_EventMetadata&gt;)&gt;&apos; },
+	Legacy_ModuleMetadata: { name: &apos;String&apos;, call: &apos;Legacy_CallMetadata&apos; },
+	Legacy_CallMetadata: { name: &apos;String&apos;, functions: &apos;Vec&lt;Legacy_FunctionMetadata&gt;&apos; },
+	Legacy_FunctionMetadata: { id: &apos;u16&apos;, name: &apos;String&apos;, arguments: &apos;Vec&lt;Legacy_FunctionArgumentMetadata&gt;&apos;, documentation: &apos;Vec&lt;String&gt;&apos; },
+	Legacy_FunctionArgumentMetadata: { name: &apos;String&apos;, type: &apos;Type&apos; },
+
+	MetadataHead: { magic: &apos;u32&apos;, version: &apos;u8&apos; },
+	MetadataBody: { modules: &apos;Vec&lt;MetadataModule&gt;&apos; },
+	MetadataModule: { 
+		name: &apos;String&apos;,
+		prefix: &apos;String&apos;,
+		storage: &apos;Option&lt;Vec&lt;MetadataStorage&gt;&gt;&apos;,
+		calls: &apos;Option&lt;Vec&lt;MetadataCall&gt;&gt;&apos;, 
+		events: &apos;Option&lt;Vec&lt;MetadataEvent&gt;&gt;&apos;,
+	},
+	MetadataStorage: {
+		name: &apos;String&apos;,
+		modifier: { _enum: [ &apos;Optional&apos;, &apos;Default&apos; ] },
+		type: { _enum: { Plain: &apos;Type&apos;, Map: { key: &apos;Type&apos;, value: &apos;Type&apos; } } },
+		default: &apos;Vec&lt;u8&gt;&apos;,
+		documentation: &apos;Docs&apos;,
+		_post: x =&gt; {
+			try {
+				if (x.default) {
+					x.default = decode(
+						x.default,
+						x.type.option === &apos;Plain&apos; ? x.type.value : x.type.value.value
+					)
+				}
+			}
+			catch (e) {
+				x.default = null
+			}
+		}
+	},
+	MetadataCall: {
+		name: &apos;String&apos;,
+		arguments: &apos;Vec&lt;MetadataCallArg&gt;&apos;,
+		documentation: &apos;Docs&apos;,
+	},
+	MetadataCallArg: { name: &apos;String&apos;, type: &apos;Type&apos; },
+	MetadataEvent: {
+		name: &apos;String&apos;,
+		arguments: &apos;Vec&lt;Type&gt;&apos;,
+		documentation: &apos;Docs&apos;,
+	},
+	Docs: &apos;Vec&lt;String&gt;&apos;,
 
 	NewAccountOutcome: { _enum: [ &apos;NoHint&apos;, &apos;GoodHint&apos;, &apos;BadHint&apos; ] },
 	UpdateBalanceOutcome: { _enum: [ &apos;Updated&apos;, &apos;AccountKilled&apos; ] },
 
-	Transaction: { version: &apos;u8&apos;, sender: &apos;Address&apos;, signature: &apos;Signature&apos;, index: &apos;Index&apos;, era: &apos;TransactionEra&apos;, call: &apos;Call&apos; },
+	Transaction: { version: &apos;u8&apos;, sender: &apos;Address&apos;, signature: &apos;Signature&apos;, index: &apos;Compact&lt;Index&gt;&apos;, era: &apos;TransactionEra&apos;, call: &apos;Call&apos; },
 	Phase: { _enum: { ApplyExtrinsic: &apos;u32&apos;, Finalization: undefined } },
-	EventRecord: { phase: &apos;Phase&apos;, event: &apos;Event&apos; }
+	EventRecord: { phase: &apos;Phase&apos;, event: &apos;Event&apos; },
+
+	&quot;&lt;LookupasStaticLookup&gt;::Source&quot;: &apos;Address&apos;,
+	&quot;RawAddress&lt;AccountId,AccountIndex&gt;&quot;: &apos;Address&apos;,
+	&quot;Address&lt;AccountId,AccountIndex&gt;&quot;: &apos;Address&apos;,
+	ParaId: &apos;u32&apos;,
+	VoteIndex: &apos;u32&apos;,
+	PropIndex: &apos;u32&apos;,
+	ReferendumIndex: &apos;u32&apos;,
+	Index: &apos;u64&apos;,
+
+	KeyValue: &apos;(Vec&lt;u8&gt;, Vec&lt;u8&gt;)&apos;,
+	ParaId: &apos;u32&apos;
 };
 
-var decodePrefix = 0;
+function addCodecTransform(type, transform) {
+	if (!transforms[type]) {
+		transforms[type] = transform
+	}
+}
+
+var decodePrefix = &apos;&apos;;
 
 function decode(input, type) {
 	if (typeof input.data === &apos;undefined&apos;) {
 		input = { data: input };
 	}
 	if (typeof type === &apos;object&apos;) {
-		return type.map(t =&gt; decode(input, t));
+		let res = {};
+		if (type instanceof Array) {
+			// just a tuple
+			res = new Tuple(type.map(t =&gt; decode(input, t)));
+		} else if (!type._enum) {
+			// a struct
+			Object.keys(type).forEach(k =&gt; {
+				if (k != &apos;_post&apos;) {
+					res[k] = decode(input, type[k])
+				}
+			});
+		} else if (type._enum instanceof Array) {
+			// simple enum
+			let n = input.data[0];
+			input.data = input.data.slice(1);
+			res = { option: type._enum[n] };
+		} else if (type._enum) {
+			// enum
+			let n = input.data[0];
+			input.data = input.data.slice(1);
+			let option = Object.keys(type._enum)[n];
+			res = { option, value: typeof type._enum[option] === &apos;undefined&apos; ? undefined : decode(input, type._enum[option]) };
+		}
+		if (type._post) {
+			type._post(res)
+		}
+		return res;
 	}
-	while (type.startsWith(&apos;T::&apos;)) {
-		type = type.slice(3);
-	}
+	type = type.replace(/ /g, &apos;&apos;).replace(/^(T::)+/, &apos;&apos;);
 	if (type == &apos;EventRecord&lt;Event&gt;&apos;) {
 		type = &apos;EventRecord&apos;
 	}
-	
+
+	let reencodeCompact;
+	let p1 = type.match(/^&lt;([A-Z][A-Za-z0-9]*)asHasCompact&gt;::Type$/);
+	if (p1) {
+		reencodeCompact = p1[1]
+	}
+	let p2 = type.match(/^Compact&lt;([A-Za-z][A-Za-z0-9]*)&gt;$/);
+	if (p2) {
+		reencodeCompact = p2[1]
+	}
+	if (reencodeCompact) {
+		return decode(encode(decode(input, &apos;Compact&apos;), reencodeCompact), reencodeCompact);
+	}
+
 	let dataHex = bytesToHex(input.data.slice(0, 50));
 //	console.log(decodePrefix + &apos;des &gt;&gt;&gt;&apos;, type, dataHex);
 //	decodePrefix +=  &quot;   &quot;;
@@ -147,47 +265,16 @@ function decode(input, type) {
 	let res;
 	let transform = transforms[type];
 	if (transform) {
-		if (typeof transform == &apos;string&apos;) {
-			res = decode(input, transform);
-		} else if (typeof transform == &apos;object&apos;) {
-			if (transform instanceof Array) {
-				// just a tuple
-				res = new Tuple(...decode(input, transform));
-			} else if (!transform._enum) {
-				// a struct
-				res = {};
-				Object.keys(transform).forEach(k =&gt; {
-					res[k] = decode(input, transform[k]);
-				});
-			} else if (transform._enum instanceof Array) {
-				// simple enum
-				let n = input.data[0];
-				input.data = input.data.slice(1);
-				res = { option: transform._enum[n] };
-			} else if (transform._enum) {
-				// enum
-				let n = input.data[0];
-				input.data = input.data.slice(1);
-				let option = Object.keys(transform._enum)[n];
-				res = { option, value: typeof transform._enum[option] === &apos;undefined&apos; ? undefined : decode(input, transform._enum[option]) };
-			}
-		}
+		res = decode(input, transform);
 		res._type = type;
 	} else {
 		switch (type) {
-/*			case &apos;Call&apos;:
+			case &apos;Call&apos;:
 			case &apos;Proposal&apos;: {
-				let c = Calls[input.data[0]];
-				res = type === &apos;Call&apos; ? new Call : new Proposal;
-				res.module = c.name;
-				c = c[type == &apos;Call&apos; ? &apos;calls&apos; : &apos;priv_calls&apos;][input.data[1]];
-				input.data = input.data.slice(2);
-				res.name = c.name;
-				res.params = c.params.map(p =&gt; ({ name: p.name, type: p.type, value: decode(input, p.type) }));
-				break;
-			}*/
+				throw &quot;Cannot represent Call/Proposal&quot;
+			}
 			case &apos;Event&apos;: {
-				let events = metadata.outerEvent.events
+				let events = metadata().outerEvent.events
 				let moduleIndex = decode(input, &apos;u8&apos;)
 				let module = events[moduleIndex][0]
 				let eventIndex = decode(input, &apos;u8&apos;)
@@ -204,6 +291,11 @@ function decode(input, type) {
 			case &apos;Hash&apos;: {
 				res = new Hash(input.data.slice(0, 32));
 				input.data = input.data.slice(32);
+				break;
+			}
+			case &apos;Signature&apos;: {
+				res = new Signature(input.data.slice(0,64));
+				input.data = input.data.slice(64);
 				break;
 			}
 			case &apos;Balance&apos;: {
@@ -240,11 +332,15 @@ function decode(input, type) {
 				res = new SlashPreference(decode(input, &apos;u32&apos;));
 				break;
 			}
-			case &apos;Compact&lt;u128&gt;&apos;:
-			case &apos;Compact&lt;u64&gt;&apos;:
-			case &apos;Compact&lt;u32&gt;&apos;:
-			case &apos;Compact&lt;u16&gt;&apos;:
-			case &apos;Compact&lt;u8&gt;&apos;: {
+			case &apos;Perbill&apos;: {
+				res = new Perbill(decode(input, &apos;u32&apos;) / 1000000000.0);
+				break;
+			}
+			case &apos;Permill&apos;: {
+				res = new Permill(decode(input, &apos;u32&apos;) / 1000000.0);
+				break;
+			}
+			case &apos;Compact&apos;: {
 				let len;
 				if (input.data[0] % 4 == 0) {
 					// one byte
@@ -254,45 +350,66 @@ function decode(input, type) {
 					res = leToNumber(input.data.slice(0, 2)) &gt;&gt; 2;
 					len = 2;
 				} else if (input.data[0] % 4 == 2) {
-					res = leToNumber(inpuzt.data.slice(0, 4)) &gt;&gt; 2;
+					res = leToNumber(input.data.slice(0, 4)) &gt;&gt; 2;
 					len = 4;
 				} else {
 					let n = (input.data[0] &gt;&gt; 2) + 4;
 					res = leToNumber(input.data.slice(1, n + 1));
-					len = 5 + n;
+					len = 1 + n;
 				}
 				input.data = input.data.slice(len);
 				break;
 			}
 			case &apos;u8&apos;:
-				res = leToNumber(input.data.slice(0, 1));
+				res = input.data.slice(0, 1);
 				input.data = input.data.slice(1);
 				break;
 			case &apos;u16&apos;:
 				res = leToNumber(input.data.slice(0, 2));
 				input.data = input.data.slice(2);
 				break;
-			case &apos;u32&apos;:
-			case &apos;VoteIndex&apos;:
-			case &apos;PropIndex&apos;:
-			case &apos;ReferendumIndex&apos;: {
+			case &apos;u32&apos;: {
 				res = leToNumber(input.data.slice(0, 4));
 				input.data = input.data.slice(4);
 				break;
 			}
-			case &apos;u64&apos;:
-			case &apos;Index&apos;: {
+			case &apos;u64&apos;: {
 				res = leToNumber(input.data.slice(0, 8));
 				input.data = input.data.slice(8);
+				break;
+			}
+			case &apos;u128&apos;: {
+				res = leToNumber(input.data.slice(0, 16));
+				input.data = input.data.slice(16);
+				break;
+			}
+			case &apos;i8&apos;: {
+				res = leToSigned(input.data.slice(0, 1));
+				input.data = input.data.slice(1);
+				break;
+			}
+			case &apos;i16&apos;:
+				res = leToSigned(input.data.slice(0, 2));
+				input.data = input.data.slice(2);
+				break;
+			case &apos;i32&apos;: {
+				res = leToSigned(input.data.slice(0, 4));
+				input.data = input.data.slice(4);
+				break;
+			}
+			case &apos;i64&apos;: {
+				res = leToSigned(input.data.slice(0, 8));
+				input.data = input.data.slice(8);
+				break;
+			}
+			case &apos;i128&apos;: {
+				res = leToSigned(input.data.slice(0, 16));
+				input.data = input.data.slice(16);
 				break;
 			}
 			case &apos;bool&apos;: {
 				res = !!input.data[0];
 				input.data = input.data.slice(1);
-				break;
-			}
-			case &apos;KeyValue&apos;: {
-				res = decode(input, &apos;(Vec&lt;u8&gt;, Vec&lt;u8&gt;)&apos;);
 				break;
 			}
 			case &apos;Vec&lt;bool&gt;&apos;: {
@@ -341,7 +458,7 @@ function decode(input, type) {
 				}
 				let t = type.match(/^\((.*)\)$/);
 				if (t) {
-					res = new Tuple(...decode(input, t[1].split(&apos;, &apos;)));
+					res = new Tuple(...decode(input, t[1].split(&apos;,&apos;)));
 					break;
 				}
 				throw &apos;Unknown type to decode: &apos; + type;
@@ -376,6 +493,7 @@ function encode(value, type = null) {
 	if (typeof type != &apos;string&apos;) {
 		throw &apos;type must be either an array or a string&apos;
 	}
+	type = type.replace(/ /g, &apos;&apos;).replace(/^(T::)+/, &apos;&apos;);
 
 	if (typeof value == &apos;string&apos; &amp;&amp; value.startsWith(&apos;0x&apos;)) {
 		value = hexToBytes(value)
@@ -383,8 +501,8 @@ function encode(value, type = null) {
 
 	if (transforms[type]) {
 		let transform = transforms[type]
-		if (transform instanceof Array) {
-			// just a tuple
+		if (transform instanceof Array || typeof transform == &apos;string&apos;) {
+			// just a tuple or string
 			return encode(value, transform)
 		} else if (!transform._enum) {
 			// a struct
@@ -413,7 +531,27 @@ function encode(value, type = null) {
 		}
 	}
 
-	if (type == &apos;Address&apos; || type == &apos;RawAddress&lt;AccountId, AccountIndex&gt;&apos; || type == &apos;Address&lt;AccountId, AccountIndex&gt;&apos;) {
+	let match_vec = type.match(/^Vec&lt;(.*)&gt;$/);
+	if (match_vec) {
+		if (value instanceof Array) {
+			let res = new Uint8Array([...encode(value.length, &apos;Compact&lt;u32&gt;&apos;)])
+			value.forEach(v =&gt; {
+				let x = encode(v, match_vec[1])
+				r = new Uint8Array(res.length + x.length)
+				r.set(res)
+				r.set(x, res.length)
+				res = r
+			})
+			return res
+		}
+	}
+
+	let t = type.match(/^\((.*)\)$/)
+	if (t) {
+		return encode(value, t[1].split(&apos;,&apos;))
+	}
+
+	if (type == &apos;Address&apos;) {
 		if (typeof value == &apos;string&apos;) {
 			value = ss58Decode(value)
 		}
@@ -442,20 +580,25 @@ function encode(value, type = null) {
 		}
 	}
 
-	if (typeof value == &apos;number&apos;) {
+	if (typeof value == &apos;number&apos; || (typeof value == &apos;string&apos; &amp;&amp; +value + &apos;&apos; == value)) {
+		value = +value
 		switch (type) {
 			case &apos;Balance&apos;:
 			case &apos;u128&apos;:
+			case &apos;i128&apos;:
 				return toLE(value, 16)
-			case &apos;Index&apos;:
 			case &apos;u64&apos;:
-			return toLE(value, 8)
+			case &apos;i64&apos;:
+				return toLE(value, 8)
 			case &apos;AccountIndex&apos;:
 			case &apos;u32&apos;:
+			case &apos;i32&apos;:
 				return toLE(value, 4)
 			case &apos;u16&apos;:
+			case &apos;i16&apos;:
 				return toLE(value, 2)
 			case &apos;u8&apos;:
+			case &apos;i8&apos;:
 				return toLE(value, 1)
 			default:
 				break
@@ -464,6 +607,14 @@ function encode(value, type = null) {
 
 	if (value instanceof AccountIndex &amp;&amp; type == &apos;AccountIndex&apos;) {
 		return toLE(value, 4)
+	}
+
+	if ((value instanceof Perbill || typeof value === &apos;number&apos;) &amp;&amp; type == &apos;Perbill&apos;) {
+		return toLE(value * 1000000000, 4)
+	}
+
+	if ((value instanceof Permill || typeof value === &apos;number&apos;) &amp;&amp; type == &apos;Permill&apos;) {
+		return toLE(value * 1000000, 4)
 	}
 
 	if (value instanceof Uint8Array) {
@@ -481,7 +632,7 @@ function encode(value, type = null) {
 		console.error(&quot;TxEra::encode bad&quot;, type, value)
 	}
 	
-	if (type.match(/^Compact&lt;u[0-9]*&gt;$/)) {
+	if (type.match(/^&lt;[A-Z][A-Za-z0-9]*asHasCompact&gt;::Type$/) || type.match(/^Compact&lt;[A-Za-z][A-Za-z0-9]*&gt;$/) || type === &apos;Compact&apos;) {
 		if (value &lt; 1 &lt;&lt; 6) {
 			return new Uint8Array([value &lt;&lt; 2])
 		} else if (value &lt; 1 &lt;&lt; 14) {
@@ -489,14 +640,9 @@ function encode(value, type = null) {
 		} else if (value &lt; 1 &lt;&lt; 30) {
 			return toLE((value &lt;&lt; 2) + 2, 4)
 		} else {
-			var v = [3, ...toLE(value, 4)]
-			let n = value &gt;&gt; 32
-			while (n &gt; 0) {
-				v[0]++
-				v.push(n % 256)
-				n &gt;&gt;= 8
-			}
-			return new Uint8Array(v)
+			let bytes = 0;
+			for (let v = value; v &gt; 0; v = Math.floor(v / 256)) { ++bytes }
+			return new Uint8Array([3 + ((bytes - 4) &lt;&lt; 2), ...toLE(value, bytes)])
 		}
 	}
 
@@ -512,6 +658,7 @@ function encode(value, type = null) {
 	if (typeof value == &apos;object&apos; &amp;&amp; value instanceof Uint8Array) {
 		switch (type) {
 			case &apos;Call&apos;:
+			case &apos;Proposal&apos;:
 				break
 			default:
 				console.warn(`Value passed apparently pre-encoded without whitelisting ${type}`)
@@ -522,7 +669,7 @@ function encode(value, type = null) {
 	throw `Value cannot be encoded as type: ${value}, ${type}`
 }
 
-module.exports = { decode, encode }</code></pre>
+module.exports = { decode, encode, addCodecTransform }</code></pre>
 
 </div>
 

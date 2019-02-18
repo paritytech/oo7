@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -96,44 +95,76 @@
 
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/bonds.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { camel } = require(&apos;change-case&apos;);
-const { Bond, TransformBond } = require(&apos;oo7&apos;)
+const { Bond, TransformBond, TimeBond } = require(&apos;oo7&apos;)
 const { nodeService } = require(&apos;./nodeService&apos;)
 const { SubscriptionBond } = require(&apos;./subscriptionBond&apos;)
 const { BlockNumber, Hash } = require(&apos;./types&apos;);
 const { decode, encode } = require(&apos;./codec&apos;);
 const { stringToBytes, hexToBytes, bytesToHex, toLE } = require(&apos;./utils&apos;)
 const { StorageBond } = require(&apos;./storageBond&apos;)
-const metadata = require(&apos;./metadata&apos;)
+const { setMetadata } = require(&apos;./metadata&apos;)
 
 let chain = (() =&gt; {
 	let head = new SubscriptionBond(&apos;chain_newHead&apos;).subscriptable()
+	let finalisedHead = new SubscriptionBond(&apos;chain_finalisedHead&apos;).subscriptable()
 	let height = head.map(h =&gt; new BlockNumber(h.number))
+	let finalisedHeight = finalisedHead.map(h =&gt; new BlockNumber(h.number))
+	let lag = Bond.all([height, finalisedHeight]).map(([h, f]) =&gt; new BlockNumber(h - f))
 	let header = hashBond =&gt; new TransformBond(hash =&gt; nodeService().request(&apos;chain_getHeader&apos;, [hash]), [hashBond]).subscriptable()
+	let block = hashBond =&gt; new TransformBond(hash =&gt; nodeService().request(&apos;chain_getBlock&apos;, [hash]), [hashBond]).subscriptable()
 	let hash = numberBond =&gt; new TransformBond(number =&gt; nodeService().request(&apos;chain_getBlockHash&apos;, [number]), [numberBond])
-	return { head, height, header, hash }
+	return { head, finalisedHead, height, finalisedHeight, header, hash, block, lag }
 })()
 
 let system = (() =&gt; {
+	let time = new TimeBond
 	let name = new TransformBond(() =&gt; nodeService().request(&apos;system_name&apos;)).subscriptable()
 	let version = new TransformBond(() =&gt; nodeService().request(&apos;system_version&apos;)).subscriptable()
 	let chain = new TransformBond(() =&gt; nodeService().request(&apos;system_chain&apos;)).subscriptable()
-	return { name, version, chain }
+	let properties = new TransformBond(() =&gt; nodeService().request(&apos;system_properties&apos;)).subscriptable()
+	let health = new TransformBond(() =&gt; nodeService().request(&apos;system_health&apos;), [], [time]).subscriptable()
+	let peers = new TransformBond(() =&gt; nodeService().request(&apos;system_peers&apos;), [], [time]).subscriptable()
+	let pendingTransactions = new TransformBond(() =&gt; nodeService().request(&apos;author_pendingExtrinsics&apos;)).subscriptable()
+	return { name, version, chain, properties, pendingTransactions, health, peers }
 })()
 
-let runtime = { core: (() =&gt; {
-	let authorityCount = new SubscriptionBond(&apos;state_storage&apos;, [[&apos;0x&apos; + bytesToHex(stringToBytes(&apos;:auth:len&apos;))]], r =&gt; decode(hexToBytes(r.changes[0][1]), &apos;u32&apos;))
-	let authorities = authorityCount.map(
-		n =&gt; [...Array(n)].map((_, i) =&gt;
-			new SubscriptionBond(&apos;state_storage&apos;,
-				[[ &apos;0x&apos; + bytesToHex(stringToBytes(&quot;:auth:&quot;)) + bytesToHex(toLE(i, 4)) ]],
-				r =&gt; decode(hexToBytes(r.changes[0][1]), &apos;AccountId&apos;)
-			)
-		), 2)
-	let code = new SubscriptionBond(&apos;state_storage&apos;, [[&apos;0x&apos; + bytesToHex(stringToBytes(&apos;:code&apos;))]], r =&gt; hexToBytes(r.changes[0][1]))
-	let codeHash = new TransformBond(() =&gt; nodeService().request(&apos;state_getStorageHash&apos;, [&apos;0x&apos; + bytesToHex(stringToBytes(&quot;:code&quot;))]).then(hexToBytes), [], [chain.head])
-	let codeSize = new TransformBond(() =&gt; nodeService().request(&apos;state_getStorageSize&apos;, [&apos;0x&apos; + bytesToHex(stringToBytes(&quot;:code&quot;))]), [], [chain.head])
-	return { authorityCount, authorities, code, codeHash, codeSize }
-})() }
+let version = (new SubscriptionBond(&apos;state_runtimeVersion&apos;, [], r =&gt; {
+	let apis = {}
+	r.apis.forEach(([id, version]) =&gt; {
+		if (typeof id !== &apos;string&apos;) {
+			id = String.fromCharCode.apply(null, id)
+		}
+		apis[id] = version
+	})
+	return {
+		authoringVersion: r.authoringVersion,
+		implName: r.implName,
+		implVersion: r.implVersion,
+		specName: r.specName,
+		specVersion: r.specVersion,
+		apis
+	}
+})).subscriptable()
+
+let runtime = {
+	version, 
+	metadata: new Bond,
+	core: (() =&gt; {
+		let authorityCount = new SubscriptionBond(&apos;state_storage&apos;, [[&apos;0x&apos; + bytesToHex(stringToBytes(&apos;:auth:len&apos;))]], r =&gt; decode(hexToBytes(r.changes[0][1]), &apos;u32&apos;))
+		let authorities = authorityCount.map(
+			n =&gt; [...Array(n)].map((_, i) =&gt;
+				new SubscriptionBond(&apos;state_storage&apos;,
+					[[ &apos;0x&apos; + bytesToHex(stringToBytes(&quot;:auth:&quot;)) + bytesToHex(toLE(i, 4)) ]],
+					r =&gt; decode(hexToBytes(r.changes[0][1]), &apos;AccountId&apos;)
+				)
+			), 2)
+		let code = new SubscriptionBond(&apos;state_storage&apos;, [[&apos;0x&apos; + bytesToHex(stringToBytes(&apos;:code&apos;))]], r =&gt; hexToBytes(r.changes[0][1]))
+		let codeHash = new TransformBond(() =&gt; nodeService().request(&apos;state_getStorageHash&apos;, [&apos;0x&apos; + bytesToHex(stringToBytes(&quot;:code&quot;))]).then(hexToBytes), [], [version])
+		let codeSize = new TransformBond(() =&gt; nodeService().request(&apos;state_getStorageSize&apos;, [&apos;0x&apos; + bytesToHex(stringToBytes(&quot;:code&quot;))]), [], [version])
+		let heapPages = new SubscriptionBond(&apos;state_storage&apos;, [[&apos;0x&apos; + bytesToHex(stringToBytes(&apos;:heappages&apos;))]], r =&gt; decode(hexToBytes(r.changes[0][1]), &apos;u64&apos;))
+		return { authorityCount, authorities, code, codeHash, codeSize, version, heapPages }
+	})()
+}
 
 let calls = {}
 
@@ -147,26 +178,26 @@ let runtimeUp = new RuntimeUp
 
 let onRuntimeInit = []
 
-function initialiseFromMetadata (m) {
-	if (metadata.set) {
-		metadata.set(m)
-	}
-	m.modules.forEach((m, module_index) =&gt; {
+function initialiseFromMetadata (md) {
+	console.log(&quot;initialiseFromMetadata&quot;, md)
+	setMetadata(md)
+	let callIndex = 0;
+	md.modules.forEach((m) =&gt; {
 		let o = {}
 		let c = {}
 		if (m.storage) {
-			let prefix = m.storage.prefix
-			m.storage.items.forEach(item =&gt; {
+			let storePrefix = m.prefix
+			m.storage.forEach(item =&gt; {
 				switch (item.type.option) {
 					case &apos;Plain&apos;: {
-						o[camel(item.name)] = new StorageBond(`${prefix} ${item.name}`, item.type.value)
+						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value, [], item.default)
 						break
 					}
 					case &apos;Map&apos;: {
 						let keyType = item.type.value.key
 						let valueType = item.type.value.value
 						o[camel(item.name)] = keyBond =&gt; new TransformBond(
-							key =&gt; new StorageBond(`${prefix} ${item.name}`, valueType, encode(key, keyType)),
+							key =&gt; new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), item.default),
 							[keyBond]
 						).subscriptable()
 						break
@@ -174,8 +205,10 @@ function initialiseFromMetadata (m) {
 				}
 			})
 		}
-		if (m.module &amp;&amp; m.module.call) {
-			m.module.call.functions.forEach(item =&gt; {
+		if (m.calls) {
+			let thisCallIndex = callIndex
+			callIndex++
+			m.calls.forEach((item, id) =&gt; {
 				if (item.arguments.length &gt; 0 &amp;&amp; item.arguments[0].name == &apos;origin&apos; &amp;&amp; item.arguments[0].type == &apos;Origin&apos;) {
 					item.arguments = item.arguments.slice(1)
 				}
@@ -185,19 +218,21 @@ function initialiseFromMetadata (m) {
 					}
 					return new TransformBond(args =&gt; {
 						let encoded_args = encode(args, item.arguments.map(x =&gt; x.type))
-						return new Uint8Array([module_index - 1, item.id, ...encoded_args])
+						let res = new Uint8Array([thisCallIndex, id, ...encoded_args]);
+						console.log(`Encoding call ${m.name}.${item.name} (${thisCallIndex}.${id}): ${bytesToHex(res)}`)
+						return res
 					}, [bondArgs], [], 3, 3, undefined, true)
 				}
 				c[camel(item.name)].help = item.arguments.map(a =&gt; a.name)
-			})
+			})				
 		}
-		runtime[m.prefix] = o
-		calls[m.prefix] = c
+		runtime[camel(m.name)] = o
+		calls[camel(m.name)] = c
 	})
-	m.modules.forEach(m =&gt; {
+	md.modules.forEach(m =&gt; {
 		if (m.storage) {
 			try {
-				require(`./srml/${m.prefix}`).augment(runtime, chain)
+				require(`./srml/${m.name}`).augment(runtime, chain)
 			}
 			catch (e) {
 				if (!e.toString().startsWith(&apos;Error: Cannot find module&apos;)) {
@@ -206,18 +241,45 @@ function initialiseFromMetadata (m) {
 			}
 		}
 	})
-	onRuntimeInit.forEach(f =&gt; { if (f) f() })
-	onRuntimeInit = null
+	if (onRuntimeInit !== null) {
+		onRuntimeInit.forEach(f =&gt; { if (f) f() })
+		onRuntimeInit = null
+	}
+
+	runtime.metadata.trigger(md)
+}
+
+function decodeMetadata(bytes) {
+	let input = { data: bytes }
+	let head = decode(input, &apos;MetadataHead&apos;)
+	if (head.magic === 0x6174656d) {
+		if (head.version == 1) {
+			return decode(input, &apos;MetadataBody&apos;)
+		} else {
+			throw `Metadata version ${head.version} not supported`
+		}
+	} else {
+		let md = decode(bytes, &apos;Legacy_RuntimeMetadata&apos;)
+		md.modules = md.modules.map(m =&gt; {
+			m.name = m.prefix
+			m.prefix = m.storage ? m.storage.prefix : null
+			m.storage = m.storage ? m.storage.items : null
+			m.calls = m.module &amp;&amp; m.module.call ? m.module.call.functions : null
+			return m
+		})
+		return md
+	}
 }
 
 function initRuntime (callback = null) {
 	if (onRuntimeInit instanceof Array) {
 		onRuntimeInit.push(callback)
-		if (onRuntimeInit.length === 1) {
+		version.tie(() =&gt; {
+//			console.info(&quot;Initialising runtime&quot;)
 			nodeService().request(&apos;state_getMetadata&apos;)
-				.then(blob =&gt; decode(hexToBytes(blob), &apos;RuntimeMetadata&apos;))
+				.then(blob =&gt; decodeMetadata(hexToBytes(blob)))
 				.then(initialiseFromMetadata)
-		}
+		})
 	} else {
 		// already inited runtime
 		if (callback) {

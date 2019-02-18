@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -97,8 +96,8 @@
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/index.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const nacl = require(&apos;tweetnacl&apos;)
 const { ss58Decode, ss58Encode, setNetworkDefault } = require(&apos;./ss58&apos;)
-const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, reviver } = require(&apos;./types&apos;)
-const { decode, encode } = require(&apos;./codec&apos;)
+const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, Permill, Perbill, reviver } = require(&apos;./types&apos;)
+const { decode, encode, addCodecTransform } = require(&apos;./codec&apos;)
 const { pretty } = require(&apos;./pretty&apos;)
 const { post } = require(&apos;./transact&apos;)
 const { secretStore } = require(&apos;./secretStore&apos;)
@@ -108,6 +107,7 @@ const { storageKey } = require(&apos;./storageBond&apos;)
 const { initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp } = require(&apos;./bonds&apos;)
 const { nodeService, setNodeUri } = require(&apos;./nodeService&apos;)
 const denominationInfo = require(&apos;./denominationInfo&apos;)
+const { metadata } = require(&apos;./metadata&apos;)
 
 function tally(x) {
 	var r = [0, 0]
@@ -127,8 +127,6 @@ function tallyAmounts(x) {
 if (typeof window !== &apos;undefined&apos;) {
 	window.ss58Encode = ss58Encode
 	window.ss58Decode = ss58Decode
-	window.ss58Encode = ss58Encode
-	window.ss58Decode = ss58Decode
 	window.bytesToHex = bytesToHex
 	window.stringToBytes = stringToBytes
 	window.hexToBytes = hexToBytes
@@ -138,6 +136,7 @@ if (typeof window !== &apos;undefined&apos;) {
 	window.encode = encode
 	window.decode = decode
 	window.pretty = pretty
+	window.addCodecTransform = addCodecTransform
 	window.nodeService = nodeService
 	window.secretStore = secretStore
 	window.nacl = nacl
@@ -153,11 +152,13 @@ module.exports = {
 	stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, leHexToNumber, toLE, leToNumber, reviver, 
 	// types
 	AccountId, AccountIndex, TransactionEra, Hash, VoteThreshold, Moment, Balance, BlockNumber, Tuple, VecU8,
-	pretty, encode, decode,
+	Permill, Perbill,
+	pretty, encode, decode, addCodecTransform,
 	secretStore, addressBook,
 	post,
 	denominationInfo,
-	setNodeUri,
+	nodeService, setNodeUri,
+	metadata,
 	// bonds
 	initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp
 }</code></pre>

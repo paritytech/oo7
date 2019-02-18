@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -95,7 +94,10 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">packages/oo7-substrate/src/nodeService.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const subscriptionKey = {
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { Bond } = require(&apos;oo7&apos;)
+const WebSocket = require(&apos;isomorphic-ws&apos;)
+
+const subscriptionKey = {
 	author_submitAndWatchExtrinsic: {
 		notification: &apos;author_extrinsicUpdate&apos;,
 		subscribe: &apos;author_submitAndWatchExtrinsic&apos;,
@@ -110,72 +112,119 @@
 		notification: &apos;chain_newHead&apos;,
 		subscribe: &apos;chain_subscribeNewHead&apos;,
 		unsubscribe: &apos;chain_unsubscribeNewHead&apos;
+	},
+	chain_finalisedHead: {
+		notification: &apos;chain_finalisedHead&apos;,
+		subscribe: &apos;chain_subscribeFinalisedHeads&apos;,
+		unsubscribe: &apos;chain_unsubscribeFinalisedHeads&apos;
+	},
+	state_runtimeVersion: {
+		notification: &apos;state_runtimeVersion&apos;,
+		subscribe: &apos;state_subscribeRuntimeVersion&apos;,
+		unsubscribe: &apos;state_unsubscribeRuntimeVersion&apos;
 	}
 }
 
 let uri = [&apos;ws://127.0.0.1:9944&apos;]
 
 function setNodeUri(u) {
+	if (uri === u) return
 	uri = u
-	// TODO: reconnect in NodeService and rejig all subscriptions
+	if (!s_nodeService) return // prevent instanciating
+	s_nodeService.uri = u
+	s_nodeService.uriIndex = 0
+	s_nodeService.uriChanged = true
+	s_nodeService.start()
 }
 
 class NodeService {
 	constructor (uri) {
 		this.subscriptions = {}
+		this.cancelations = {}
+		this.pendingCancelations = {}
+		this.theirIds = {}
 		this.onReply = {}
 		this.onceOpen = []
 		this.index = 1
 		this.uriIndex = 0
 		this.backoff = 0
 		this.uri = uri
+		this.status = new Bond
 		this.start(uri[0])
 	}
 
-	start (uri) {
+	start (uri = this.uri[0]) {
+		if (this.ws) {
+			this.ws.close()
+			delete this.ws
+		}
+
 		let that = this
 		this.ws = new WebSocket(uri)
 		this.ws.onopen = function () {
 			console.log(&apos;Connection open&apos;)
-			this.backoff = 0
+			that.rejig()
+			that.backoff = 0
 			let onceOpen = that.onceOpen;
 			that.onceOpen = []
-			window.setTimeout(() =&gt; onceOpen.forEach(f =&gt; f()), 0)
+			setTimeout(() =&gt; {
+//				console.warn(&quot;Proceessing deferred requests...&quot;)
+				onceOpen.forEach(f =&gt; f())
+			}, 0)
+			that.status.trigger({connected: uri})
 		}
 		this.ws.onmessage = function (msg) {
+			if (that.reconnect) {
+				clearTimeout(that.reconnect)
+			}
+
 			let d = JSON.parse(msg.data)
-//			console.log(&quot;Message from node&quot;, d)
+//			console.log(&apos;Incoming:&apos;, d);
 			if (d.id) {
 				that.onReply[d.id](d)
 				delete that.onReply[d.id];
-			} else if (d.method &amp;&amp; d.params &amp;&amp; that.subscriptions[d.method] &amp;&amp; that.subscriptions[d.method][d.params.subscription]) {
-				that.subscriptions[d.method][d.params.subscription](d.params.result, d.method)
+			} else if (d.method &amp;&amp; d.params &amp;&amp; that.subscriptions[d.params.subscription]) {
+				that.subscriptions[d.params.subscription].callback(d.params.result, d.method)
+			} else if (that.pendingCancelations[d.params.subscription]) {
+				// Ok; this message was sent by them before they heard that we wanted to unsubscribe.
+			} else {
+				console.warn(&quot;Subscription reply without recognised ID&quot;, d.params.subscription)
 			}
 
-			if (that.reconnect) {
-				window.clearTimeout(that.reconnect)
-			}
 			// epect a message every 10 seconds or we reconnect.
-			if (false) 
-				that.reconnect = window.setTimeout(() =&gt; {
-				that.ws.close()
-				delete that.ws
-				that.start()
-			}, 10000)
+			that.reconnect = setTimeout(() =&gt; { console.log(&apos;Reconnecting.&apos;); that.start() }, 60000)
 		}
-		this.ws.onerror = () =&gt; {
-			window.setTimeout(() =&gt; {
+		this.ws.onerror = (err) =&gt; {
+			if (that.uriChanged) {
+				delete that.uriChanged
+				return // no reconnection if uri changed
+			}
+			setTimeout(() =&gt; {
 				that.uriIndex = (that.uriIndex + 1) % that.uri.length
 				that.start(that.uri[that.uriIndex])
 			}, that.backoff)
 			that.backoff = Math.min(30000, that.backoff + 1000)
+			that.status.trigger({error: err})
 		}
 	}
 
-	request (method, params = []) {
+	rejig () {
 		let that = this
-		let doSend = () =&gt; new Promise((resolve, reject) =&gt; {
+		let subs = this.subscriptions
+		this.subscriptions = {}
+		let theirIds = this.theirIds
+		this.theirIds = {}
+		Object.keys(theirIds).forEach(ourId =&gt; {
+			let sub = subs[theirIds[ourId]]
+			that.subscribe(sub.what, sub.params, sub.callback, console.warn, ourId)
+		})
+	}
+
+	req (method, params, callback) {
+		let that = this
+		let doSend = () =&gt; {
 			let id = &apos;&apos; + this.index++;
+//			console.warn(&quot;Executing request&quot;, method, params, id, callback)
 			let msg = {
 				&quot;jsonrpc&quot;: &quot;2.0&quot;,
 				&quot;id&quot;: id,
@@ -183,52 +232,83 @@ class NodeService {
 				&quot;params&quot;: params
 			};
 			that.ws.send(JSON.stringify(msg))
-//			console.log(&apos;Attempting send&apos;, msg)
 	
-			that.onReply[id] = msg =&gt; {
+			that.onReply[id] = callback
+		}
+
+		if (this.ws.readyState === 1) {
+			doSend(callback)
+		} else {
+//			console.warn(&quot;Defering request until connected&quot;, method, params)
+			that.onceOpen.push(() =&gt; {
+				doSend(callback)
+			})
+		}
+	}
+
+	request (method, params = []) {
+		let that = this
+		return new Promise((resolve, reject) =&gt; {
+			that.req(method, params, msg =&gt; {
+//				console.warn(&quot;Processing request reply&quot;, method, params, msg)
 				if (msg.error) {
 					reject(msg.error)
 				} else {
 					resolve(msg.result)
 				}
-			}
-		})
-
-		if (this.ws.readyState == 0) {
-			// still connecting
-			return new Promise(resolve =&gt; {
-				that.onceOpen.push(() =&gt; {
-					let res = doSend()
-					resolve(res)
-				})
 			})
-		} else {
-			return doSend()
+		})
+	}
+
+	subscribe (what, params, callback, errorHandler, ourId = null) {
+		let that = this
+		return new Promise((resolve, reject) =&gt; {
+//			console.log(&apos;Subscribing&apos;, ourId)
+			this.req(subscriptionKey[what].subscribe, params, msg =&gt; {
+				if (msg.error) {
+//					console.log(&apos;Error subscribing&apos;, ourId)
+					errorHandler(msg.error)
+				} else {
+					let theirId = msg.result
+//					console.log(&apos;Subscribed&apos;, &apos;ourId=&apos;, ourId, &apos;theirId=&apos;, theirId)
+					if (that.cancelations[ourId]) {
+//						console.log(&apos;Delayed unsubscription of&apos;, ourId)
+						that.pendingCancelations[theirId] = ourId
+						this.req(subscriptionKey[what].unsubscribe, [theirId], () =&gt; {
+							delete that.pendingCancelations[theirId]
+							delete that.cancelations[ourId]
+						}, errorHandler)
+					} else {
+						that.subscriptions[theirId] = { what, params, callback }
+						ourId = ourId || theirId
+						that.theirIds[ourId] = theirId
+					}
+					// We resolve to our ID regardless which should be safe since
+					// unsubscribes of old IDs are no-ops.
+					resolve(ourId)
+				}
+			})
+		})
+	}
+
+	unsubscribe (ourId) {
+		let that = this
+
+		if (this.theirIds[ourId] == null) {
+//			console.log(&apos;Resubscription not yet complete. Defering unsubscribe&apos;, ourId)
+			this.cancelations[ourId] = true
+			return
 		}
-	}
-
-	subscribe (what, params, callback, errorHandler) {
-		let that = this
-		return this.request(subscriptionKey[what].subscribe, params).then(id =&gt; {
-			let notification = subscriptionKey[what].notification;
-			that.subscriptions[notification] = that.subscriptions[notification] || {}
-			that.subscriptions[notification][id] = callback
-			return { what, id }
-		}).catch(errorHandler)
-	}
-
-	unsubscribe ({what, id}) {
-		let that = this
-
-		let notification = subscriptionKey[what].notification;
-		if (!(this.subscriptions[notification] &amp;&amp; this.subscriptions[notification][id])) {
+		let theirId = this.theirIds[ourId]
+		if (!this.subscriptions[theirId]) {
 			throw &apos;Invalid subscription id&apos;
 		}
-		let unsubscribe = subscriptionKey[what].unsubscribe
+		let unsubscribe = subscriptionKey[this.subscriptions[theirId].what].unsubscribe
 
-		return this.request(unsubscribe, [id]).then(result =&gt; {
-			delete that.subscriptions[notification][id]
-			return result
+//		console.log(&apos;Unsubscribing&apos;, ourId, theirId, this.subscriptions[theirId].what, unsubscribe)
+		this.req(unsubscribe, [theirId], () =&gt; {
+			delete that.theirIds[ourId]
+			delete that.subscriptions[theirId]
 		})
 	}
 	
@@ -240,13 +320,14 @@ class NodeService {
 let s_nodeService = null;
 
 function nodeService() {
-	if (s_nodeService === null) {
+	if (!s_nodeService) {
 		s_nodeService = new NodeService(uri);
 	}
 	return s_nodeService;
 }
 
-module.exports = { nodeService, NodeService, setNodeUri };</code></pre>
+module.exports = { nodeService, NodeService, setNodeUri };
+</code></pre>
 
 </div>
 

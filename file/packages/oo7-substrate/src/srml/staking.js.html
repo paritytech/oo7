@@ -77,7 +77,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-secretStore">secretStore</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-composeTransaction">composeTransaction</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-post">post</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-metadata">metadata</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#oo7-src">oo7/src</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bond.js~Bond.html">Bond</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondCache.js~BondCache.html">BondCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/packages/oo7/src/bondProxy.js~BondProxy.html">BondProxy</a></span></span></li>
@@ -100,6 +99,14 @@ const { ss58Encode } = require(&apos;../ss58&apos;)
 const { Balance } = require(&apos;../types&apos;)
 const balancesModule = require(&apos;./balances&apos;)
 const sessionModule = require(&apos;./session&apos;)
+
+function compareAccountId(a, b) {
+	return a.length === b.length &amp;&amp; a.every((v, i) =&gt; b[i] === v)
+}
+
+function accountIdMemberOf(member, set) {
+	return set.find(item =&gt; compareAccountId(member, item)) !== undefined
+}
 
 function augment (runtime, chain) {
 	sessionModule.augment(runtime, chain)
@@ -141,12 +148,13 @@ function augment (runtime, chain) {
 			session.sessionLength
 		])
 	
-	staking.validators = session.validators
-		.map(v =&gt; v.map(who =&gt; ({
+	staking.validators = Bond.all([staking.invulerables, session.validators])
+		.map(([inv, v]) =&gt; v.map(who =&gt; ({
 			who,
 			ownBalance: balances.totalBalance(who),
 			otherBalance: staking.currentNominatedBalance(who),
-			nominators: staking.currentNominatorsFor(who)
+			nominators: staking.currentNominatorsFor(who),
+			invulnerable: accountIdMemberOf(who, inv)
 		})), 2)
 		.map(v =&gt; v
 			.map(i =&gt; Object.assign({balance: i.ownBalance.add(i.otherBalance)}, i))

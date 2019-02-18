@@ -1,6 +1,6 @@
 {
-  "coverage": "26.47%",
-  "expectCount": 423,
+  "coverage": "25.05%",
+  "expectCount": 447,
   "actualCount": 112,
   "files": {
     "packages/oo7/src/bond.js": {
@@ -272,31 +272,34 @@
       ]
     },
     "packages/oo7-substrate/src/bonds.js": {
-      "expectCount": 12,
+      "expectCount": 14,
       "actualCount": 0,
       "undocumentLines": [
         11,
-        19,
-        26,
-        41,
-        43,
-        44,
-        49,
-        51,
+        23,
+        35,
         53,
-        116,
-        132,
-        136
+        73,
+        75,
+        76,
+        81,
+        83,
+        85,
+        156,
+        178,
+        195,
+        199
       ]
     },
     "packages/oo7-substrate/src/codec.js": {
-      "expectCount": 4,
+      "expectCount": 5,
       "actualCount": 0,
       "undocumentLines": [
-        7,
-        30,
-        32,
-        259
+        8,
+        106,
+        112,
+        114,
+        377
       ]
     },
     "packages/oo7-substrate/src/denominationInfo.js": {
@@ -312,41 +315,49 @@
       "expectCount": 2,
       "actualCount": 0,
       "undocumentLines": [
-        15,
-        21
+        16,
+        22
       ]
     },
     "packages/oo7-substrate/src/metadata.js": {
-      "expectCount": 1,
-      "actualCount": 0,
-      "undocumentLines": [
-        1
-      ]
-    },
-    "packages/oo7-substrate/src/nodeService.js": {
-      "expectCount": 20,
+      "expectCount": 3,
       "actualCount": 0,
       "undocumentLines": [
         1,
-        19,
-        143,
-        145,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
+        3,
+        7
+      ]
+    },
+    "packages/oo7-substrate/src/nodeService.js": {
+      "expectCount": 26,
+      "actualCount": 0,
+      "undocumentLines": [
+        4,
         32,
-        33,
-        34,
-        38,
-        40,
-        78,
-        113,
-        123,
-        138,
-        21
+        224,
+        226,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        60,
+        67,
+        115,
+        127,
+        153,
+        167,
+        198,
+        219,
+        34
       ]
     },
     "packages/oo7-substrate/src/pretty.js": {
@@ -358,34 +369,34 @@
       ]
     },
     "packages/oo7-substrate/src/secretStore.js": {
-      "expectCount": 17,
+      "expectCount": 18,
       "actualCount": 0,
       "undocumentLines": [
         8,
         10,
-        108,
-        110,
+        109,
+        111,
         19,
         20,
         22,
-        26,
-        32,
-        36,
-        40,
-        50,
-        65,
-        74,
-        88,
-        101,
-        102
+        23,
+        27,
+        33,
+        37,
+        41,
+        51,
+        66,
+        75,
+        89,
+        102,
+        103
       ]
     },
     "packages/oo7-substrate/src/srml/balances.js": {
-      "expectCount": 2,
+      "expectCount": 1,
       "actualCount": 0,
       "undocumentLines": [
-        5,
-        11
+        4
       ]
     },
     "packages/oo7-substrate/src/srml/democracy.js": {
@@ -393,6 +404,16 @@
       "actualCount": 0,
       "undocumentLines": [
         2
+      ]
+    },
+    "packages/oo7-substrate/src/srml/indices.js": {
+      "expectCount": 4,
+      "actualCount": 0,
+      "undocumentLines": [
+        5,
+        11,
+        15,
+        19
       ]
     },
     "packages/oo7-substrate/src/srml/session.js": {
@@ -403,21 +424,23 @@
       ]
     },
     "packages/oo7-substrate/src/srml/staking.js": {
-      "expectCount": 1,
+      "expectCount": 3,
       "actualCount": 0,
       "undocumentLines": [
-        7
+        7,
+        11,
+        15
       ]
     },
     "packages/oo7-substrate/src/ss58.js": {
       "expectCount": 5,
       "actualCount": 0,
       "undocumentLines": [
-        5,
         6,
-        8,
-        12,
-        48
+        7,
+        9,
+        13,
+        49
       ]
     },
     "packages/oo7-substrate/src/storageBond.js": {
@@ -449,62 +472,69 @@
       "expectCount": 4,
       "actualCount": 0,
       "undocumentLines": [
-        8,
-        9,
-        14,
-        50
+        10,
+        11,
+        16,
+        64
       ]
     },
     "packages/oo7-substrate/src/types.js": {
-      "expectCount": 30,
+      "expectCount": 36,
       "actualCount": 0,
       "undocumentLines": [
-        2,
         3,
-        8,
+        4,
         9,
-        14,
+        10,
         15,
-        20,
+        16,
         21,
-        26,
+        22,
         27,
-        32,
+        28,
         33,
-        38,
+        34,
         39,
-        44,
+        40,
         45,
-        48,
-        49,
+        46,
         51,
-        53,
-        58,
+        52,
+        55,
+        56,
         59,
         60,
-        61,
+        63,
         64,
-        65,
-        67,
+        66,
         68,
-        72,
-        84
+        73,
+        74,
+        75,
+        76,
+        79,
+        80,
+        82,
+        83,
+        87,
+        99
       ]
     },
     "packages/oo7-substrate/src/utils.js": {
-      "expectCount": 10,
+      "expectCount": 11,
       "actualCount": 0,
       "undocumentLines": [
-        3,
-        14,
-        21,
-        32,
-        45,
-        53,
-        61,
-        70,
+        1,
+        12,
+        19,
+        30,
+        43,
+        51,
+        59,
         77,
-        115
+        84,
+        99,
+        137
       ]
     },
     "packages/polkadot-identicon/lib/index.js": {

@@ -288,12 +288,6 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
-    "./packages/oo7-substrate/src/metadata.js~metadata",
-    "variable/index.html#static-variable-metadata",
-    "<span>metadata</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/metadata.js</span>",
-    "variable"
-  ],
-  [
     "./packages/oo7-substrate/src/nodeservice.js~nodeservice",
     "function/index.html#static-function-nodeService",
     "<span>nodeService</span> <span class=\"search-result-import-path\">./packages/oo7-substrate/src/nodeService.js</span>",
@@ -672,9 +666,9 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "packages/oo7-parity/src/index.js~bonds#allaccontsinfo",
-    "class/packages/oo7-parity/src/index.js~Bonds.html#instance-member-allAccontsInfo",
-    "packages/oo7-parity/src/index.js~Bonds#allAccontsInfo",
+    "packages/oo7-parity/src/index.js~bonds#allaccountsinfo",
+    "class/packages/oo7-parity/src/index.js~Bonds.html#instance-member-allAccountsInfo",
+    "packages/oo7-parity/src/index.js~Bonds#allAccountsInfo",
     "member"
   ],
   [
@@ -1242,6 +1236,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#cancelations",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-cancelations",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#cancelations",
+    "member"
+  ],
+  [
     "packages/oo7-substrate/src/nodeservice.js~nodeservice#constructor",
     "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-constructor-constructor",
     "packages/oo7-substrate/src/nodeService.js~NodeService#constructor",
@@ -1272,6 +1272,24 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#pendingcancelations",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-pendingCancelations",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#pendingCancelations",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#rejig",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-rejig",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#rejig",
+    "method"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#req",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-req",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#req",
+    "method"
+  ],
+  [
     "packages/oo7-substrate/src/nodeservice.js~nodeservice#request",
     "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-request",
     "packages/oo7-substrate/src/nodeService.js~NodeService#request",
@@ -1284,6 +1302,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#status",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-status",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#status",
+    "member"
+  ],
+  [
     "packages/oo7-substrate/src/nodeservice.js~nodeservice#subscribe",
     "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-method-subscribe",
     "packages/oo7-substrate/src/nodeService.js~NodeService#subscribe",
@@ -1293,6 +1317,12 @@ window.esdocSearchIndex = [
     "packages/oo7-substrate/src/nodeservice.js~nodeservice#subscriptions",
     "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-subscriptions",
     "packages/oo7-substrate/src/nodeService.js~NodeService#subscriptions",
+    "member"
+  ],
+  [
+    "packages/oo7-substrate/src/nodeservice.js~nodeservice#theirids",
+    "class/packages/oo7-substrate/src/nodeService.js~NodeService.html#instance-member-theirIds",
+    "packages/oo7-substrate/src/nodeService.js~NodeService#theirIds",
     "member"
   ],
   [
@@ -1356,6 +1386,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "packages/oo7-substrate/src/secretstore.js~secretstore#_storage",
+    "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-member-_storage",
+    "packages/oo7-substrate/src/secretStore.js~SecretStore#_storage",
+    "member"
+  ],
+  [
     "packages/oo7-substrate/src/secretstore.js~secretstore#_sync",
     "class/packages/oo7-substrate/src/secretStore.js~SecretStore.html#instance-method-_sync",
     "packages/oo7-substrate/src/secretStore.js~SecretStore#_sync",
@@ -1413,6 +1449,12 @@ window.esdocSearchIndex = [
     "packages/oo7-substrate/src/srml/democracy.js",
     "file/packages/oo7-substrate/src/srml/democracy.js.html",
     "packages/oo7-substrate/src/srml/democracy.js",
+    "file"
+  ],
+  [
+    "packages/oo7-substrate/src/srml/indices.js",
+    "file/packages/oo7-substrate/src/srml/indices.js.html",
+    "packages/oo7-substrate/src/srml/indices.js",
     "file"
   ],
   [
