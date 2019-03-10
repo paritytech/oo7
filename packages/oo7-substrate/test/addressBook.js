@@ -19,25 +19,25 @@ describe('addressBook', () => {
 	});
 
 
-	it('should remove an account by given address', () => {
-		addressBook().accounts().should.have.lengthOf(1)
+	it('should remove an account by an address', () => {
+		const length = addressBook().accounts().length
 		addressBook().forget(account)
-		addressBook().accounts().should.have.lengthOf(0)
+		addressBook().accounts().should.have.lengthOf(length - 1)
 	});
 
-	it('should not remove an account by given another address', () => {
+	it('should not remove an account using another address', () => {
+		const length = addressBook().accounts().length
 		const anotherAccount = new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1])
 		addressBook().forget(anotherAccount);
-		addressBook().accounts().should.have.lengthOf(1)
+		addressBook().accounts().should.have.lengthOf(length)
 	});
 
-	it('find an account by name', () => {
+	it('should find an account by a name', () => {
 		addressBook().byName(name).should.have.property('account').equal(account)
 	});
 
-	it('find an account by address', () => {
+	it('should find an account by an address', () => {
 		const address = ss58Encode(account)
-		addressBook().submit(account, "my-name")
 		addressBook().byAddress(address).should.have.property('account').equal(account)
 	});
 

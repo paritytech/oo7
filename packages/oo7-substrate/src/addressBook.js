@@ -5,7 +5,7 @@ const { AccountId } = require('./types')
 class AddressBook extends Bond {
 	constructor (storage) {
 		super()
-		this._storage = storage || typeof localStorage === 'undefined' ? {} : localStorage
+		this._storage = storage || (typeof localStorage === 'undefined' ? {} : localStorage)
 		this._accounts = []
 		this._load()
 	}
