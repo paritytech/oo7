@@ -1,10 +1,11 @@
 const { Bond } = require('oo7')
-const { ss58Encode } = require('./ss58')
+const { ss58Encode, ss58Decode } = require('./ss58')
 const { AccountId } = require('./types')
 
 class AddressBook extends Bond {
-	constructor () {
+	constructor (storage) {
 		super()
+		this._storage = storage || typeof localStorage === 'undefined' ? {} : localStorage
 		this._accounts = []
 		this._load()
 	}
@@ -18,14 +19,22 @@ class AddressBook extends Bond {
 		return this._accounts.map(i => i.account)
 	}
 
+	byAddress (address) {
+		return this._accounts.filter(i => i.address === address)[0]
+	}
+
+	byName (name) {
+		return this._accounts.filter(i => i.name === name)[0]
+	}
+
 	find (identifier) {
-		if (this._accounts.indexOf(identifier) !== -1) { 
+		if (this._accounts.indexOf(identifier) !== -1) {
 			return identifier
 		}
 		if (identifier instanceof Uint8Array && identifier.length == 32 || identifier instanceof AccountId) {
 			identifier = ss58Encode(identifier)
 		}
-		return this._byAddress[identifier] ? this._byAddress[identifier] : this._byName[identifier]
+		return this.byAddress(identifier) || this.byName(identifier)
 	}
 
 	forget (identifier) {
@@ -38,8 +47,8 @@ class AddressBook extends Bond {
 	}
 
 	_load () {
-		if (localStorage.addressBook) {
-			this._accounts = JSON.parse(localStorage.addressBook)
+		if (this._storage.addressBook) {
+			this._accounts = JSON.parse(this._storage.addressBook)
 		} else {
 			this._accounts = []
 		}
@@ -47,28 +56,21 @@ class AddressBook extends Bond {
 	}
 
 	_sync () {
-		let byAddress = {}
-		let byName = {}
 		this._accounts = this._accounts.map(({address, account, name}) => {
 			account = account || ss58Decode(address)
 			address = address || ss58Encode(account)
-			let item = {name, account, address}
-			byAddress[address] = item
-			byName[name] = item
-			return item
+			return {name, account, address}
 		})
-		this._byAddress = byAddress
-		this._byName = byName
-		localStorage.addressBook = JSON.stringify(this._accounts.map(k => ({address: k.address, name: k.name})))
-		this.trigger({accounts: this._accounts, byAddress: this._byAddress, byName: this._byName})
+		this._storage.addressBook = JSON.stringify(this._accounts.map(k => ({address: k.address, name: k.name})))
+		this.trigger({accounts: this._accounts})
 	}
 }
 
 let s_addressBook = null;
 
-function addressBook() {
+function addressBook(storage) {
 	if (s_addressBook === null) {
-		s_addressBook = new AddressBook;
+		s_addressBook = new AddressBook(storage);
 	}
 	return s_addressBook;
 }
