@@ -18,24 +18,24 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@parity/abi@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@parity/abi/-/abi-5.0.1.tgz#8326954f7fe99c26c8d2d4600b11c9bed780d2f6"
-  integrity sha512-bhBJGGJcki73jGCk1EXOEEuY3P8oT2Yxz18dOriHHjJUJzwgJ9AqJ2M5BWn7BEcjc59U2kZuwCTOnIWV+iAWRA==
+"@parity/abi@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@parity/abi/-/abi-5.1.1.tgz#a91b1483ef969ede7c1a29c59fa5dd39b4880f51"
+  integrity sha512-in+1ubZq69yWgZQzjp8SLcwnhKSqV4LLpzjbDA4lJsE/BJtsCndJ8HWBjiv690Ej9v2TgggRyuyrF091j2Eluw==
   dependencies:
     bignumber.js "^8.0.1"
     js-sha3 "0.8.0"
     utf8 "^3.0.0"
 
 "@parity/api@^5":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@parity/api/-/api-5.0.1.tgz#4a8c508979af5f78dc15780e707e87f2d9c2d4cf"
-  integrity sha512-T6CEIUr8gzhiBp2mv7GFElfUlT/7s+ALegso6Z9gu5ogtye//dnxM5mnBdkpWHxDJXKth0IINCBiTGbcpEEAHg==
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@parity/api/-/api-5.1.1.tgz#3ac522262f68f23910193b5ab9a37fd261701c14"
+  integrity sha512-JPngq2ifejXDhAJ4Xhx7vVr5LeDRvsm6UW1QBRIlm8bpqeaAUw9nwoyvxGZC/JUI9Riq4WjaHYGIa6ZRvpd0rg==
   dependencies:
-    "@parity/abi" "^5.0.1"
+    "@parity/abi" "^5.1.1"
     bignumber.js "^8.0.1"
     blockies "0.0.2"
-    es6-error "4.1.1"
+    es6-error "4.0.2"
     es6-promise "^4.1.1"
     eventemitter3 "^3.1.0"
     isomorphic-fetch "^2.2.1"
@@ -296,10 +296,10 @@ error-ex@^1.2.0:
   dependencies:
     is-arrayish "^0.2.1"
 
-es6-error@4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/es6-error/-/es6-error-4.1.1.tgz#9e3af407459deed47e9a91f9b885a84eb05c561d"
-  integrity sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==
+es6-error@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/es6-error/-/es6-error-4.0.2.tgz#eec5c726eacef51b7f6b73c20db6e1b13b069c98"
+  integrity sha1-7sXHJurO9Rt/a3PCDbbhsTsGnJg=
 
 es6-promise@^4.1.1:
   version "4.2.5"
