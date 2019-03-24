@@ -109,4 +109,4 @@ function post(tx) {
 	})
 }
 
-module.exports = { composeTransaction, post };
+module.exports = { composeTransaction, post, TransactionBond };

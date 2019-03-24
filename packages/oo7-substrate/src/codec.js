@@ -1,8 +1,8 @@
 const { TextDecoder } = require('text-encoding')
 const { ss58Decode } = require('./ss58')
-const { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
+const { VecU8, AccountId, Hash, Signature, VoteThreshold, RewardDestination, SlashPreference, Moment, Balance,
 	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill } = require('./types')
-const { toLE, leToNumber, leToSigned, bytesToHex, hexToBytes } = require('./utils')
+const { toLE, leToNumber, leToSigned, bytesToHex, hexToBytes, stringToBytes } = require('./utils')
 const { metadata } = require('./metadata')
 
 const transforms = {
@@ -42,7 +42,15 @@ const transforms = {
 	Legacy_FunctionArgumentMetadata: { name: 'String', type: 'Type' },
 
 	MetadataHead: { magic: 'u32', version: 'u8' },
+	MetadataBodyV1: { modules: 'Vec<MetadataModuleV1>' },
 	MetadataBody: { modules: 'Vec<MetadataModule>' },
+	MetadataModuleV1: { 
+		name: 'String',
+		prefix: 'String',
+		storage: 'Option<Vec<MetadataStorageV1>>',
+		calls: 'Option<Vec<MetadataCall>>', 
+		events: 'Option<Vec<MetadataEvent>>',
+	},
 	MetadataModule: { 
 		name: 'String',
 		prefix: 'String',
@@ -50,10 +58,30 @@ const transforms = {
 		calls: 'Option<Vec<MetadataCall>>', 
 		events: 'Option<Vec<MetadataEvent>>',
 	},
-	MetadataStorage: {
+	MetadataStorageV1: {
 		name: 'String',
 		modifier: { _enum: [ 'Optional', 'Default' ] },
 		type: { _enum: { Plain: 'Type', Map: { key: 'Type', value: 'Type' } } },
+		default: 'Vec<u8>',
+		documentation: 'Docs',
+		_post: x => {
+			try {
+				if (x.default) {
+					x.default = decode(
+						x.default,
+						x.type.option === 'Plain' ? x.type.value : x.type.value.value
+					)
+				}
+			}
+			catch (e) {
+				x.default = null
+			}
+		}
+	},
+	MetadataStorage: {
+		name: 'String',
+		modifier: { _enum: [ 'Optional', 'Default' ] },
+		type: { _enum: { Plain: 'Type', Map: { key: 'Type', value: 'Type', iterable: 'bool' } } },
 		default: 'Vec<u8>',
 		documentation: 'Docs',
 		_post: x => {
@@ -89,10 +117,17 @@ const transforms = {
 	Transaction: { version: 'u8', sender: 'Address', signature: 'Signature', index: 'Compact<Index>', era: 'TransactionEra', call: 'Call' },
 	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
 	EventRecord: { phase: 'Phase', event: 'Event' },
+	ValidatorPrefs: { unstakeThreshold: 'Compact<u32>', validatorPayment: 'Compact<Balance>' },
+	UnlockChunk: { value: 'Compact<Balance>', era: 'BlockNumber' },
+	StakingLedger: { stash: 'AccountId', total: 'Compact<Balance>', active: 'Compact<Balance>', unlocking: 'Vec<UnlockChunk>' },
 
+	"BalanceOf<T>": 'Balance',
 	"<LookupasStaticLookup>::Source": 'Address',
 	"RawAddress<AccountId,AccountIndex>": 'Address',
 	"Address<AccountId,AccountIndex>": 'Address',
+	"StakingLedger<AccountId,BalanceOf<T>,BlockNumber>": 'StakingLedger',
+	"UnlockChunk<BalanceOf<T>,BlockNumber>": 'UnlockChunk',
+	
 	ParaId: 'u32',
 	VoteIndex: 'u32',
 	PropIndex: 'u32',
@@ -110,6 +145,9 @@ function addCodecTransform(type, transform) {
 }
 
 var decodePrefix = '';
+
+const VOTE_THRESHOLD = ['SuperMajorityApprove', 'NotSuperMajorityAgainst', 'SimpleMajority'];
+const REWARD_DESTINATION = ['Staked', 'Stash', 'Controller'];
 
 function decode(input, type) {
 	if (typeof input.data === 'undefined') {
@@ -144,7 +182,7 @@ function decode(input, type) {
 		}
 		return res;
 	}
-	type = type.replace(/ /g, '').replace(/^(T::)+/, '');
+	type = type.replace(/ /g, '').replace(/^(T::)+/, '').replace(/<BalanceOf<T>>$/, '');
 	if (type == 'EventRecord<Event>') {
 		type = 'EventRecord'
 	}
@@ -227,8 +265,12 @@ function decode(input, type) {
 				break;
 			}
 			case 'VoteThreshold': {
-				const VOTE_THRESHOLD = ['SuperMajorityApprove', 'NotSuperMajorityAgainst', 'SimpleMajority'];
 				res = new VoteThreshold(VOTE_THRESHOLD[input.data[0]]);
+				input.data = input.data.slice(1);
+				break;
+			}
+			case 'RewardDestination': {
+				res = new RewardDestination(REWARD_DESTINATION[input.data[0]]);
 				input.data = input.data.slice(1);
 				break;
 			}
@@ -394,10 +436,16 @@ function encode(value, type = null) {
 	if (typeof value == 'object' && !type && value._type) {
 		type = value._type
 	}
+	if (typeof value == 'number' && !type) {
+		type = 'u128'
+	}
+	if (typeof value == 'string' && !type) {
+		type = 'String'
+	}
 	if (typeof type != 'string') {
 		throw 'type must be either an array or a string'
 	}
-	type = type.replace(/ /g, '').replace(/^(T::)+/, '');
+	type = type.replace(/ /g, '').replace(/^(T::)+/, '').replace(/<BalanceOf<T>>$/, '');
 
 	if (typeof value == 'string' && value.startsWith('0x')) {
 		value = hexToBytes(value)
@@ -432,6 +480,14 @@ function encode(value, type = null) {
 	if (type == 'Vec<u8>') {
 		if (typeof value == 'object' && value instanceof Uint8Array) {
 			return new Uint8Array([...encode(value.length, 'Compact<u32>'), ...value])
+		}
+	}
+
+	// other type-specific transforms
+	if (type == 'String') {
+		if (typeof value == 'string') {
+			v = stringToBytes(value);
+			return new Uint8Array([...encode(v.length, 'Compact<u32>'), ...v])
 		}
 	}
 
@@ -481,6 +537,17 @@ function encode(value, type = null) {
 		}
 		if (value instanceof Uint8Array && value.length == 32) {
 			return value
+		}
+	}
+
+	if (type == 'RewardDestination') {
+		if (typeof value == 'string') {
+			let i = REWARD_DESTINATION.indexOf(value);
+			if (i != -1) {
+				return new Uint8Array([i])
+			}
+		} else if (typeof value == 'number' && value < 3) {
+			return new Uint8Array([value])
 		}
 	}
 

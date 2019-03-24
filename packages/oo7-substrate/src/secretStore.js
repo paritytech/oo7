@@ -1,19 +1,151 @@
 const { Bond } = require('oo7')
 const nacl = require('tweetnacl');
-const { generateMnemonic, mnemonicToSeed } = require('bip39')
+const { generateMnemonic, mnemonicToSeed, mnemonicToEntropy } = require('bip39')
 const { ss58Encode } = require('./ss58')
 const { AccountId } = require('./types')
-const { bytesToHex, hexToBytes } = require('./utils')
+const { encode } = require('./codec')
+const { stringToBytes, bytesToHex, hexToBytes, toLE } = require('./utils')
+const { blake2b } = require('blakejs')
+const { pbkdf2Sync } = require('pbkdf2')
+const { Buffer } = require('buffer')
+const { isReady, keypairFromSeed, sign, verify, deriveKeypairHard, derivePublicSoft, deriveKeypairSoft } = require('@polkadot/wasm-schnorrkel');
+
+const DEV_PHRASE = 'bottom drive obey lake curtain smoke basket hold race lonely fit walk'
 
 let cache = {}
 
-function seedFromPhrase(phrase) {
-	if (!cache[phrase]) {
-		cache[phrase] = phrase.match(/^0x[0-9a-fA-F]{64}$/)
-			? hexToBytes(phrase)
-			: new Uint8Array(mnemonicToSeed(phrase).slice(0, 32))
+function chainCodeFor(x) {
+	let r = encode(x)
+	if (r.length <= 32) {
+		r = [...encode(x)]
+		for (let i = r.length; i < 32; ++i) {
+			r.push(0)
+		}
+		r = new Uint8Array(r)
+	} else {
+		r = blake2b(r)
 	}
-	return cache[phrase]
+	return r
+}
+
+function deriveHardJunction(seed, cc) {
+	return blake2b(encode(["Ed25519HDKD", seed, cc]), null, 32)
+}
+
+function edSeedFromUri(uri) {
+	if (!cache[uri]) {
+		if (uri.match(/^0x[0-9a-fA-F]{64}$/)) {
+			cache[uri] = hexToBytes(uri)
+		} else {
+			let m = uri.match(/^([a-z]+( [a-z]+){11})?((\/\/?[^\/]*)*)(\/\/\/(.*))?$/)
+			if (m) {
+				let password = m[6] || ''
+				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(m[1] || DEV_PHRASE)))
+				let salt = new Buffer(stringToBytes(`mnemonic${password}`))
+				let seed = keypairFromSeed(pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32));
+				let rest = m[3];
+				while (rest != '') {
+					let m = rest.match(/^\/(\/?)([^\/]*)(\/.*)?$/)
+					if (m[1] == '/') {
+						// hard key -all good
+						seed = deriveHardJunction(seed, chainCodeFor(m[2]))
+					} else {
+						throw "Soft key"
+					}
+					rest = m[3] || ''
+				}
+				cache[uri] = seed
+			} else {
+				throw "Invalid secret URI"
+			}
+		}
+	}
+	return cache[uri]
+}
+
+function srKeypairToAccountId(pair) {
+	return new AccountId(srKeypairToPublic(pair))
+}
+
+function srKeypairToPublic(pair) {
+	return new Uint8Array(pair.slice(64, 96))
+}
+
+function srKeypairToSecret(pair) {
+	return new Uint8Array(pair.slice(0, 64))
+}
+
+function srKeypairFromUri(uri) {
+	if (!cache[uri]) {
+		if (uri.match(/^0x[0-9a-fA-F]{64}$/)) {
+			cache[uri] = keypairFromSeed(hexToBytes(uri))
+		} else {
+			let m = uri.match(/^([a-z]+( [a-z]+){11})?((\/\/?[^\/]*)*)(\/\/\/(.*))?$/)
+			if (m) {
+				let password = m[6] || ''
+				let phrase = m[1] || DEV_PHRASE
+
+				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(phrase)))
+				let salt = new Buffer(stringToBytes(`mnemonic${password}`))
+				let seed = pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32)
+				let pair = keypairFromSeed(seed)
+
+				let rest = m[3];
+				while (rest != '') {
+					let m = rest.match(/^\/(\/?)([^\/]*)(\/.*)?$/)
+					let cc = chainCodeFor(m[2])
+					console.log('Deriving ', m[2], bytesToHex(cc), seed)
+					if (m[1] == '/') {
+						pair = deriveKeypairHard(pair, cc)
+					} else {
+						pair = deriveKeypairSoft(pair, cc)
+					}
+					rest = m[3] || ''
+				}
+				console.log('Derived ', ss58Encode(srKeypairToPublic(pair)))
+
+				cache[uri] = pair
+			} else {
+				throw "Invalid secret URI"
+			}
+		}
+	}
+	return cache[uri]
+}
+
+window.chainCodeFor = chainCodeFor
+window.deriveHardJunction = deriveHardJunction
+window.edSeedFromUri = edSeedFromUri
+window.pbkdf2Sync = pbkdf2Sync
+window.Buffer = Buffer
+window.mnemonicToEntropy = mnemonicToEntropy
+window.isReady = isReady
+window.keypairFromSeed = keypairFromSeed
+window.sign = sign
+window.deriveKeypairHard = deriveKeypairHard
+window.derivePublicSoft = derivePublicSoft
+window.deriveKeypairSoft = deriveKeypairSoft
+window.srKeypairFromUri = srKeypairFromUri
+window.srKeypairToPublic = srKeypairToPublic
+
+const ED25519 = 'ed25519'
+const SR25519 = 'sr25519'
+
+function overrideType(uri, type) {
+	let m = uri.match(/^((ed25519)|(sr25519):)?(.*)$/)
+	if (m) {
+		switch (m[1]) {
+			case 'ed25519':
+				type = ED25519
+				break
+			case 'sr25519':
+				type = SR25519
+				break
+			default:
+		}
+		uri = m[4];
+	}
+	return {uri, type}
 }
 
 class SecretStore extends Bond {
@@ -24,14 +156,20 @@ class SecretStore extends Bond {
 		this._load()
 	}
 
-	submit (phrase, name) {
-		this._keys.push({phrase, name})
+	submit (_uri, name, _type = SR25519) {
+		let {uri, type} = overrideType(_uri, _type)
+		this._keys.push({uri, name, type})
 		this._sync()
-		return this.accountFromPhrase(phrase)
+		return this.accountFromPhrase(uri, type)
 	}
 
-	accountFromPhrase (phrase) {
-		return new AccountId(nacl.sign.keyPair.fromSeed(seedFromPhrase(phrase)).publicKey)
+	accountFromPhrase (_uri, _type = SR25519) {
+		let {uri, type} = overrideType(_uri, _type)
+		if (type == ED25519) {
+			return new AccountId(nacl.sign.keyPair.fromSeed(edSeedFromUri(uri)).publicKey)
+		} else if (type == SR25519) {
+			return srKeypairToAccountId(srKeypairFromUri(uri))
+		}
 	}
 
 	accounts () {
@@ -52,12 +190,24 @@ class SecretStore extends Bond {
 		let item = this.find(from)
 		if (item) {
 			console.info(`Signing data from ${item.name}`, bytesToHex(data))
-			let sig = nacl.sign.detached(data, item.key.secretKey)
-			console.info(`Signature is ${bytesToHex(sig)}`)
-			if (!nacl.sign.detached.verify(data, sig, item.key.publicKey)) {
-				console.warn(`Signature is INVALID!`)
-				return null
+			let sig
+			switch (item.type) {
+				case ED25519: 
+					sig = nacl.sign.detached(data, item.key.secretKey)
+					if (!nacl.sign.detached.verify(data, sig, item.key.publicKey)) {
+						console.warn(`Signature is INVALID!`)
+						return null
+					}
+					break
+				case SR25519:
+					sig = sign(srKeypairToPublic(item.key), srKeypairToSecret(item.key), data)
+					if (!verify(sig, data, srKeypairToPublic(item.key))) {
+						console.warn(`Signature is INVALID!`)
+						return null
+					}
+					break
 			}
+			console.info(`Signature is ${bytesToHex(sig)}`)
 			return sig
 		}
 		return null
@@ -66,7 +216,7 @@ class SecretStore extends Bond {
 	forget (identifier) {
 		let item = this.find(identifier)
 		if (item) {
-			console.info(`Forgetting key ${item.name} (${item.address}, ${item.phrase})`)
+			console.info(`Forgetting key ${item.name} (${item.address}, ${item.uri})`)
 			this._keys = this._keys.filter(i => i !== item)
 			this._sync()
 		}
@@ -74,13 +224,18 @@ class SecretStore extends Bond {
 
 	_load () {
 		if (this._storage.secretStore) {
-			this._keys = JSON.parse(this._storage.secretStore).map(({seed, phrase, name}) => ({ phrase, name, seed: hexToBytes(seed) }))
-		} else if (this._storage.secretStore2) {
-			this._keys = JSON.parse(this._storage.secretStore2).map(({seed, name}) => ({ phrase: seed, name }))
+			this._keys = JSON.parse(this._storage.secretStore)
+				.map(({keyData, seed, uri, phrase, name, type}) => ({
+					name,
+					keyData: hexToBytes(keyData || seed),
+					uri: uri || phrase,
+					type: type || ED25519
+				}))
 		} else {
 			this._keys = [{
 				name: 'Default',
-				phrase: generateMnemonic()
+				uri: generateMnemonic(),
+				type: SR25519
 			}]
 		}
 		this._sync()
@@ -89,19 +244,34 @@ class SecretStore extends Bond {
 	_sync () {
 		let byAddress = {}
 		let byName = {}
-		this._keys = this._keys.map(({seed, phrase, name, key}) => {
-			seed = seed || seedFromPhrase(phrase)
-			key = key || nacl.sign.keyPair.fromSeed(seed)
-			let account = new AccountId(key.publicKey)
-			let address = ss58Encode(account)
-			let item = {seed, phrase, name, key, account, address}
-			byAddress[address] = item
-			byName[name] = item
-			return item
+		this._keys = this._keys.map(({key, uri, keyData, name, type}) => {
+			let item
+			switch (type) {
+				case ED25519: {
+					keyData = keyData || edSeedFromUri(uri)
+					key = key || nacl.sign.keyPair.fromSeed(keyData)
+					let account = new AccountId(key.publicKey)
+					item = {uri, name, type, key, keyData, account}
+					break
+				}
+				case SR25519: {
+					keyData = keyData || srKeypairFromUri(uri)
+					key = key || keyData
+					let account = srKeypairToAccountId(key)
+					item = {uri, name, type, key, keyData, account}
+					break
+				}
+			}
+			if (item) {
+				item.address = ss58Encode(item.account)
+				byAddress[item.address] = item
+				byName[item.name] = item
+				return item
+			}
 		})
 		this._byAddress = byAddress
 		this._byName = byName
-		this._storage.secretStore = JSON.stringify(this._keys.map(k => ({seed: bytesToHex(k.seed), phrase: k.phrase, name: k.name})))
+		this._storage.secretStore = JSON.stringify(this._keys.map(k => ({keyData: bytesToHex(k.keyData), uri: k.uri, name: k.name, type: k.type})))
 		this.trigger({keys: this._keys, byAddress: this._byAddress, byName: this._byName})
 	}
 }

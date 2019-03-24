@@ -30,6 +30,12 @@ class VoteThreshold extends String {
 	}
 }
 
+class RewardDestination extends String {
+	toJSON() {
+		return { _type: 'RewardDestination', data: this + ''}
+	}
+}
+
 class BlockNumber extends Number {
 	toJSON() {
 		return { _type: 'BlockNumber', data: this+0 }
@@ -112,10 +118,11 @@ function reviver(key, bland) {
 			case 'Balance': return new Balance(bland.data);
 			case 'BlockNumber': return new BlockNumber(bland.data);
 			case 'AccountIndex': return new AccountIndex(bland.data);
+			case 'Payee': return new Payee(bland.data);
 		}
 	}
 	return bland;
 }
 
 module.exports = { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver }
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver, RewardDestination }
