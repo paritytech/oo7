@@ -109,19 +109,20 @@ function initialiseFromMetadata (md) {
 							console.log("iterable storage map item", camel(item.name), storePrefix, item.name, keyType, valueType)
 							o[camel(item.name)].head = new StorageBond(`head of ${storePrefix} ${item.name}`, keyType)
 							let prefix = `${storePrefix} ${item.name}`;
-							let rest = head => {
+							let rest
+							rest = (pre, head) => {
 								if (head == null) {
-									return []
+									return pre
 								} else {
-									let s = new StorageBond(prefix, [valueType, `Option<${keyType}>`, `Option<${keyType}>`], encode(head, keyType))
-									console.log(prefix, valueType, keyType, head, s)
-									return s.map(([item]) => {
-										console.log("item", item);
-										return [{key: head, value: item[0] }, ... rest(item[2])]
-									})
+									return new TransformBond(
+										l => l && l[0]
+											? rest([...pre, { key: head, value: l[0][0] }], l[0][2])
+											: pre,
+										[new StorageBond(prefix, [valueType, `Option<${keyType}>`, `Option<${keyType}>`], encode(head, keyType))]
+									)
 								}
 							}
-							o[camel(item.name)].all = o[camel(item.name)].head.map(rest)
+							o[camel(item.name)].all = o[camel(item.name)].head.map(x => rest([], x))
 						}
 						break
 					}

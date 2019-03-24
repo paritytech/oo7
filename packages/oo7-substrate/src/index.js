@@ -50,6 +50,14 @@ if (typeof window !== 'undefined') {
 	window.storageKey = storageKey
 	window.StorageBond = StorageBond
 	window.TransactionBond = TransactionBond
+	window.lookup = query => {
+		let q = secretStore().find(query)
+		if (q) {
+			return q.account
+		} else {
+			return runtime.indices.ss58Decode(query)
+		}
+	}
 }
 
 module.exports = {
