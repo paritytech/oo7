@@ -417,6 +417,19 @@ function decode(input, type) {
 }
 
 function encode(value, type = null) {
+	if (!type) {
+		if (typeof value == 'object') {
+			if (value._type) {
+				type = value._type
+			}
+		}
+		if (typeof value == 'number') {
+			type = 'u128'
+		}
+		if (typeof value == 'string') {
+			type = 'String'
+		}
+	}
 	// if an array then just concat
 	if (type instanceof Array) {
 		if (value instanceof Array) {
@@ -433,16 +446,8 @@ function encode(value, type = null) {
 			throw 'If type is array, value must be too'
 		}
 	}
-	if (typeof value == 'object' && !type && value._type) {
-		type = value._type
-	}
-	if (typeof value == 'number' && !type) {
-		type = 'u128'
-	}
-	if (typeof value == 'string' && !type) {
-		type = 'String'
-	}
 	if (typeof type != 'string') {
+		console.log("Invalid encode type", type)
 		throw 'type must be either an array or a string'
 	}
 	type = type.replace(/ /g, '').replace(/^(T::)+/, '').replace(/<BalanceOf<T>>$/, '');
@@ -537,6 +542,23 @@ function encode(value, type = null) {
 		}
 		if (value instanceof Uint8Array && value.length == 32) {
 			return value
+		}
+	}
+
+	if (type.startsWith('[') && type.endsWith(']')) {
+		if (value instanceof Uint8Array) {
+			return value
+		} else if (value instanceof Array) {
+			let type = type.substr(1, type.length - 2)
+			let x = value.map(i => encode(i, type));
+			let res = new Uint8Array();
+			x.forEach(x => {
+				r = new Uint8Array(res.length + x.length);
+				r.set(res)
+				r.set(x, res.length)
+				res = r
+			})
+			return res
 		}
 	}
 

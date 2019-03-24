@@ -29,7 +29,7 @@ function chainCodeFor(x) {
 }
 
 function deriveHardJunction(seed, cc) {
-	return blake2b(encode(["Ed25519HDKD", seed, cc]), null, 32)
+	return blake2b(encode(["Ed25519HDKD", seed, cc], ['String', '[u8]', '[u8]']), null, 32)
 }
 
 function edSeedFromUri(uri) {
@@ -42,7 +42,7 @@ function edSeedFromUri(uri) {
 				let password = m[6] || ''
 				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(m[1] || DEV_PHRASE)))
 				let salt = new Buffer(stringToBytes(`mnemonic${password}`))
-				let seed = keypairFromSeed(pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32));
+				let seed = pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32);
 				let rest = m[3];
 				while (rest != '') {
 					let m = rest.match(/^\/(\/?)([^\/]*)(\/.*)?$/)
@@ -130,15 +130,15 @@ window.srKeypairToPublic = srKeypairToPublic
 
 const ED25519 = 'ed25519'
 const SR25519 = 'sr25519'
-
+//
 function overrideType(uri, type) {
-	let m = uri.match(/^((ed25519)|(sr25519):)?(.*)$/)
+	let m = uri.match(/^((ed25519:)|(sr25519:))?(.*)$/)
 	if (m) {
 		switch (m[1]) {
-			case 'ed25519':
+			case 'ed25519:':
 				type = ED25519
 				break
-			case 'sr25519':
+			case 'sr25519:':
 				type = SR25519
 				break
 			default:
@@ -164,11 +164,16 @@ class SecretStore extends Bond {
 	}
 
 	accountFromPhrase (_uri, _type = SR25519) {
-		let {uri, type} = overrideType(_uri, _type)
-		if (type == ED25519) {
-			return new AccountId(nacl.sign.keyPair.fromSeed(edSeedFromUri(uri)).publicKey)
-		} else if (type == SR25519) {
-			return srKeypairToAccountId(srKeypairFromUri(uri))
+		try {
+			let {uri, type} = overrideType(_uri, _type)
+			if (type == ED25519) {
+				return new AccountId(nacl.sign.keyPair.fromSeed(edSeedFromUri(uri)).publicKey)
+			} else if (type == SR25519) {
+				return srKeypairToAccountId(srKeypairFromUri(uri))
+			}
+		}
+		catch (e) {
+			return null
 		}
 	}
 
