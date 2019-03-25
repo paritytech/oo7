@@ -10,6 +10,12 @@ class AccountId extends Uint8Array {
 	toJSON() {
 		return { _type: 'AccountId', data: Array.from(this) }
 	}
+	compare (other) {
+		return this.length === other.length && this.every((v, i) => other[i] === v)
+	}
+	memberOf (set) {
+		return set.find(item => this.compare(item)) !== undefined
+	}
 }
 
 class Hash extends Uint8Array {

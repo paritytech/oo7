@@ -101,12 +101,11 @@ function initialiseFromMetadata (md) {
 						let keyType = item.type.value.key
 						let valueType = item.type.value.value
 						
-						o[camel(item.name)] = keyBond => new TransformBond(
-							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), item.default),
+						o[camel(item.name)] = (keyBond, useDefault = true) => new TransformBond(
+							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), useDefault ? item.default : null),
 							[keyBond]
 						).subscriptable()
 						if (item.type.value.iterable) {
-							console.log("iterable storage map item", camel(item.name), storePrefix, item.name, keyType, valueType)
 							o[camel(item.name)].head = new StorageBond(`head of ${storePrefix} ${item.name}`, keyType)
 							let prefix = `${storePrefix} ${item.name}`;
 							let rest
@@ -143,7 +142,7 @@ function initialiseFromMetadata (md) {
 					return new TransformBond(args => {
 						let encoded_args = encode(args, item.arguments.map(x => x.type))
 						let res = new Uint8Array([thisCallIndex, id, ...encoded_args]);
-						console.log(`Encoding call ${m.name}.${item.name} (${thisCallIndex}.${id}): ${bytesToHex(res)}`)
+//						console.log(`Encoding call ${m.name}.${item.name} (${thisCallIndex}.${id}): ${bytesToHex(res)}`)
 						return res
 					}, [bondArgs], [], 3, 3, undefined, true)
 				}

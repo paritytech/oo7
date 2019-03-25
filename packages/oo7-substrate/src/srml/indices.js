@@ -43,19 +43,28 @@ function augment(runtime, chain) {
 		return res
 	}).subscriptable()
 
-	indices.tryIndex = (id, whenNone = id) => new TransformBond((accounts, id, whenNone) => {
-		if (typeof id === 'string') {
-			id = ss58Decode(id)
+	indices.tryIndex = (id, whenNone = id) => {
+		if (!id) {
+			console.warn("bad identity passed to tryIndex", id)
 		}
-		if (isId(id)) {
-			let i = accounts[ss58Encode(id)]
-			return isIndex(i)
-				? new AccountIndex(i)
-				: whenNone
-		} else {
-			return whenNone
-		}
-	}, [indices.accounts, id, whenNone], [], 3, 3, undefined, false)
+		return new TransformBond((accounts, id, whenNone) => {
+			if (!id) {
+				console.warn("bad identity resolved to tryIndex", id)
+				return undefined
+			}
+			if (typeof id === 'string') {
+				id = ss58Decode(id)
+			}
+			if (isId(id)) {
+				let i = accounts[ss58Encode(id)]
+				return isIndex(i)
+					? new AccountIndex(i)
+					: whenNone
+			} else {
+				return whenNone
+			}
+		}, [indices.accounts, id, whenNone], [], 3, 3, undefined, false)
+	}
 
 	indices.ss58Encode = (address, type, csLength, length) => new TransformBond((address, id, index, type, csLength, length) => {
 		if (isIndex(address)) {

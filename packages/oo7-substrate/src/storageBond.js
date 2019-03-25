@@ -14,7 +14,7 @@ class StorageBond extends SubscriptionBond {
 		super('state_storage', [[ storageKey(prefix, args) ]], r => {
 			let raw = hexToBytes(r.changes[0][1]);
 			return raw.length > 0 ? type == null ? raw : decode(raw, type) : defaultValue
-		})			
+		})
 	}
 }
 

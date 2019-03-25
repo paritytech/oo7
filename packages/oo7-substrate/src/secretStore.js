@@ -8,7 +8,8 @@ const { stringToBytes, bytesToHex, hexToBytes, toLE } = require('./utils')
 const { blake2b } = require('blakejs')
 const { pbkdf2Sync } = require('pbkdf2')
 const { Buffer } = require('buffer')
-const { isReady, keypairFromSeed, sign, verify, deriveKeypairHard, derivePublicSoft, deriveKeypairSoft } = require('@polkadot/wasm-schnorrkel');
+const { waitReady, isReady, keypairFromSeed, sign, verify, deriveKeypairHard, derivePublicSoft, deriveKeypairSoft } = require('@polkadot/wasm-schnorrkel');
+const wasmCrypto = require('@polkadot/wasm-crypto');
 
 const DEV_PHRASE = 'bottom drive obey lake curtain smoke basket hold race lonely fit walk'
 
@@ -40,9 +41,11 @@ function edSeedFromUri(uri) {
 			let m = uri.match(/^([a-z]+( [a-z]+){11})?((\/\/?[^\/]*)*)(\/\/\/(.*))?$/)
 			if (m) {
 				let password = m[6] || ''
-				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(m[1] || DEV_PHRASE)))
-				let salt = new Buffer(stringToBytes(`mnemonic${password}`))
-				let seed = pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32);
+				let phrase = m[1] || DEV_PHRASE
+				let seed = wasmCrypto.bip39ToMiniSecret(phrase, password)
+//				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(phrase)))
+//				let salt = new Buffer(stringToBytes(`mnemonic${password}`))
+//				let seed = pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32);
 				let rest = m[3];
 				while (rest != '') {
 					let m = rest.match(/^\/(\/?)([^\/]*)(\/.*)?$/)
@@ -85,16 +88,16 @@ function srKeypairFromUri(uri) {
 				let password = m[6] || ''
 				let phrase = m[1] || DEV_PHRASE
 
-				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(phrase)))
+				let seed = wasmCrypto.bip39ToMiniSecret(phrase, password)
+/*				let entropy = new Buffer(hexToBytes(mnemonicToEntropy(phrase)))
 				let salt = new Buffer(stringToBytes(`mnemonic${password}`))
-				let seed = pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32)
+				let seed = pbkdf2Sync(entropy, salt, 2048, 64, 'sha512').slice(0, 32)*/
 				let pair = keypairFromSeed(seed)
 
 				let rest = m[3];
 				while (rest != '') {
 					let m = rest.match(/^\/(\/?)([^\/]*)(\/.*)?$/)
 					let cc = chainCodeFor(m[2])
-					console.log('Deriving ', m[2], bytesToHex(cc), seed)
 					if (m[1] == '/') {
 						pair = deriveKeypairHard(pair, cc)
 					} else {
@@ -102,7 +105,6 @@ function srKeypairFromUri(uri) {
 					}
 					rest = m[3] || ''
 				}
-				console.log('Derived ', ss58Encode(srKeypairToPublic(pair)))
 
 				cache[uri] = pair
 			} else {
@@ -120,6 +122,7 @@ window.pbkdf2Sync = pbkdf2Sync
 window.Buffer = Buffer
 window.mnemonicToEntropy = mnemonicToEntropy
 window.isReady = isReady
+window.waitReady = waitReady
 window.keypairFromSeed = keypairFromSeed
 window.sign = sign
 window.deriveKeypairHard = deriveKeypairHard
@@ -127,10 +130,11 @@ window.derivePublicSoft = derivePublicSoft
 window.deriveKeypairSoft = deriveKeypairSoft
 window.srKeypairFromUri = srKeypairFromUri
 window.srKeypairToPublic = srKeypairToPublic
+window.wasmCrypto = wasmCrypto
 
 const ED25519 = 'ed25519'
 const SR25519 = 'sr25519'
-//
+
 function overrideType(uri, type) {
 	let m = uri.match(/^((ed25519:)|(sr25519:))?(.*)$/)
 	if (m) {
@@ -154,6 +158,10 @@ class SecretStore extends Bond {
 		this._storage = storage || typeof localStorage === 'undefined' ? {} : localStorage
 		this._keys = []
 		this._load()
+	}
+
+	generateMnemonic (wordCount = 12) {
+		return wasmCrypto.bip39Generate(wordCount)
 	}
 
 	submit (_uri, name, _type = SR25519) {

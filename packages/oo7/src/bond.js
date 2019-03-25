@@ -16,7 +16,7 @@ const BondCache = require('./bondCache');
 
 var subscripted = {};
 // Any names which should never be subscripted.
-const reservedNames = { toJSON: true, toString: true };
+const reservedNames = { toJSON: true, toString: true, subscription: true };
 
 function symbolValues (o) {
 	return Object.getOwnPropertySymbols(o).map(k => o[k]);
@@ -25,6 +25,8 @@ function symbolValues (o) {
 function equivalent (a, b) {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
+
+let globalCount = 0;
 
 /**
  * An object which tracks a single, potentially variable, value.
@@ -88,6 +90,7 @@ class Bond {
 	 * is equivalent to reseting back to being _not ready_.
 	 */
 	constructor (mayBeNull = true, cache = null) {
+		this._uid = globalCount++;
 		// Functions that should execute whenever we resolve to a new, "ready"
 		// value. They are passed the new value as a single parameter.
 		// Each function is mapped to from a `Symbol`, which can be used to
@@ -450,8 +453,12 @@ class Bond {
 	 * {@link Bond#notify} call.
 	 */
 	unnotify (id) {
-		delete this._notifies[id];
-		this.drop();
+		if (this._notifies[id]) {
+			delete this._notifies[id];
+			this.drop();
+		} else {
+			console.warn("untie on from old or non-existent notifyee ID")
+		}
 	}
 
 	/**
@@ -494,8 +501,12 @@ class Bond {
 	 * {@link Bond#tie} call.
 	 */
 	untie (id) {
-		delete this._subscribers[id];
-		this.drop();
+		if (this._subscribers[id]) {
+			delete this._subscribers[id];
+			this.drop();
+		} else {
+			console.warn("untie on from old or non-existent subscriber ID")
+		}
 	}
 
 	/**

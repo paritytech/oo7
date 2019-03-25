@@ -6,41 +6,6 @@ const { toLE, leToNumber, leToSigned, bytesToHex, hexToBytes, stringToBytes } = 
 const { metadata } = require('./metadata')
 
 const transforms = {
-	Legacy_RuntimeMetadata: { outerEvent: 'Legacy_OuterEventMetadata', modules: 'Vec<Legacy_RuntimeModuleMetadata>', outerDispatch: 'Legacy_OuterDispatchMetadata' },
-	Legacy_OuterDispatchMetadata: { name: 'String', calls: 'Vec<Legacy_OuterDispatchCall>' },
-	Legacy_OuterDispatchCall: { name: 'String', prefix: 'String', index: 'u16' },
-	Legacy_RuntimeModuleMetadata: { prefix: 'String', module: 'Legacy_ModuleMetadata', storage: 'Option<Legacy_StorageMetadata>' },
-	Legacy_StorageFunctionModifier: { _enum: [ 'Optional', 'Default' ] },
-	Legacy_StorageFunctionTypeMap: { key: 'Type', value: 'Type' },
-	Legacy_StorageFunctionType: { _enum: { Plain: 'Type', Map: 'Legacy_StorageFunctionTypeMap' } },
-	Legacy_StorageFunctionMetadata: {
-		name: 'String',
-		modifier: 'Legacy_StorageFunctionModifier',
-		type: 'Legacy_StorageFunctionType',
-		default: 'Vec<u8>',
-		documentation: 'Vec<String>',
-		_post: x => {
-			try {
-				if (x.default) {
-					x.default = decode(
-						x.default,
-						x.type.option === 'Plain' ? x.type.value : x.type.value.value
-					)
-				}
-			}
-			catch (e) {
-				x.default = null
-			}
-		}
-	},
-	Legacy_StorageMetadata: { prefix: 'String', items: 'Vec<Legacy_StorageFunctionMetadata>' },
-	Legacy_EventMetadata: { name: 'String', arguments: 'Vec<Type>', documentation: 'Vec<String>' },
-	Legacy_OuterEventMetadata: { name: 'String', events: 'Vec<(String, Vec<Legacy_EventMetadata>)>' },
-	Legacy_ModuleMetadata: { name: 'String', call: 'Legacy_CallMetadata' },
-	Legacy_CallMetadata: { name: 'String', functions: 'Vec<Legacy_FunctionMetadata>' },
-	Legacy_FunctionMetadata: { id: 'u16', name: 'String', arguments: 'Vec<Legacy_FunctionArgumentMetadata>', documentation: 'Vec<String>' },
-	Legacy_FunctionArgumentMetadata: { name: 'String', type: 'Type' },
-
 	MetadataHead: { magic: 'u32', version: 'u8' },
 	MetadataBodyV1: { modules: 'Vec<MetadataModuleV1>' },
 	MetadataBody: { modules: 'Vec<MetadataModule>' },
@@ -85,17 +50,17 @@ const transforms = {
 		default: 'Vec<u8>',
 		documentation: 'Docs',
 		_post: x => {
+			let def = null
 			try {
-				if (x.default) {
-					x.default = decode(
+				if (x.default && (x.default.length > 1 || x.default.length == 1 && x.default[0] != 0)) {
+					def = decode(
 						x.default,
 						x.type.option === 'Plain' ? x.type.value : x.type.value.value
 					)
 				}
 			}
-			catch (e) {
-				x.default = null
-			}
+			catch (e) {}
+			x.default = def
 		}
 	},
 	MetadataCall: {
@@ -118,9 +83,13 @@ const transforms = {
 	Phase: { _enum: { ApplyExtrinsic: 'u32', Finalization: undefined } },
 	EventRecord: { phase: 'Phase', event: 'Event' },
 	ValidatorPrefs: { unstakeThreshold: 'Compact<u32>', validatorPayment: 'Compact<Balance>' },
-	UnlockChunk: { value: 'Compact<Balance>', era: 'BlockNumber' },
+	UnlockChunk: { value: 'Compact<Balance>', era: 'Compact<BlockNumber>' },
 	StakingLedger: { stash: 'AccountId', total: 'Compact<Balance>', active: 'Compact<Balance>', unlocking: 'Vec<UnlockChunk>' },
-
+	IndividualExposure: { who: 'AccountId', value: 'Compact<Balance>' },
+	Exposure: { total: 'Compact<Balance>', own: 'Compact<Balance>', others: 'Vec<IndividualExposure>' },
+	
+	"Exposure<AccountId,BalanceOf<T>>": 'Exposure',
+	"IndividualExposure<AccountId,BalanceOf<T>>": 'IndividualExposure',
 	"BalanceOf<T>": 'Balance',
 	"<LookupasStaticLookup>::Source": 'Address',
 	"RawAddress<AccountId,AccountIndex>": 'Address',
@@ -128,6 +97,10 @@ const transforms = {
 	"StakingLedger<AccountId,BalanceOf<T>,BlockNumber>": 'StakingLedger',
 	"UnlockChunk<BalanceOf<T>,BlockNumber>": 'UnlockChunk',
 	
+	"Schedule<Gas>": { offset: 'Gas', per_block: 'Gas' },
+	ProposalIndex: 'u32',
+	Gas: 'u64',
+	LockPeriods: 'i8',
 	ParaId: 'u32',
 	VoteIndex: 'u32',
 	PropIndex: 'u32',
@@ -573,13 +546,19 @@ function encode(value, type = null) {
 		}
 	}
 
-	if (typeof value == 'number' || (typeof value == 'string' && +value + '' == value)) {
+	if (typeof value == 'number'
+		|| (typeof value == 'string' && +value + '' == value)
+		|| (type == 'Balance' && value instanceof Balance)
+		|| (type == 'AccountIndex' && value instanceof AccountIndex)
+		|| (type == 'BlockNumber' && value instanceof BlockNumber)
+	) {
 		value = +value
 		switch (type) {
 			case 'Balance':
 			case 'u128':
 			case 'i128':
 				return toLE(value, 16)
+			case 'BlockNumber':
 			case 'u64':
 			case 'i64':
 				return toLE(value, 8)
@@ -596,10 +575,6 @@ function encode(value, type = null) {
 			default:
 				break
 		}
-	}
-
-	if (value instanceof AccountIndex && type == 'AccountIndex') {
-		return toLE(value, 4)
 	}
 
 	if ((value instanceof Perbill || typeof value === 'number') && type == 'Perbill') {
