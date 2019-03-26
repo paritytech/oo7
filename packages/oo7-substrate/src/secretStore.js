@@ -13,7 +13,8 @@ const wasmCrypto = require('@polkadot/wasm-crypto');
 
 const DEV_PHRASE = 'bottom drive obey lake curtain smoke basket hold race lonely fit walk'
 
-let cache = {}
+let edCache = {}
+let srCache = {}
 
 function chainCodeFor(x) {
 	let r = encode(x)
@@ -34,7 +35,7 @@ function deriveHardJunction(seed, cc) {
 }
 
 function edSeedFromUri(uri) {
-	if (!cache[uri]) {
+	if (!edCache[uri]) {
 		if (uri.match(/^0x[0-9a-fA-F]{64}$/)) {
 			cache[uri] = hexToBytes(uri)
 		} else {
@@ -57,13 +58,13 @@ function edSeedFromUri(uri) {
 					}
 					rest = m[3] || ''
 				}
-				cache[uri] = seed
+				edCache[uri] = seed
 			} else {
 				throw "Invalid secret URI"
 			}
 		}
 	}
-	return cache[uri]
+	return edCache[uri]
 }
 
 function srKeypairToAccountId(pair) {
@@ -79,7 +80,7 @@ function srKeypairToSecret(pair) {
 }
 
 function srKeypairFromUri(uri) {
-	if (!cache[uri]) {
+	if (!srCache[uri]) {
 		if (uri.match(/^0x[0-9a-fA-F]{64}$/)) {
 			cache[uri] = keypairFromSeed(hexToBytes(uri))
 		} else {
@@ -106,13 +107,13 @@ function srKeypairFromUri(uri) {
 					rest = m[3] || ''
 				}
 
-				cache[uri] = pair
+				srCache[uri] = pair
 			} else {
 				throw "Invalid secret URI"
 			}
 		}
 	}
-	return cache[uri]
+	return srCache[uri]
 }
 
 window.chainCodeFor = chainCodeFor
