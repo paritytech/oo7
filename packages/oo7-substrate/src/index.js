@@ -3,11 +3,11 @@ const { ss58Decode, ss58Encode, setNetworkDefault } = require('./ss58')
 const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, Permill, Perbill, reviver } = require('./types')
 const { decode, encode, addCodecTransform } = require('./codec')
 const { pretty } = require('./pretty')
-const { post } = require('./transact')
+const { post, TransactionBond } = require('./transact')
 const { secretStore } = require('./secretStore')
 const { addressBook } = require('./addressBook')
 const { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, toLE, leToNumber, leHexToNumber, siPrefix } = require('./utils')
-const { storageKey } = require('./storageBond')
+const { storageKey, StorageBond } = require('./storageBond')
 const { initRuntime, runtime, calls, runtimePromise, callsPromise, chain, system, state, runtimeUp } = require('./bonds')
 const { nodeService, setNodeUri } = require('./nodeService')
 const denominationInfo = require('./denominationInfo')
@@ -48,6 +48,16 @@ if (typeof window !== 'undefined') {
 	window.AccountId = AccountId
 	window.AccountIndex = AccountIndex
 	window.storageKey = storageKey
+	window.StorageBond = StorageBond
+	window.TransactionBond = TransactionBond
+	window.lookup = query => {
+		let q = secretStore().find(query)
+		if (q) {
+			return q.account
+		} else {
+			return runtime.indices.ss58Decode(query)
+		}
+	}
 }
 
 module.exports = {

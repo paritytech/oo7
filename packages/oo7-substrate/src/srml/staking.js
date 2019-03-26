@@ -4,14 +4,6 @@ const { Balance } = require('../types')
 const balancesModule = require('./balances')
 const sessionModule = require('./session')
 
-function compareAccountId(a, b) {
-	return a.length === b.length && a.every((v, i) => b[i] === v)
-}
-
-function accountIdMemberOf(member, set) {
-	return set.find(item => compareAccountId(member, item)) !== undefined
-}
-
 function augment (runtime, chain) {
 	sessionModule.augment(runtime, chain)
 	balancesModule.augment(runtime, chain)
@@ -24,6 +16,17 @@ function augment (runtime, chain) {
 		staking._extras = true
 	}
 
+	oldStakers = staking.stakers
+	staking.stakers = who => oldStakers(who, false)
+	oldValidators = staking.validators
+	staking.validators = who => oldValidators(who, false)
+	staking.validators.all = oldValidators.all
+	staking.validators.head = oldValidators.head
+	oldNominators = staking.nominators
+	staking.nominators = who => oldNominators(who, false)
+	staking.nominators.all = oldNominators.all
+	staking.nominators.head = oldNominators.head
+
 	staking.thisSessionReward = new TransformBond(
 		(r, l) => Math.round(r / l),
 		[
@@ -32,19 +35,82 @@ function augment (runtime, chain) {
 		]
 	)
 
-	staking.currentNominatedBalance = who => staking.currentNominatorsFor(who)
-		.map(ns => ns.map(n => balances.totalBalance(n)), 2)
-		.map(bs => new Balance(bs.reduce((a, b) => a + b, 0)))
-	staking.nominatedBalance = who => staking.nominatorsFor(who)
-		.map(ns => ns.map(n => balances.totalBalance(n)), 2)
-		.map(bs => new Balance(bs.reduce((a, b) => a + b, 0)))
-	staking.stakingBalance = who => Bond
-		.all([balances.totalBalance(who), staking.nominatedBalance(who)])
-		.map(([f, r]) => new Balance(f + r));
-	staking.currentStakingBalance = who => Bond
-		.all([balances.totalBalance(who), staking.currentNominatedBalance(who)])
-		.map(([f, r]) => new Balance(f + r));
-		
+	staking.bonding = either => new TransformBond(
+		(ledger, controller) => {
+			if (ledger) {			// was controller
+				return {
+					ledger,
+					controller: either,
+					key: 'controller'
+				}
+			} else if (controller) {	// was stash
+				return {
+					ledger: staking.ledger(controller),
+					controller,
+					key: 'stash'
+				}
+			} else {
+				return undefined
+			}
+		},
+		[staking.ledger(either), staking.bonded(either)]
+	).subscriptable(2)
+
+	staking.info = either => new TransformBond(
+		({bonding, vals, noms, slashCount, payee, currentElected, invulnerables}) => bonding && ({
+			ledger: bonding.ledger,
+			controller: bonding.controller,
+			key: bonding.key,
+			role: vals ? { validator: vals } : noms ? { nominator: noms } : { idle: 'null' },
+			payee
+		}),
+		[staking.bonding(either).map(bonding => bonding ? ({
+			bonding,
+			vals: staking.validators(bonding.ledger.stash),
+			noms: staking.nominators(bonding.ledger.stash),
+			payee: staking.payee(bonding.ledger.stash),
+		}) : ({
+			bonding: null
+		}))]
+	).subscriptable(2)
+
+	staking.exposure = new TransformBond((validators, invulns) => {
+		let r = {}
+		validators.forEach(validator => {
+			r[ss58Encode(validator)] = new TransformBond((stakers, controller) => Object.assign({
+				validator,
+				controller,
+				invulnerable: controller.memberOf(invulns),
+			}, stakers), [staking.stakers(validator), staking.bonded(validator)])
+		})
+		return r
+	}, [staking.currentElected, staking.invulnerables]).subscriptable(2)
+
+	staking.exposureOf = nominator => new TransformBond((exposure, nominator, slotStake) => {
+		let slot = exposure[ss58Encode(nominator)];
+		if (slot) {
+			// Validator
+			return { validating: slot }
+		} else {
+			// Maybe a nominator?
+			let nominations = {}
+			Object.keys(exposure).forEach(k => {
+				let slot = exposure[k]
+				let n = slot.others.find(x => x.who.compare(nominator))
+				if (n) {
+					nominations[k] = Object.assign({
+						share: n.value
+					}, slot)
+				}
+			})
+			if (Object.keys(nominations).length > 0) {
+				return { nominating: nominations }
+			} else {
+				return { idle: true }
+			}
+		}
+	}, [staking.exposure, nominator, staking.slotStake]).subscriptable(2)
+
 	staking.eraLength = new TransformBond(
 		(a, b) => a * b,
 		[
@@ -52,45 +118,6 @@ function augment (runtime, chain) {
 			session.sessionLength
 		])
 	
-	staking.validators = Bond.all([staking.invulerables, session.validators])
-		.map(([inv, v]) => v.map(who => ({
-			who,
-			ownBalance: balances.totalBalance(who),
-			otherBalance: staking.currentNominatedBalance(who),
-			nominators: staking.currentNominatorsFor(who),
-			invulnerable: accountIdMemberOf(who, inv)
-		})), 2)
-		.map(v => v
-			.map(i => Object.assign({balance: i.ownBalance.add(i.otherBalance)}, i))
-			.sort((a, b) => b.balance - a.balance)
-		)
-
-	staking.nextThreeUp = staking.intentions.map(
-			l => ([session.validators, l.map(who => ({
-				who, ownBalance: balances.totalBalance(who), otherBalance: staking.nominatedBalance(who)
-			}) ) ]), 3
-		).map(([c, l]) => l
-			.map(i => Object.assign({balance: i.ownBalance.add(i.otherBalance)}, i))
-			.sort((a, b) => b.balance - a.balance)
-			.filter(i => !c.some(x => x+'' == i.who+''))
-			.slice(0, 3)
-		)
-
-	staking.nextValidators = Bond
-		.all([
-			staking.intentions.map(v => v.map(who => ({
-				who,
-				ownBalance: balances.totalBalance(who),
-				otherBalance: staking.nominatedBalance(who),
-				nominators: staking.nominatorsFor(who)
-			})), 2),
-			staking.validatorCount
-		]).map(([as, vc]) => as
-			.map(i => Object.assign({balance: i.ownBalance.add(i.otherBalance)}, i))
-			.sort((a, b) => b.balance - a.balance)
-			.slice(0, vc)
-		)
-
 	staking.eraSessionsRemaining = new TransformBond(
 		(spe, si, lec) => (spe - 1 - (si - lec) % spe),
 		[
@@ -106,24 +133,6 @@ function augment (runtime, chain) {
 			staking.eraSessionsRemaining,
 			session.blocksRemaining
 		])
-
-	staking.intentionIndexOf = id =>
-		new TransformBond((i, id) => {
-			let ss58 = ss58Encode(id);
-			return i.findIndex(a => ss58Encode(a) === ss58);
-		}, [runtime.staking.intentions, id])
-	
-	staking.bondageOf = id =>
-		new TransformBond(
-			(b, h) => h >= b ? null : (b - h),
-			[runtime.staking.bondage(id), chain.height]
-		)
-	
-	staking.nominationIndex = (val) =>
-		new TransformBond((i, id) => {
-			let ss58 = ss58Encode(id);
-			return i.findIndex(a => ss58Encode(a) === ss58);
-		}, [runtime.staking.nominatorsFor(staking.nominating(val)), val])
 }
 
 module.exports = { augment }

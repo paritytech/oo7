@@ -135,16 +135,19 @@ class ReactiveComponent extends React.Component {
 
 	finiProps () {
 		if (this._consolidatedExtraBonds) {
-			this._consolidatedExtraBonds.drop();
+			let x = this._consolidatedExtraBonds;
 			delete this._consolidatedExtraBonds;
+			x.drop();
 		}
 		if (this._consolidatedBonds) {
-			this._consolidatedBonds.drop();
+			let x = this._consolidatedBonds;
 			delete this._consolidatedBonds;
+			x.drop();
 		}
 		if (this._derivedBonds) {
-			this._derivedBonds.drop();
+			let x = this._derivedBonds;
 			delete this._derivedBonds;
+			x.drop();
 		}
 	}
 
@@ -158,12 +161,14 @@ class ReactiveComponent extends React.Component {
 		let derivedBondKeys = Object.keys(bonds).filter(k => typeof bonds[k] === 'function');
 
 		if (this._derivedBonds) {
-			this._derivedBonds.drop();
+			let x = this._derivedBonds;
 			delete this._derivedBonds;
+			x.drop();
 		}
 		if (this._consolidatedBonds) {
-			this._consolidatedBonds.drop();
+			let x = this._consolidatedBonds;
 			delete this._consolidatedBonds;
+			x.drop();
 		}
 
 		if (that.reactiveProps.length > 0) {
@@ -176,7 +181,7 @@ class ReactiveComponent extends React.Component {
 				},
 				this.reactiveProps.map(f => nextProps[f]),
 				[]
-			).subscriptable().use();
+			).use().subscriptable();
 		}
 
 		if (derivedBondKeys.length > 0) {

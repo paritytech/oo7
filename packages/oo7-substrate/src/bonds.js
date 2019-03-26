@@ -101,10 +101,29 @@ function initialiseFromMetadata (md) {
 					case 'Map': {
 						let keyType = item.type.value.key
 						let valueType = item.type.value.value
-						o[camel(item.name)] = keyBond => new TransformBond(
-							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), item.default),
+						
+						o[camel(item.name)] = (keyBond, useDefault = true) => new TransformBond(
+							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), useDefault ? item.default : null),
 							[keyBond]
 						).subscriptable()
+						if (item.type.value.iterable) {
+							o[camel(item.name)].head = new StorageBond(`head of ${storePrefix} ${item.name}`, keyType)
+							let prefix = `${storePrefix} ${item.name}`;
+							let rest
+							rest = (pre, head) => {
+								if (head == null) {
+									return pre
+								} else {
+									return new TransformBond(
+										l => l && l[0]
+											? rest([...pre, { key: head, value: l[0][0] }], l[0][2])
+											: pre,
+										[new StorageBond(prefix, [valueType, `Option<${keyType}>`, `Option<${keyType}>`], encode(head, keyType))]
+									)
+								}
+							}
+							o[camel(item.name)].all = o[camel(item.name)].head.map(x => rest([], x))
+						}
 						break
 					}
 				}
@@ -159,6 +178,8 @@ function decodeMetadata(bytes) {
 	let head = decode(input, 'MetadataHead')
 	if (head.magic === 0x6174656d) {
 		if (head.version == 1) {
+			return decode(input, 'MetadataBodyV1')
+		} else if (head.version == 2) {
 			return decode(input, 'MetadataBody')
 		} else {
 			throw `Metadata version ${head.version} not supported`

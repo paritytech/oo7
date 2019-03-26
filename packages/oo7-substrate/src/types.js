@@ -10,6 +10,12 @@ class AccountId extends Uint8Array {
 	toJSON() {
 		return { _type: 'AccountId', data: Array.from(this) }
 	}
+	compare (other) {
+		return this.length === other.length && this.every((v, i) => other[i] === v)
+	}
+	memberOf (set) {
+		return set.find(item => this.compare(item)) !== undefined
+	}
 }
 
 class Hash extends Uint8Array {
@@ -27,6 +33,12 @@ class Signature extends Uint8Array {
 class VoteThreshold extends String {
 	toJSON() {
 		return { _type: 'VoteThreshold', data: this + ''}
+	}
+}
+
+class RewardDestination extends String {
+	toJSON() {
+		return { _type: 'RewardDestination', data: this + ''}
 	}
 }
 
@@ -112,10 +124,11 @@ function reviver(key, bland) {
 			case 'Balance': return new Balance(bland.data);
 			case 'BlockNumber': return new BlockNumber(bland.data);
 			case 'AccountIndex': return new AccountIndex(bland.data);
+			case 'Payee': return new Payee(bland.data);
 		}
 	}
 	return bland;
 }
 
 module.exports = { VecU8, AccountId, Hash, Signature, VoteThreshold, SlashPreference, Moment, Balance,
-	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver }
+	BlockNumber, AccountIndex, Tuple, TransactionEra, Perbill, Permill, reviver, RewardDestination }
