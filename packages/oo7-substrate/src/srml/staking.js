@@ -80,7 +80,7 @@ function augment (runtime, chain) {
 			r[ss58Encode(validator)] = new TransformBond((stakers, controller) => Object.assign({
 				validator,
 				controller,
-				invulnerable: controller.memberOf(invulns),
+				invulnerable: validator.memberOf(invulns),
 			}, stakers), [staking.stakers(validator), staking.bonded(validator)])
 		})
 		return r

@@ -30,21 +30,34 @@ class LatchBond extends Bond {
 		let that = this;
 		this._targetBond = targetBond;
 		this._poll = () => {
-			if (targetBond._ready) {
-				that.changed(targetBond._value);
-				that._targetBond.unnotify(that._notifyId);
-				delete that._poll;
-				delete that._targetBond;
+			if (that._targetBond) {
+				if (that._targetBond._ready) {
+					that.changed(targetBond._value);
+					if (that._notifyId) {
+						that._targetBond.unnotify(that._notifyId);
+						delete that._targetBond;
+					}
+					delete that._poll;
+				}
+			} else {
+				console.warn("poll called when targetBond is not set. This cannot happen.")
 			}
 		};
 	}
 
 	initialise () {
 		if (this._poll) {
-			this._notifyId = this._targetBond.notify(this._poll);
+			let notifyId = this._targetBond.notify(this._poll);
+			// line above might have killed it (if the target is already ready):
+			// we should only save it that wasn't the case
 			if (this._poll) {
-				// line above might have killed it.
+				// It didn't delete it. Carry on.
+				this._notifyId = notifyId
 				this._poll();
+			} else {
+				// It did delete it; unnotify immediately.
+				this._targetBond.unnotify(notifyId);
+				delete this._targetBond;
 			}
 		}
 	}
