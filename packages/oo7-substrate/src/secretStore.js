@@ -37,7 +37,7 @@ function deriveHardJunction(seed, cc) {
 function edSeedFromUri(uri) {
 	if (!edCache[uri]) {
 		if (uri.match(/^0x[0-9a-fA-F]{64}$/)) {
-			cache[uri] = hexToBytes(uri)
+			edCache[uri] = hexToBytes(uri)
 		} else {
 			let m = uri.match(/^([a-z]+( [a-z]+){11})?((\/\/?[^\/]*)*)(\/\/\/(.*))?$/)
 			if (m) {
