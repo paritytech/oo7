@@ -3,7 +3,6 @@ const nacl = require('tweetnacl');
 const { generateMnemonic, mnemonicToSeed, mnemonicToEntropy } = require('bip39')
 const { ss58Encode } = require('./ss58')
 const { AccountId } = require('./types')
-const { bytesToHex, hexToBytes } = require('./utils')
 const { encode } = require('./codec')
 const { stringToBytes, bytesToHex, hexToBytes, toLE } = require('./utils')
 const { blake2b } = require('blakejs')
