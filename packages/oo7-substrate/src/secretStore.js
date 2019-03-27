@@ -116,22 +116,24 @@ function srKeypairFromUri(uri) {
 	return srCache[uri]
 }
 
-window.chainCodeFor = chainCodeFor
-window.deriveHardJunction = deriveHardJunction
-window.edSeedFromUri = edSeedFromUri
-window.pbkdf2Sync = pbkdf2Sync
-window.Buffer = Buffer
-window.mnemonicToEntropy = mnemonicToEntropy
-window.isReady = isReady
-window.waitReady = waitReady
-window.keypairFromSeed = keypairFromSeed
-window.sign = sign
-window.deriveKeypairHard = deriveKeypairHard
-window.derivePublicSoft = derivePublicSoft
-window.deriveKeypairSoft = deriveKeypairSoft
-window.srKeypairFromUri = srKeypairFromUri
-window.srKeypairToPublic = srKeypairToPublic
-window.wasmCrypto = wasmCrypto
+if (typeof window !== 'undefined') {
+	window.chainCodeFor = chainCodeFor
+	window.deriveHardJunction = deriveHardJunction
+	window.edSeedFromUri = edSeedFromUri
+	window.pbkdf2Sync = pbkdf2Sync
+	window.Buffer = Buffer
+	window.mnemonicToEntropy = mnemonicToEntropy
+	window.isReady = isReady
+	window.waitReady = waitReady
+	window.keypairFromSeed = keypairFromSeed
+	window.sign = sign
+	window.deriveKeypairHard = deriveKeypairHard
+	window.derivePublicSoft = derivePublicSoft
+	window.deriveKeypairSoft = deriveKeypairSoft
+	window.srKeypairFromUri = srKeypairFromUri
+	window.srKeypairToPublic = srKeypairToPublic
+	window.wasmCrypto = wasmCrypto
+}
 
 const ED25519 = 'ed25519'
 const SR25519 = 'sr25519'
