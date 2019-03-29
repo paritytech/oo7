@@ -12,8 +12,6 @@ function setNetworkDefault(type) {
 	defaultType = type
 }
 
-window.pss58Encode = ss58Encode
-
 function ss58Encode(a, type = defaultType, checksumLength = null, length = null, accountId) {
 	let payload
 	if (KNOWN_TYPES.indexOf(type) === -1) {

@@ -17,10 +17,10 @@ const subscriptionKey = {
 		subscribe: 'chain_subscribeNewHead',
 		unsubscribe: 'chain_unsubscribeNewHead'
 	},
-	chain_finalisedHead: {
-		notification: 'chain_finalisedHead',
-		subscribe: 'chain_subscribeFinalisedHeads',
-		unsubscribe: 'chain_unsubscribeFinalisedHeads'
+	chain_finalizedHead: {
+		notification: 'chain_finalizedHead',
+		subscribe: 'chain_subscribeFinalizedHeads',
+		unsubscribe: 'chain_unsubscribeFinalizedHeads'
 	},
 	state_runtimeVersion: {
 		notification: 'state_runtimeVersion',
@@ -92,7 +92,7 @@ class NodeService {
 			} else if (that.pendingCancelations[d.params.subscription]) {
 				// Ok; this message was sent by them before they heard that we wanted to unsubscribe.
 			} else {
-				console.warn("Subscription reply without recognised ID", d.params.subscription)
+				console.warn("Subscription reply without recognized ID", d.params.subscription)
 			}
 
 			// epect a message every 10 seconds or we reconnect.
