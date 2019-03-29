@@ -41,6 +41,7 @@ if (typeof window !== 'undefined') {
 	window.decode = decode
 	window.pretty = pretty
 	window.addCodecTransform = addCodecTransform
+	window.setNetworkDefault = setNetworkDefault
 	window.nodeService = nodeService
 	window.secretStore = secretStore
 	window.nacl = nacl

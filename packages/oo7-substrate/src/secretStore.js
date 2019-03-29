@@ -50,9 +50,13 @@ function edSeedFromUri(uri) {
 				let rest = m[3];
 				while (rest != '') {
 					let m = rest.match(/^\/(\/?)([^\/]*)(\/.*)?$/)
+					if (m[2].match(/^[0-9]+$/)) {
+						m[2] = +m[2]
+					}
+					let cc = chainCodeFor(m[2])
 					if (m[1] == '/') {
 						// hard key -all good
-						seed = deriveHardJunction(seed, chainCodeFor(m[2]))
+						seed = deriveHardJunction(seed, cc)
 					} else {
 						throw "Soft key"
 					}
