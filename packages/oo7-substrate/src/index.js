@@ -3,7 +3,7 @@ const { ss58Decode, ss58Encode, setNetworkDefault } = require('./ss58')
 const { VecU8, AccountId, Hash, VoteThreshold, Moment, Balance, BlockNumber, AccountIndex, TransactionEra, Tuple, Permill, Perbill, reviver } = require('./types')
 const { decode, encode, addCodecTransform } = require('./codec')
 const { pretty } = require('./pretty')
-const { post, TransactionBond } = require('./transact')
+const { post, composeTransaction, TransactionBond } = require('./transact')
 const { secretStore } = require('./secretStore')
 const { addressBook } = require('./addressBook')
 const { stringToSeed, stringToBytes, hexToBytes, bytesToHex, toLEHex, toLE, leToNumber, leHexToNumber, siPrefix } = require('./utils')
@@ -46,6 +46,8 @@ if (typeof window !== 'undefined') {
 	window.secretStore = secretStore
 	window.nacl = nacl
 	window.post = post
+	window.TransactionEra = TransactionEra
+	window.composeTransaction = composeTransaction
 	window.AccountId = AccountId
 	window.AccountIndex = AccountIndex
 	window.storageKey = storageKey
@@ -70,7 +72,7 @@ module.exports = {
 	Permill, Perbill,
 	pretty, encode, decode, addCodecTransform,
 	secretStore, addressBook,
-	post,
+	post, TransactionBond,
 	denominationInfo,
 	nodeService, setNodeUri,
 	metadata,

@@ -81,7 +81,7 @@ function augment (runtime, chain) {
 				validator,
 				controller,
 				invulnerable: validator.memberOf(invulns),
-			}, stakers || {others: [], own: 0, total: 0}), [staking.stakers(validator), staking.bonded(validator)])
+			}, stakers || {others: [], own: new Balance(0), total: new Balance(0)}), [staking.stakers(validator), staking.bonded(validator)])
 		})
 		return r
 	}, [staking.currentElected, staking.invulnerables]).subscriptable(2)

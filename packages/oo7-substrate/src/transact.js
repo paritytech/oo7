@@ -63,6 +63,11 @@ function composeTransaction (sender, call, index, era, checkpoint, senderAccount
 // }
 function post(tx) {
 	return Bond.all([tx, chain.height, runtimeUp]).map(([o, height, unused]) => {
+		if (o instanceof Uint8Array) {
+			// already assembled and signed
+			return o
+		}
+		
 		console.log("Posting:", o, height)
 
 		let {sender, call, index, longevity, compact} = o
@@ -105,7 +110,7 @@ function post(tx) {
 			compact
 		}
 	}, 2).latched(false).map(o => 
-		o && composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount, o.compact)
+		o && (o instanceof Uint8Array ? o : composeTransaction(o.sender, o.call, o.index, o.era, o.eraHash, o.senderAccount, o.compact))
 	).map(composed => {
 		return composed ? new TransactionBond(composed) : { signing: true }
 	})

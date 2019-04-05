@@ -7,12 +7,20 @@ const { metadata } = require('./metadata')
 
 const transforms = {
 	MetadataHead: { magic: 'u32', version: 'u8' },
+	MetadataBodyV2: { modules: 'Vec<MetadataModuleV2>' },
 	MetadataBodyV1: { modules: 'Vec<MetadataModuleV1>' },
 	MetadataBody: { modules: 'Vec<MetadataModule>' },
 	MetadataModuleV1: { 
 		name: 'String',
 		prefix: 'String',
 		storage: 'Option<Vec<MetadataStorageV1>>',
+		calls: 'Option<Vec<MetadataCall>>', 
+		events: 'Option<Vec<MetadataEvent>>',
+	},
+	MetadataModuleV2: { 
+		name: 'String',
+		prefix: 'String',
+		storage: 'Option<Vec<MetadataStorageV2>>',
 		calls: 'Option<Vec<MetadataCall>>', 
 		events: 'Option<Vec<MetadataEvent>>',
 	},
@@ -43,7 +51,7 @@ const transforms = {
 			}
 		}
 	},
-	MetadataStorage: {
+	MetadataStorageV2: {
 		name: 'String',
 		modifier: { _enum: [ 'Optional', 'Default' ] },
 		type: { _enum: { Plain: 'Type', Map: { key: 'Type', value: 'Type', iterable: 'bool' } } },
@@ -60,6 +68,30 @@ const transforms = {
 				}
 			}
 			catch (e) {}
+			x.default = def
+		}
+	},
+	MetadataStorage: {
+		name: 'String',
+		modifier: { _enum: [ 'Optional', 'Default' ] },
+		type: { _enum: { Plain: 'Type', Map: { key: 'Type', value: 'Type', iterable: 'bool' }, DoubleMap: { first_key: 'Type', second_key: 'Type', value: 'Type', iterable: 'bool' } } },
+		default: 'Vec<u8>',
+		documentation: 'Docs',
+		_post: x => {
+			let def = null
+			try {
+				if (x.modifier.option == 'Default') {
+					def = decode(
+						x.default,
+						x.type.option === 'Plain' ? x.type.value : x.type.value.value
+					)
+//					if (x.type.option == 'Plain')
+//						console.log("Decoding default to:", x.name, x.modifier, x.default, x.type.value, def)
+				}
+			}
+			catch (e) {
+				console.log("Couldn't decode default!", x.name, x.modifier, x.default, x.type.value)
+			}
 			x.default = def
 		}
 	},
@@ -594,9 +626,10 @@ function encode(value, type = null) {
 		}
 	}
 
-	if (type == 'TransactionEra' && value instanceof TransactionEra) {
+	if (value.constructor.name == type && typeof value.encode == 'function') {
 		return value.encode()
-	} else if (type == 'TransactionEra') {
+	}
+	if (type == 'TransactionEra') {
 		console.error("TxEra::encode bad", type, value)
 	}
 	
