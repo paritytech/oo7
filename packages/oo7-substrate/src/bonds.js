@@ -94,7 +94,7 @@ function initialiseFromMetadata (md) {
 			m.storage.forEach(item => {
 				switch (item.type.option) {
 					case 'Plain': {
-						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value, [], item.modifier.option == 'Default' ? item.default : null)
+						o[camel(item.name)] = new StorageBond(`${storePrefix} ${item.name}`, item.type.value, [], item.modifier.option == 'Default' ? item.default : null, 'Twox128')
 						break
 					}
 					case 'Map': {
@@ -103,7 +103,7 @@ function initialiseFromMetadata (md) {
 						let hasDefault = item.modifier.option == 'Default'
 						
 						o[camel(item.name)] = (keyBond, useDefault = hasDefault) => new TransformBond(
-							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), useDefault ? item.default : null),
+							key => new StorageBond(`${storePrefix} ${item.name}`, valueType, encode(key, keyType), useDefault ? item.default : null, item.type.value.hasher.option),
 							[keyBond]
 						).subscriptable()
 						if (item.type.value.iterable) {
@@ -182,6 +182,8 @@ function decodeMetadata(bytes) {
 		} else if (head.version == 2) {
 			return decode(input, 'MetadataBodyV2')
 		} else if (head.version == 3) {
+			return decode(input, 'MetadataBodyV3')
+		} else if (head.version == 4) {
 			return decode(input, 'MetadataBody')
 		} else {
 			throw `Metadata version ${head.version} not supported`

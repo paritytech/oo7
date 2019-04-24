@@ -46,6 +46,7 @@ function augment(runtime, chain) {
 	indices.tryIndex = (id, whenNone = id) => {
 		if (!id) {
 			console.warn("bad identity passed to tryIndex", id)
+			return undefined
 		}
 		return new TransformBond((accounts, id, whenNone) => {
 			if (!id) {

@@ -7,6 +7,7 @@ const { metadata } = require('./metadata')
 
 const transforms = {
 	MetadataHead: { magic: 'u32', version: 'u8' },
+	MetadataBodyV3: { modules: 'Vec<MetadataModuleV3>' },
 	MetadataBodyV2: { modules: 'Vec<MetadataModuleV2>' },
 	MetadataBodyV1: { modules: 'Vec<MetadataModuleV1>' },
 	MetadataBody: { modules: 'Vec<MetadataModule>' },
@@ -21,6 +22,13 @@ const transforms = {
 		name: 'String',
 		prefix: 'String',
 		storage: 'Option<Vec<MetadataStorageV2>>',
+		calls: 'Option<Vec<MetadataCall>>', 
+		events: 'Option<Vec<MetadataEvent>>',
+	},
+	MetadataModuleV3: { 
+		name: 'String',
+		prefix: 'String',
+		storage: 'Option<Vec<MetadataStorageV3>>',
 		calls: 'Option<Vec<MetadataCall>>', 
 		events: 'Option<Vec<MetadataEvent>>',
 	},
@@ -71,10 +79,35 @@ const transforms = {
 			x.default = def
 		}
 	},
-	MetadataStorage: {
+	MetadataStorageV3: {
 		name: 'String',
 		modifier: { _enum: [ 'Optional', 'Default' ] },
 		type: { _enum: { Plain: 'Type', Map: { key: 'Type', value: 'Type', iterable: 'bool' }, DoubleMap: { first_key: 'Type', second_key: 'Type', value: 'Type', iterable: 'bool' } } },
+		default: 'Vec<u8>',
+		documentation: 'Docs',
+		_post: x => {
+			let def = null
+			try {
+				if (x.modifier.option == 'Default') {
+					def = decode(
+						x.default,
+						x.type.option === 'Plain' ? x.type.value : x.type.value.value
+					)
+//					if (x.type.option == 'Plain')
+//						console.log("Decoding default to:", x.name, x.modifier, x.default, x.type.value, def)
+				}
+			}
+			catch (e) {
+				console.log("Couldn't decode default!", x.name, x.modifier, x.default, x.type.value)
+			}
+			x.default = def
+		}
+	},
+	StorageHasher: { _enum: [ 'Blake2_128', 'Blake2_256', 'Twox128', 'Twox256', 'Twox64Concat' ] },
+	MetadataStorage: {
+		name: 'String',
+		modifier: { _enum: [ 'Optional', 'Default' ] },
+		type: { _enum: { Plain: 'Type', Map: { hasher: 'StorageHasher', key: 'Type', value: 'Type', iterable: 'bool' }, DoubleMap: { hasher: 'StorageHasher', first_key: 'Type', second_key: 'Type', value: 'Type', iterable: 'bool' } } },
 		default: 'Vec<u8>',
 		documentation: 'Docs',
 		_post: x => {
