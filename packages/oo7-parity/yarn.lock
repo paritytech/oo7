@@ -18,21 +18,21 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@parity/abi@^5.1.2":
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/@parity/abi/-/abi-5.1.2.tgz#0030c6c1fb7fc88add214dffbe8d36c2f4ab585d"
-  integrity sha512-nQ9/KTBelTS3Jxpy9blk/gOZVybSwESAizkbG82F0XFfTmT58wldWkgrf6PJWQ/3McGV9efHyVQsGX3aGZaJpA==
+"@parity/abi@^5.1.5":
+  version "5.1.5"
+  resolved "https://registry.yarnpkg.com/@parity/abi/-/abi-5.1.5.tgz#cf3407a124f5bf3d69f3fca276e795f745b7e658"
+  integrity sha512-fam79+5sOrUdxJ1KDk1MTfpNsjjeSnidgXZER5hWk5+sEKkC0RzX60d9sX9juTFFuK/sQy0ldckekbWZoOh8HA==
   dependencies:
     bignumber.js "^8.0.1"
     js-sha3 "0.8.0"
     utf8 "^3.0.0"
 
 "@parity/api@^5":
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/@parity/api/-/api-5.1.2.tgz#31c7427461866b4bd647cfb9f5612e92edcbeb89"
-  integrity sha512-bifUYIsmM+5q7EZVp16FRUKcfb4nwbe50SmWSSRvgGB50U/HiHUY2IAX6mUYbdf5Ks5e2/vyA1XQsqbdLks1Bw==
+  version "5.1.5"
+  resolved "https://registry.yarnpkg.com/@parity/api/-/api-5.1.5.tgz#b2d8b69ca881aed3a1c42947e95cf4175d4000ea"
+  integrity sha512-8xu02QkL7tn7TRcNtqfDG3a58y95DsCQ/2LMeiKDMTVOW66M6MJNDWiDUiQMousT2gh5m7lg8BKbh5Adhw47WA==
   dependencies:
-    "@parity/abi" "^5.1.2"
+    "@parity/abi" "^5.1.5"
     bignumber.js "^8.0.1"
     blockies "0.0.2"
     es6-error "4.0.2"
