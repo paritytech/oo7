@@ -28,7 +28,7 @@
   "homepage": "https://github.com/paritytech/oo7-parity#readme",
   "dependencies": {
     "@parity/api": "^5",
-    "bignumber.js": "^8.0.2",
+    "bignumber.js": "^9.0.0",
     "oo7": "^0.5.9"
   },
   "devDependencies": {
