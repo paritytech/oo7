@@ -25,7 +25,7 @@
   "dependencies": {
     "@polkadot/util": "^0.41.1",
     "@polkadot/wasm-crypto": "^0.5.1",
-    "@polkadot/wasm-schnorrkel": "^0.3.1",
+    "@polkadot/wasm-schnorrkel": "^0.7.1",
     "base-x": "^3.0.4",
     "bip39": "^2.5.0",
     "blakejs": "^1.1.0",
