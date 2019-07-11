@@ -522,11 +522,6 @@ once@^1.3.0:
   dependencies:
     wrappy "1"
 
-oo7@^0.7.10:
-  version "0.7.10"
-  resolved "https://registry.yarnpkg.com/oo7/-/oo7-0.7.10.tgz#5ecc2b76f04f585679ffe13f1e3ab527389b700c"
-  integrity sha512-jUCFP0gxyjDyjuxd6/CfuY7tQ63dKJNWdO/V8hjyAAXUHPGNL2CmMJOa/2TysR+E/L7Ha8UXZ6xUiOunbrejSw==
-
 param-case@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/param-case/-/param-case-2.1.1.tgz#df94fd8cf6531ecf75e6bef9a0858fbc72be2247"

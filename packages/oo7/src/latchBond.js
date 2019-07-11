@@ -40,7 +40,7 @@ class LatchBond extends Bond {
 					delete that._poll;
 				}
 			} else {
-				console.warn("poll called when targetBond is not set. This cannot happen.")
+				console.warn('poll called when targetBond is not set. This cannot happen.');
 			}
 		};
 	}
@@ -52,7 +52,7 @@ class LatchBond extends Bond {
 			// we should only save it that wasn't the case
 			if (this._poll) {
 				// It didn't delete it. Carry on.
-				this._notifyId = notifyId
+				this._notifyId = notifyId;
 				this._poll();
 			} else {
 				// It did delete it; unnotify immediately.

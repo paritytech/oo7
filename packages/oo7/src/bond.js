@@ -457,7 +457,7 @@ class Bond {
 			delete this._notifies[id];
 			this.drop();
 		} else {
-			console.warn("untie on from old or non-existent notifyee ID")
+			console.warn('untie on from old or non-existent notifyee ID');
 		}
 	}
 
@@ -505,7 +505,7 @@ class Bond {
 			delete this._subscribers[id];
 			this.drop();
 		} else {
-			console.warn("untie on from old or non-existent subscriber ID")
+			console.warn('untie on from old or non-existent subscriber ID');
 		}
 	}
 

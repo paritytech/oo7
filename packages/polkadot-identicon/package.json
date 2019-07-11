@@ -30,7 +30,7 @@
   "homepage": "https://github.com/paritytech/oo7/tree/master/packages/polkadot-identicon#readme",
   "types": "types.d.ts",
   "dependencies": {
-    "blake2js": "^1.0.0",
+    "blakejs": "^1.1.0",
     "oo7": "^0.7.12",
     "oo7-react": "^0.8.13",
     "oo7-substrate": "^0.8.0",
