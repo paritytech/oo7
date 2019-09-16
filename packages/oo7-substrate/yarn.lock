@@ -2,26 +2,24 @@
 # yarn lockfile v1
 
 
-"@babel/runtime@^7.4.0":
-  version "7.4.2"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.4.2.tgz#f5ab6897320f16decd855eed70b705908a313fe8"
-  integrity sha512-7Bl2rALb7HpvXFL7TETNzKSAeBVCPHELzc0C//9FCxN8nsiueWSJBqaF+2oIJScyILStASR/Cx5WMkXGYTiJFA==
+"@babel/runtime@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.6.0.tgz#4fc1d642a9fd0299754e8b5de62c631cf5568205"
+  integrity sha512-89eSBLJsxNxOERC0Op4vd+0Bqm6wRMqMbFtV3i0/fbaWw/mJ8Q3eBvgX0G4SyrOOLCtbu98HspF8o09MRT+KzQ==
   dependencies:
     regenerator-runtime "^0.13.2"
 
-"@polkadot/util@^0.41.1":
-  version "0.41.1"
-  resolved "https://registry.yarnpkg.com/@polkadot/util/-/util-0.41.1.tgz#b67762a0a7408138d843adc7240944e704e819e7"
-  integrity sha512-1mFHxxdXyRgeFk0ygfJklzsf6HiEEMikrpUgr+3Dw5S7KromjPD8EbWkpcZQZ3Png5PTwGyjrx7MYY4Ajiu5xQ==
+"@polkadot/util@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@polkadot/util/-/util-1.4.1.tgz#0c10fc1cc60111ffc9fd63fd7e3c07c8ebf28b37"
+  integrity sha512-ERrWL6ADG7F7xRKr0Hb0oMDuDbYBStgD4jniu+6w58DizvMrzlKNyatxuXtXAQEB/G+AO4Vodp7UI0OnVclS9g==
   dependencies:
-    "@babel/runtime" "^7.4.0"
-    "@types/bn.js" "^4.11.4"
-    "@types/deasync" "^0.1.0"
-    "@types/ip-regex" "^3.0.0"
+    "@babel/runtime" "^7.6.0"
+    "@types/bn.js" "^4.11.5"
     bn.js "^4.11.8"
-    camelcase "^5.2.0"
+    camelcase "^5.3.1"
     chalk "^2.4.2"
-    ip-regex "^4.0.0"
+    ip-regex "^4.1.0"
     moment "^2.24.0"
 
 "@polkadot/wasm-crypto@^0.5.1":
@@ -34,22 +32,12 @@
   resolved "https://registry.yarnpkg.com/@polkadot/wasm-schnorrkel/-/wasm-schnorrkel-0.3.1.tgz#08287848f769dee4955517348905888bd289f277"
   integrity sha512-2J/lNZe7oDWvzUbsEfvKfiiAvBIBbIsppeBGahwSg2Y+cLweQgThXGizPpQoPo0tHxgMKdTi6jhPu7tLzCW/cA==
 
-"@types/bn.js@^4.11.4":
-  version "4.11.4"
-  resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-4.11.4.tgz#a7bed5bdef9f16b25c92ba27745ab261374787d7"
-  integrity sha512-AO8WW+aRcKWKQAYTfKLzwnpL6U+TfPqS+haRrhCy5ff04Da8WZud3ZgVjspQXaEXJDcTlsjUEVvL39wegDek5w==
+"@types/bn.js@^4.11.5":
+  version "4.11.5"
+  resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-4.11.5.tgz#40e36197433f78f807524ec623afcf0169ac81dc"
+  integrity sha512-AEAZcIZga0JgVMHNtl1CprA/hXX7/wPt79AgR4XqaDt7jyj3QWYw6LPoOiznPtugDmlubUnAahMs2PFxGcQrng==
   dependencies:
     "@types/node" "*"
-
-"@types/deasync@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@types/deasync/-/deasync-0.1.0.tgz#b2bd6c3fcde3cf67b8be4c2f70136ba8f157b45a"
-  integrity sha512-jxUH53LtGvbIL3TX2hD/XQuAgYJeATtx9kDXq5XtCZrWQABsiCQPjWi/KQXECUF+p9FuR6/tawnEDjXlEr4rFA==
-
-"@types/ip-regex@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@types/ip-regex/-/ip-regex-3.0.0.tgz#f06748a44dd47810bb24555958b4b410cfe5abab"
-  integrity sha512-4j26qYCikXbIaypgqdGQhhIvYfTR+40i/05jVQB8oc57RbROEkBocdIUZO7fOhyqJsx7WRY36ySW8hoUZn7Fgw==
 
 "@types/node@*":
   version "11.11.6"
@@ -147,10 +135,10 @@ camel-case@^3.0.0:
     no-case "^2.2.0"
     upper-case "^1.1.1"
 
-camelcase@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-5.2.0.tgz#e7522abda5ed94cc0489e1b8466610e88404cf45"
-  integrity sha512-IXFsBS2pC+X0j0N/GE7Dm7j3bsEBp+oTpb7F50dwEVX7rf3IgwO9XatnegTsDtniKCUtEJH4fSU6Asw7uoVLfQ==
+camelcase@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-5.3.1.tgz#e3c9b31569e106811df242f715725a1f4c494320"
+  integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 canvas-renderer@~2.1.1:
   version "2.1.1"
@@ -389,10 +377,10 @@ inherits@2, inherits@^2.0.1:
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
 
-ip-regex@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ip-regex/-/ip-regex-4.0.0.tgz#0120e0558a355604d511709c831a19adf8487b10"
-  integrity sha512-3WQiamA4s/EGI9WxXhSWeR7X+fYxD7LqjJ0nIjMwXYSLOuJ2/ix13QOLvy/TGRDKEhhfLzHnCduANvdCIsn/+A==
+ip-regex@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ip-regex/-/ip-regex-4.1.0.tgz#5ad62f685a14edb421abebc2fff8db94df67b455"
+  integrity sha512-pKnZpbgCTfH/1NLIlOduP/V+WRXzC2MOz3Qo8xmxk8C5GudJLgK5QyLVXOSWy3ParAH7Eemurl3xjv/WXYFvMA==
 
 is-lower-case@^1.1.0:
   version "1.1.3"
