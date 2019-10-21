@@ -41,7 +41,7 @@
     "text-encoding": "^0.7.0",
     "text-encoding-polyfill": "^0.6.7",
     "tweetnacl": "^1.0.0",
-    "ws": "^6.1.2",
+    "ws": "^7.2.0",
     "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
