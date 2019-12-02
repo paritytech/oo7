@@ -31,7 +31,7 @@
     "blakejs": "^1.1.0",
     "bs58": "^4.0.1",
     "buffer": "^5.2.1",
-    "change-case": "^3.0.2",
+    "change-case": "^4.0.0",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-ws": "^4.0.1",
     "jdenticon": "^2.1.1",
