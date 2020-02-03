@@ -24,10 +24,10 @@
     ip-regex "^4.0.0"
     moment "^2.24.0"
 
-"@polkadot/wasm-crypto@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@polkadot/wasm-crypto/-/wasm-crypto-0.5.1.tgz#3d5734d6dc2f5174a411689f78538287d21bd710"
-  integrity sha512-8h7uz85bvLVirtbxLkELr9H25oqAfgnQuDP6FP3QJeag7VfMtVvRF5U2JWGgsiUSiRg+UJnTuCleOSDnageRmg==
+"@polkadot/wasm-crypto@^0.20.1":
+  version "0.20.1"
+  resolved "https://registry.yarnpkg.com/@polkadot/wasm-crypto/-/wasm-crypto-0.20.1.tgz#422f61cf61c8067b9800e6493608aeed2c701729"
+  integrity sha512-HVmKEQoC7RTS15nGJkQDam8pvwBLjO/JJfhq1OI/zBSqi0KPoh2ZxThkyI+O4CjjY1W+HGvybe0uf0c+VDn62Q==
 
 "@polkadot/wasm-schnorrkel@^0.3.1":
   version "0.3.1"
