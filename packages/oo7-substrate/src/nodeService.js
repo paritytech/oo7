@@ -1,5 +1,6 @@
 const { Bond } = require('oo7')
 const WebSocket = require('isomorphic-ws')
+const debug = require('debug')('oo7-substrate:nodeService')
 
 const subscriptionKey = {
 	author_submitAndWatchExtrinsic: {
@@ -66,7 +67,7 @@ class NodeService {
 		let that = this
 		this.ws = new WebSocket(uri)
 		this.ws.onopen = function () {
-			console.log('Connection open')
+			debug('Connection open')
 			that.rejig()
 			that.backoff = 0
 			let onceOpen = that.onceOpen;
@@ -96,7 +97,7 @@ class NodeService {
 			}
 
 			// epect a message every 10 seconds or we reconnect.
-			that.reconnect = setTimeout(() => { console.log('Reconnecting.'); that.start() }, 60000)
+			that.reconnect = setTimeout(() => { debug('Reconnecting.'); that.start() }, 60000)
 		}
 		this.ws.onerror = (err) => {
 			if (that.uriChanged) {

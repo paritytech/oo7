@@ -10,6 +10,7 @@ const { pbkdf2Sync } = require('pbkdf2')
 const { Buffer } = require('buffer')
 const { waitReady, isReady, keypairFromSeed, sign, verify, deriveKeypairHard, derivePublicSoft, deriveKeypairSoft } = require('@polkadot/wasm-schnorrkel');
 const wasmCrypto = require('@polkadot/wasm-crypto');
+const debug = require('debug')('oo7-substrate:secretStore')
 
 const DEV_PHRASE = 'bottom drive obey lake curtain smoke basket hold race lonely fit walk'
 
@@ -210,25 +211,25 @@ class SecretStore extends Bond {
 	sign (from, data) {
 		let item = this.find(from)
 		if (item) {
-			console.info(`Signing data from ${item.name}`, bytesToHex(data))
+			debug(`Signing data from ${item.name}`, bytesToHex(data))
 			let sig
 			switch (item.type) {
-				case ED25519: 
+				case ED25519:
 					sig = nacl.sign.detached(data, item.key.secretKey)
 					if (!nacl.sign.detached.verify(data, sig, item.key.publicKey)) {
-						console.warn(`Signature is INVALID!`)
+						debug(`Signature is INVALID!`)
 						return null
 					}
 					break
 				case SR25519:
 					sig = sign(srKeypairToPublic(item.key), srKeypairToSecret(item.key), data)
 					if (!verify(sig, data, srKeypairToPublic(item.key))) {
-						console.warn(`Signature is INVALID!`)
+						debug(`Signature is INVALID!`)
 						return null
 					}
 					break
 			}
-			console.info(`Signature is ${bytesToHex(sig)}`)
+			debug(`Signature is ${bytesToHex(sig)}`)
 			return sig
 		}
 		return null
@@ -237,7 +238,7 @@ class SecretStore extends Bond {
 	forget (identifier) {
 		let item = this.find(identifier)
 		if (item) {
-			console.info(`Forgetting key ${item.name} (${item.address}, ${item.uri})`)
+			debug(`Forgetting key ${item.name} (${item.address}, ${item.phrase})`)
 			this._keys = this._keys.filter(i => i !== item)
 			this._sync()
 		}
